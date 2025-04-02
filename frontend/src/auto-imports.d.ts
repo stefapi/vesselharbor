@@ -8,8 +8,16 @@ export {}
 declare global {
   const EffectScope: typeof import('vue')['EffectScope']
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
+  const addFunctionToGroup: typeof import('./services/groupService')['addFunctionToGroup']
+  const api: typeof import('./services/api')['default']
+  const apiDelete: typeof import('./services/api')['apiDelete']
+  const apiGet: typeof import('./services/api')['apiGet']
+  const apiPost: typeof import('./services/api')['apiPost']
+  const apiPut: typeof import('./services/api')['apiPut']
+  const assignUserToGroup: typeof import('./services/groupService')['assignUserToGroup']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
+  const changePassword: typeof import('./services/userService')['changePassword']
   const computed: typeof import('vue')['computed']
   const computedAsync: typeof import('@vueuse/core')['computedAsync']
   const computedEager: typeof import('@vueuse/core')['computedEager']
@@ -18,8 +26,11 @@ declare global {
   const controlledComputed: typeof import('@vueuse/core')['controlledComputed']
   const controlledRef: typeof import('@vueuse/core')['controlledRef']
   const createApp: typeof import('vue')['createApp']
+  const createElement: typeof import('./services/elementService')['createElement']
+  const createEnvironment: typeof import('./services/environmentService')['createEnvironment']
   const createEventHook: typeof import('@vueuse/core')['createEventHook']
   const createGlobalState: typeof import('@vueuse/core')['createGlobalState']
+  const createGroup: typeof import('./services/groupService')['createGroup']
   const createInjectionState: typeof import('@vueuse/core')['createInjectionState']
   const createPinia: typeof import('pinia')['createPinia']
   const createReactiveFn: typeof import('@vueuse/core')['createReactiveFn']
@@ -28,18 +39,28 @@ declare global {
   const createSharedComposable: typeof import('@vueuse/core')['createSharedComposable']
   const createTemplatePromise: typeof import('@vueuse/core')['createTemplatePromise']
   const createUnrefFn: typeof import('@vueuse/core')['createUnrefFn']
+  const createUser: typeof import('./services/userService')['createUser']
   const customRef: typeof import('vue')['customRef']
   const debouncedRef: typeof import('@vueuse/core')['debouncedRef']
   const debouncedWatch: typeof import('@vueuse/core')['debouncedWatch']
   const defineAsyncComponent: typeof import('vue')['defineAsyncComponent']
   const defineComponent: typeof import('vue')['defineComponent']
   const defineStore: typeof import('pinia')['defineStore']
+  const deleteElement: typeof import('./services/elementService')['deleteElement']
+  const deleteEnvironment: typeof import('./services/environmentService')['deleteEnvironment']
+  const deleteGroup: typeof import('./services/groupService')['deleteGroup']
+  const deleteUser: typeof import('./services/userService')['deleteUser']
   const eagerComputed: typeof import('@vueuse/core')['eagerComputed']
   const effectScope: typeof import('vue')['effectScope']
   const extendRef: typeof import('@vueuse/core')['extendRef']
   const getActivePinia: typeof import('pinia')['getActivePinia']
+  const getAvailableFunctions: typeof import('./services/groupService')['getAvailableFunctions']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
+  const getElement: typeof import('./services/elementService')['getElement']
+  const getEnvironment: typeof import('./services/environmentService')['getEnvironment']
+  const getGroupFunctions: typeof import('./services/groupService')['getGroupFunctions']
+  const getUserGroups: typeof import('./services/userService')['getUserGroups']
   const h: typeof import('vue')['h']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
   const inject: typeof import('vue')['inject']
@@ -49,6 +70,13 @@ declare global {
   const isReactive: typeof import('vue')['isReactive']
   const isReadonly: typeof import('vue')['isReadonly']
   const isRef: typeof import('vue')['isRef']
+  const listAllGroups: typeof import('./services/groupService')['listAllGroups']
+  const listElements: typeof import('./services/elementService')['listElements']
+  const listEnvironmentUsers: typeof import('./services/environmentUserService')['listEnvironmentUsers']
+  const listEnvironments: typeof import('./services/environmentService')['listEnvironments']
+  const listGroups: typeof import('./services/groupService')['listGroups']
+  const listUsers: typeof import('./services/userService')['listUsers']
+  const login: typeof import('./services/userService')['login']
   const makeDestructurable: typeof import('@vueuse/core')['makeDestructurable']
   const mapActions: typeof import('pinia')['mapActions']
   const mapGetters: typeof import('pinia')['mapGetters']
@@ -94,6 +122,8 @@ declare global {
   const refDefault: typeof import('@vueuse/core')['refDefault']
   const refThrottled: typeof import('@vueuse/core')['refThrottled']
   const refWithControl: typeof import('@vueuse/core')['refWithControl']
+  const removeFunctionFromGroup: typeof import('./services/groupService')['removeFunctionFromGroup']
+  const removeUserFromGroup: typeof import('./services/groupService')['removeUserFromGroup']
   const resolveComponent: typeof import('vue')['resolveComponent']
   const resolveRef: typeof import('@vueuse/core')['resolveRef']
   const resolveUnref: typeof import('@vueuse/core')['resolveUnref']
@@ -122,6 +152,11 @@ declare global {
   const unref: typeof import('vue')['unref']
   const unrefElement: typeof import('@vueuse/core')['unrefElement']
   const until: typeof import('@vueuse/core')['until']
+  const updateElement: typeof import('./services/elementService')['updateElement']
+  const updateEnvironment: typeof import('./services/environmentService')['updateEnvironment']
+  const updateGroup: typeof import('./services/groupService')['updateGroup']
+  const updateSuperadmin: typeof import('./services/userService')['updateSuperadmin']
+  const updateUserEnvironmentRights: typeof import('./services/environmentUserService')['updateUserEnvironmentRights']
   const useActiveElement: typeof import('@vueuse/core')['useActiveElement']
   const useAnimate: typeof import('@vueuse/core')['useAnimate']
   const useArrayDifference: typeof import('@vueuse/core')['useArrayDifference']
@@ -139,6 +174,7 @@ declare global {
   const useAsyncQueue: typeof import('@vueuse/core')['useAsyncQueue']
   const useAsyncState: typeof import('@vueuse/core')['useAsyncState']
   const useAttrs: typeof import('vue')['useAttrs']
+  const useAuthStore: typeof import('./store/auth')['useAuthStore']
   const useBase64: typeof import('@vueuse/core')['useBase64']
   const useBattery: typeof import('@vueuse/core')['useBattery']
   const useBluetooth: typeof import('@vueuse/core')['useBluetooth']
@@ -176,6 +212,7 @@ declare global {
   const useElementHover: typeof import('@vueuse/core')['useElementHover']
   const useElementSize: typeof import('@vueuse/core')['useElementSize']
   const useElementVisibility: typeof import('@vueuse/core')['useElementVisibility']
+  const useEnvironmentsStore: typeof import('./store/entities')['useEnvironmentsStore']
   const useEventBus: typeof import('@vueuse/core')['useEventBus']
   const useEventListener: typeof import('@vueuse/core')['useEventListener']
   const useEventSource: typeof import('@vueuse/core')['useEventSource']
@@ -190,6 +227,7 @@ declare global {
   const useFullscreen: typeof import('@vueuse/core')['useFullscreen']
   const useGamepad: typeof import('@vueuse/core')['useGamepad']
   const useGeolocation: typeof import('@vueuse/core')['useGeolocation']
+  const useGroupsStore: typeof import('./store/group')['useGroupsStore']
   const useHead: typeof import('@vueuse/head')['useHead']
   const useId: typeof import('vue')['useId']
   const useIdle: typeof import('@vueuse/core')['useIdle']
@@ -216,6 +254,7 @@ declare global {
   const useMutationObserver: typeof import('@vueuse/core')['useMutationObserver']
   const useNavigatorLanguage: typeof import('@vueuse/core')['useNavigatorLanguage']
   const useNetwork: typeof import('@vueuse/core')['useNetwork']
+  const useNotificationStore: typeof import('./store/notifications')['useNotificationStore']
   const useNow: typeof import('@vueuse/core')['useNow']
   const useObjectUrl: typeof import('@vueuse/core')['useObjectUrl']
   const useOffsetPagination: typeof import('@vueuse/core')['useOffsetPagination']
@@ -279,6 +318,7 @@ declare global {
   const useTransition: typeof import('@vueuse/core')['useTransition']
   const useUrlSearchParams: typeof import('@vueuse/core')['useUrlSearchParams']
   const useUserMedia: typeof import('@vueuse/core')['useUserMedia']
+  const useUsersStore: typeof import('./store/users')['useUsersStore']
   const useVModel: typeof import('@vueuse/core')['useVModel']
   const useVModels: typeof import('@vueuse/core')['useVModels']
   const useVibrate: typeof import('@vueuse/core')['useVibrate']
@@ -313,6 +353,15 @@ declare global {
   // @ts-ignore
   export type { Component, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
+  // @ts-ignore
+  export type { Group } from './store/group'
+  import('./store/group')
+  // @ts-ignore
+  export type { Notification } from './store/notifications'
+  import('./store/notifications')
+  // @ts-ignore
+  export type { User } from './store/users'
+  import('./store/users')
 }
 
 // for vue template auto import
@@ -322,8 +371,16 @@ declare module 'vue' {
   interface ComponentCustomProperties {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
+    readonly addFunctionToGroup: UnwrapRef<typeof import('./services/groupService')['addFunctionToGroup']>
+    readonly api: UnwrapRef<typeof import('./services/api')['default']>
+    readonly apiDelete: UnwrapRef<typeof import('./services/api')['apiDelete']>
+    readonly apiGet: UnwrapRef<typeof import('./services/api')['apiGet']>
+    readonly apiPost: UnwrapRef<typeof import('./services/api')['apiPost']>
+    readonly apiPut: UnwrapRef<typeof import('./services/api')['apiPut']>
+    readonly assignUserToGroup: UnwrapRef<typeof import('./services/groupService')['assignUserToGroup']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
+    readonly changePassword: UnwrapRef<typeof import('./services/userService')['changePassword']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly computedAsync: UnwrapRef<typeof import('@vueuse/core')['computedAsync']>
     readonly computedEager: UnwrapRef<typeof import('@vueuse/core')['computedEager']>
@@ -332,8 +389,11 @@ declare module 'vue' {
     readonly controlledComputed: UnwrapRef<typeof import('@vueuse/core')['controlledComputed']>
     readonly controlledRef: UnwrapRef<typeof import('@vueuse/core')['controlledRef']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
+    readonly createElement: UnwrapRef<typeof import('./services/elementService')['createElement']>
+    readonly createEnvironment: UnwrapRef<typeof import('./services/environmentService')['createEnvironment']>
     readonly createEventHook: UnwrapRef<typeof import('@vueuse/core')['createEventHook']>
     readonly createGlobalState: UnwrapRef<typeof import('@vueuse/core')['createGlobalState']>
+    readonly createGroup: UnwrapRef<typeof import('./services/groupService')['createGroup']>
     readonly createInjectionState: UnwrapRef<typeof import('@vueuse/core')['createInjectionState']>
     readonly createPinia: UnwrapRef<typeof import('pinia')['createPinia']>
     readonly createReactiveFn: UnwrapRef<typeof import('@vueuse/core')['createReactiveFn']>
@@ -342,18 +402,28 @@ declare module 'vue' {
     readonly createSharedComposable: UnwrapRef<typeof import('@vueuse/core')['createSharedComposable']>
     readonly createTemplatePromise: UnwrapRef<typeof import('@vueuse/core')['createTemplatePromise']>
     readonly createUnrefFn: UnwrapRef<typeof import('@vueuse/core')['createUnrefFn']>
+    readonly createUser: UnwrapRef<typeof import('./services/userService')['createUser']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly debouncedRef: UnwrapRef<typeof import('@vueuse/core')['debouncedRef']>
     readonly debouncedWatch: UnwrapRef<typeof import('@vueuse/core')['debouncedWatch']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly defineStore: UnwrapRef<typeof import('pinia')['defineStore']>
+    readonly deleteElement: UnwrapRef<typeof import('./services/elementService')['deleteElement']>
+    readonly deleteEnvironment: UnwrapRef<typeof import('./services/environmentService')['deleteEnvironment']>
+    readonly deleteGroup: UnwrapRef<typeof import('./services/groupService')['deleteGroup']>
+    readonly deleteUser: UnwrapRef<typeof import('./services/userService')['deleteUser']>
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
+    readonly getAvailableFunctions: UnwrapRef<typeof import('./services/groupService')['getAvailableFunctions']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
+    readonly getElement: UnwrapRef<typeof import('./services/elementService')['getElement']>
+    readonly getEnvironment: UnwrapRef<typeof import('./services/environmentService')['getEnvironment']>
+    readonly getGroupFunctions: UnwrapRef<typeof import('./services/groupService')['getGroupFunctions']>
+    readonly getUserGroups: UnwrapRef<typeof import('./services/userService')['getUserGroups']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
@@ -363,6 +433,13 @@ declare module 'vue' {
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
+    readonly listAllGroups: UnwrapRef<typeof import('./services/groupService')['listAllGroups']>
+    readonly listElements: UnwrapRef<typeof import('./services/elementService')['listElements']>
+    readonly listEnvironmentUsers: UnwrapRef<typeof import('./services/environmentUserService')['listEnvironmentUsers']>
+    readonly listEnvironments: UnwrapRef<typeof import('./services/environmentService')['listEnvironments']>
+    readonly listGroups: UnwrapRef<typeof import('./services/groupService')['listGroups']>
+    readonly listUsers: UnwrapRef<typeof import('./services/userService')['listUsers']>
+    readonly login: UnwrapRef<typeof import('./services/userService')['login']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
     readonly mapActions: UnwrapRef<typeof import('pinia')['mapActions']>
     readonly mapGetters: UnwrapRef<typeof import('pinia')['mapGetters']>
@@ -408,6 +485,8 @@ declare module 'vue' {
     readonly refDefault: UnwrapRef<typeof import('@vueuse/core')['refDefault']>
     readonly refThrottled: UnwrapRef<typeof import('@vueuse/core')['refThrottled']>
     readonly refWithControl: UnwrapRef<typeof import('@vueuse/core')['refWithControl']>
+    readonly removeFunctionFromGroup: UnwrapRef<typeof import('./services/groupService')['removeFunctionFromGroup']>
+    readonly removeUserFromGroup: UnwrapRef<typeof import('./services/groupService')['removeUserFromGroup']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
     readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
@@ -436,6 +515,11 @@ declare module 'vue' {
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
     readonly unrefElement: UnwrapRef<typeof import('@vueuse/core')['unrefElement']>
     readonly until: UnwrapRef<typeof import('@vueuse/core')['until']>
+    readonly updateElement: UnwrapRef<typeof import('./services/elementService')['updateElement']>
+    readonly updateEnvironment: UnwrapRef<typeof import('./services/environmentService')['updateEnvironment']>
+    readonly updateGroup: UnwrapRef<typeof import('./services/groupService')['updateGroup']>
+    readonly updateSuperadmin: UnwrapRef<typeof import('./services/userService')['updateSuperadmin']>
+    readonly updateUserEnvironmentRights: UnwrapRef<typeof import('./services/environmentUserService')['updateUserEnvironmentRights']>
     readonly useActiveElement: UnwrapRef<typeof import('@vueuse/core')['useActiveElement']>
     readonly useAnimate: UnwrapRef<typeof import('@vueuse/core')['useAnimate']>
     readonly useArrayDifference: UnwrapRef<typeof import('@vueuse/core')['useArrayDifference']>
@@ -453,6 +537,7 @@ declare module 'vue' {
     readonly useAsyncQueue: UnwrapRef<typeof import('@vueuse/core')['useAsyncQueue']>
     readonly useAsyncState: UnwrapRef<typeof import('@vueuse/core')['useAsyncState']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
+    readonly useAuthStore: UnwrapRef<typeof import('./store/auth')['useAuthStore']>
     readonly useBase64: UnwrapRef<typeof import('@vueuse/core')['useBase64']>
     readonly useBattery: UnwrapRef<typeof import('@vueuse/core')['useBattery']>
     readonly useBluetooth: UnwrapRef<typeof import('@vueuse/core')['useBluetooth']>
@@ -490,6 +575,7 @@ declare module 'vue' {
     readonly useElementHover: UnwrapRef<typeof import('@vueuse/core')['useElementHover']>
     readonly useElementSize: UnwrapRef<typeof import('@vueuse/core')['useElementSize']>
     readonly useElementVisibility: UnwrapRef<typeof import('@vueuse/core')['useElementVisibility']>
+    readonly useEnvironmentsStore: UnwrapRef<typeof import('./store/entities')['useEnvironmentsStore']>
     readonly useEventBus: UnwrapRef<typeof import('@vueuse/core')['useEventBus']>
     readonly useEventListener: UnwrapRef<typeof import('@vueuse/core')['useEventListener']>
     readonly useEventSource: UnwrapRef<typeof import('@vueuse/core')['useEventSource']>
@@ -504,6 +590,7 @@ declare module 'vue' {
     readonly useFullscreen: UnwrapRef<typeof import('@vueuse/core')['useFullscreen']>
     readonly useGamepad: UnwrapRef<typeof import('@vueuse/core')['useGamepad']>
     readonly useGeolocation: UnwrapRef<typeof import('@vueuse/core')['useGeolocation']>
+    readonly useGroupsStore: UnwrapRef<typeof import('./store/group')['useGroupsStore']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
     readonly useIdle: UnwrapRef<typeof import('@vueuse/core')['useIdle']>
     readonly useImage: UnwrapRef<typeof import('@vueuse/core')['useImage']>
@@ -529,6 +616,7 @@ declare module 'vue' {
     readonly useMutationObserver: UnwrapRef<typeof import('@vueuse/core')['useMutationObserver']>
     readonly useNavigatorLanguage: UnwrapRef<typeof import('@vueuse/core')['useNavigatorLanguage']>
     readonly useNetwork: UnwrapRef<typeof import('@vueuse/core')['useNetwork']>
+    readonly useNotificationStore: UnwrapRef<typeof import('./store/notifications')['useNotificationStore']>
     readonly useNow: UnwrapRef<typeof import('@vueuse/core')['useNow']>
     readonly useObjectUrl: UnwrapRef<typeof import('@vueuse/core')['useObjectUrl']>
     readonly useOffsetPagination: UnwrapRef<typeof import('@vueuse/core')['useOffsetPagination']>
@@ -591,6 +679,7 @@ declare module 'vue' {
     readonly useTransition: UnwrapRef<typeof import('@vueuse/core')['useTransition']>
     readonly useUrlSearchParams: UnwrapRef<typeof import('@vueuse/core')['useUrlSearchParams']>
     readonly useUserMedia: UnwrapRef<typeof import('@vueuse/core')['useUserMedia']>
+    readonly useUsersStore: UnwrapRef<typeof import('./store/users')['useUsersStore']>
     readonly useVModel: UnwrapRef<typeof import('@vueuse/core')['useVModel']>
     readonly useVModels: UnwrapRef<typeof import('@vueuse/core')['useVModels']>
     readonly useVibrate: UnwrapRef<typeof import('@vueuse/core')['useVibrate']>

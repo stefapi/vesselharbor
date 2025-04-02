@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from typing import List, Optional
-
+from datetime import timedelta
 from ..schema.user import UserCreate, UserOut, ChangePassword, ChangeSuperadmin
 from ..schema.auth import Token
 from ..schema.password_reset import PasswordResetRequest, PasswordReset
@@ -37,6 +37,19 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Identifiants invalides")
 
+@router.get(
+    "/me",
+    response_model=UserOut,
+    summary="Obtenir les informations de l'utilisateur connecté",
+    description="Renvoie les informations publiques de l'utilisateur connecté, sans données sensibles.",
+    responses={
+        401: {"description": "Non autorisé"}
+    }
+)
+def get_me(current_user: User = Depends(get_current_user)):
+    # La conversion en UserOut se fait automatiquement grâce à orm_mode
+    return current_user
+
 @router.post(
     "/users",
     response_model=dict,
@@ -69,9 +82,33 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     user = user_repo.get_user_by_email(db, form_data.username)
     if not user or not security.verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Email ou mot de passe incorrect")
-    access_token = auth.create_access_token(data={"sub": str(user.id)})
+    access_token = auth.create_access_token(data={"sub": str(user.id)}, expires_delta=timedelta(minutes=60), token_type="access")
+    refresh_token = auth.create_access_token(data={"sub": str(user.id)}, expires_delta=timedelta(days=7), token_type="refresh")
     audit.log_action(db, user.id, "Login", "Connexion réussie")
-    return {"access_token": access_token, "token_type": "bearer"}
+    return response.success_response({"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}, "Login réussi")
+
+@router.post(
+    "/refresh-token",
+    response_model=dict,
+    summary="Renouveler le token",
+    description="Renouvelle le token d'accès à partir d'un refresh token valide. Le refresh token doit avoir le claim 'token_type' égal à 'refresh'.",
+    responses={
+        400: {"description": "Refresh token invalide ou expiré"}
+    }
+)
+def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
+    try:
+        payload = auth.decode_access_token(refresh_token)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Refresh token invalide ou expiré")
+    if payload.get("token_type") != "refresh":
+        raise HTTPException(status_code=400, detail="Le token fourni n'est pas un refresh token")
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Refresh token invalide")
+    new_access_token = auth.create_access_token(data={"sub": str(user_id)}, expires_delta=timedelta(minutes=60), token_type="access")
+    return response.success_response({"access_token": new_access_token, "token_type": "bearer"}, "Token renouvelé avec succès")
+
 
 @router.delete(
     "/users/{user_id}",

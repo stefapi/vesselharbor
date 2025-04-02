@@ -3,13 +3,15 @@ import { createApp } from 'vue';
 import App from '@/App.vue';
 import router from '@/router/index.js';
 import { createPinia } from 'pinia';
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+// @ts-ignore
 import { createVuestic } from 'vuestic-ui';
 import 'vuestic-ui/css'
 import 'vuestic-ui/styles/essential.css'
 import 'vuestic-ui/styles/typography.css'
 import 'uno.css';
 import 'nprogress/nprogress.css'
-import NProgress from 'nprogress'
+import NProgress from  'nprogress'
 import '@/styles/nprogress.css' // ou ton chemin
 import 'material-icons/iconfont/material-icons.css'
 
@@ -24,7 +26,9 @@ router.afterEach(() => {
   NProgress.done()
 })
 
-app.use(createPinia());
+const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
+app.use(pinia);
 app.use(router);
 app.use(createVuestic({
   components: {
@@ -35,5 +39,11 @@ app.use(createVuestic({
     }
   }
 }));
+
+// Réinitialiser le store d'authentification
+import { useAuthStore } from '@/store/auth.ts';
+const authStore = useAuthStore();
+authStore.initialize();
+
 app.mount('#app');
 

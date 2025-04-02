@@ -18,15 +18,9 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-import { login } from "@/services/userService";
-import { useNotificationStore } from '@/store/notifications';
-import LoginForm from '@/components/Auth/LoginForm.vue';
-import NotificationsList from '@/components/Common/NotificationsList.vue';
-import type { AxiosError } from 'axios';
 
 interface LoginSubmitEvent {
-  isValid: boolean;
+  isValid: boolean
   credentials: {
     email: string;
     password: string;
@@ -46,19 +40,24 @@ const handleFormSubmit = async (event: LoginSubmitEvent) => {
   }
 
   try {
-    const response = await login({
-      username: event.credentials.email,
-      password: event.credentials.password,
-    });
+    const authStore = useAuthStore();
 
-    localStorage.setItem('authToken', response.access_token);
+    // Utiliser l'action login du store au lieu du service direct
+    await authStore.login({
+      username: event.credentials.email,
+      password: event.credentials.password
+    });
 
     notificationStore.addNotification({
       type: 'success',
       message: 'Connexion réussie ! Redirection en cours...'
     });
 
-    router.push({ name: 'Dashboard' });
+    // Redirection après un léger délai pour laisser le store se mettre à jour
+    setTimeout(() => {
+      router.push({ name: 'Dashboard' });
+    }, 100);
+
   } catch (error: unknown) {
     handleLoginError(error);
   }
@@ -84,6 +83,6 @@ const isAxiosError = (error: unknown): error is AxiosError => {
   return typeof error === 'object'
     && error !== null
     && 'isAxiosError' in error
-    && (error as AxiosError).isAxiosError === true;
+    && (error as AxiosError).isAxiosError;
 };
 </script>

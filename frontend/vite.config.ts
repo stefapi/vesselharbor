@@ -71,7 +71,7 @@ export default defineConfig({
     AutoImport({
       imports: ['vue', 'vue-router', 'pinia', '@vueuse/core', VueRouterAutoImports],
       dts: 'src/auto-imports.d.ts',
-      dirs: ['src/composables', 'src/stores'],
+      dirs: ['src/services', 'src/store'],
       vueTemplate: true,
     }),
     // https://github.com/antfu/unplugin-icons

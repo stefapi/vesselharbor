@@ -13,7 +13,7 @@ const api = axios.create({
 
 // Intercepteur pour gérer les erreurs de manière centralisée
 api.interceptors.response.use(
-  (response) => response.data, // Retourne directement les données pour simplification
+  (response) => response,
   async (error) => {
     const notificationStore = useNotificationStore();
     const authStore = useAuthStore();
