@@ -23,7 +23,7 @@
 import { defineComponent } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import api from '@/services/api';
-import PasswordResetForm from '@/components/PasswordResetForm.vue';
+import PasswordResetForm from '@/components/Auth/PasswordResetForm.vue';
 
 export default defineComponent({
   name: 'ResetPasswordView',

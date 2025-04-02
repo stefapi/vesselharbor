@@ -8,14 +8,14 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    ChangePasswordForm: typeof import('./components/ChangePasswordForm.vue')['default']
+    ChangePasswordForm: typeof import('./components/Auth/ChangePasswordForm.vue')['default']
     EnvironmentForm: typeof import('./components/EnvironmentForm.vue')['default']
     GroupForm: typeof import('./components/GroupForm.vue')['default']
     GroupFunctionsManager: typeof import('./components/GroupFunctionsManager.vue')['default']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
-    LoginForm: typeof import('./components/LoginForm.vue')['default']
-    Notifications: typeof import('./components/Notifications.vue')['default']
-    PasswordResetForm: typeof import('./components/PasswordResetForm.vue')['default']
+    LoginForm: typeof import('./components/Auth/LoginForm.vue')['default']
+    Notifications: typeof import('./components/Common/Notifications.vue')['default']
+    PasswordResetForm: typeof import('./components/Auth/PasswordResetForm.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     UserForm: typeof import('./components/UserForm.vue')['default']

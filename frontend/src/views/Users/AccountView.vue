@@ -17,7 +17,7 @@
 import { defineComponent } from 'vue';
 import { useAuthStore } from '@/store/auth';
 import UserForm from '@/components/UserForm.vue';
-import ChangePasswordForm from '@/components/ChangePasswordForm.vue';
+import ChangePasswordForm from '@/components/Auth/ChangePasswordForm.vue';
 
 export default defineComponent({
   components: { UserForm, ChangePasswordForm },
