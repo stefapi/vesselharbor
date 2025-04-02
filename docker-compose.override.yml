@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: ./app
+    # On peut conserver l'attribut "env_file" et "command" du fichier de base.
+
+  frontend:
+    build:
+      context: ./frontend

@@ -1,0 +1,9 @@
+**/.unlighthouse/
+**/.vite-inspect/
+**/node_modules/
+**/*.db
+**/__pycache__/
+**/*.log
+**/*.pyc
+**/*.pyo
+**/*.pyclass

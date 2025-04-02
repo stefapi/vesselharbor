@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  backend:
+    image: myorg/backend:latest
+    container_name: backend
+    env_file: .env
+    expose:
+      - "8010"
+    command: uvicorn main:app --host 0.0.0.0 --port 8010
+
+  frontend:
+    image: myorg/frontend:latest
+    container_name: frontend
+    env_file: .env
+    expose:
+      - "5000"
+    command: serve -s dist -l 5000
+
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    ports:
+      - "3000:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - backend
+      - frontend
+

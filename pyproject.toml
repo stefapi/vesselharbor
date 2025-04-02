@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "app"
+version = "0.1.0"
+description = "Backend FastAPI/SQLite (compatible PostgreSQL) pour la gestion des utilisateurs, environnements, groupes et permissions."
+authors = ["Votre Nom <votre.email@example.com>"]
+readme = "README.md"
+classifiers = [
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Software Development :: Libraries :: Python Modules"]
+license = "Apache"
+
+[custom.params]
+package="app"
+srcdir="app"
+man-section="1"
+long-description="""A service wich deploys e home web platform on a Raspberry Pi or a VPS
+This is usable for debian, Ubuntu systems. other Platforms are planned"""
+
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.115.11"
+uvicorn = { extras = ["standard"], version = "^0.34.0" }
+sqlalchemy = "^2.0.38"
+python-dotenv = "^1.0.0"
+passlib = { version="^1.7.4", extras = ["bcrypt"]}
+authlib = "^1.5.1"
+email-validator = "^2.2.0"
+
+[poetry.group.dev.dependencies]
+pytest = "^7.1.2"
+pytest-asyncio = "^0.20.2"
+black = "^23.3.0"
+isort = "^5.12.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,10 @@
+:80 {
+    # Les requêtes commençant par /api sont redirigées vers le backend
+    @api {
+        path /api/*
+    }
+    reverse_proxy @api backend:8010
+
+    # Toutes les autres requêtes vont vers le frontend
+    reverse_proxy frontend:5000
+}

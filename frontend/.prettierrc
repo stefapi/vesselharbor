@@ -1,0 +1,9 @@
+{
+  "semi": false,
+  "singleQuote": true,
+  "printWidth": 220,
+  "endOfLine": "auto",
+  "eslintIntegration": true,
+  "trailingComma": "es5",
+  "tabWidth": 2
+}

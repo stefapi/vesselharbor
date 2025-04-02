@@ -1,0 +1,9 @@
+/* Masquer les styles par défaut */
+#nprogress .bar {
+  background: transparent !important;
+}
+
+/* Supprimer le spinner si présent */
+#nprogress .spinner {
+  display: none !important;
+}
