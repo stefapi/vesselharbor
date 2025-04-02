@@ -1,25 +1,25 @@
 <!-- src/views/Auth/LoginView.vue -->
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-100">
-    <VaCard class="w-full max-w-md p-6">
+    <va-card class="w-full max-w-md p-6">
       <h1 class="text-2xl font-bold mb-4 text-center">Connexion</h1>
       <NotificationsList />
       <LoginForm @submit="handleFormSubmit" />
       <div class="mt-4 text-center">
         <router-link
           to="/forgot-password"
-          class="text-blue-500 hover:underline transition-colors duration-200"
+          class="va-text-primary va-link hover:va-link--hover"
         >
           Mot de passe oublié ?
         </router-link>
       </div>
-    </VaCard>
+    </va-card>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { login } from '@/services/userService';
+import { login } from "@/services/userService";
 import { useNotificationStore } from '@/store/notifications';
 import LoginForm from '@/components/Auth/LoginForm.vue';
 import NotificationsList from '@/components/Common/NotificationsList.vue';

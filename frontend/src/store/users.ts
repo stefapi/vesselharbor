@@ -1,6 +1,6 @@
 // src/store/users.ts
 import { defineStore } from 'pinia';
-import { listUsers } from '@/services/userService';
+import { listUsers } from '@/services/userService.ts';
 
 export interface User {
   id: number;

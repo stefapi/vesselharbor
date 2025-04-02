@@ -1,6 +1,6 @@
 // src/store/groups.ts
 import { defineStore } from 'pinia';
-import { listGroups } from '@/services/groupService';
+import { listGroups } from '@/services/groupService.ts';
 
 export interface Group {
   id: number;

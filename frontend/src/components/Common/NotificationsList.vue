@@ -1,4 +1,4 @@
-<!-- src/views/Auth/Notifications.vue -->
+<!-- src/components/Common/NotificationsList.vue -->
 <template>
   <div class="notifications">
     <va-toast
@@ -8,8 +8,9 @@
       position="top-right"
       :color="typeToColor[notification.type]"
       closeable
-      @close="remove(notification.id)"
+      @close="removeNotification(notification.id)"
       class="notification-toast"
+      :offset="16"
     >
       <template #icon>
         <va-icon
@@ -24,10 +25,10 @@
 
 <script setup lang="ts">
 import { useNotificationStore } from '@/store/notifications';
-import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 
-const store = useNotificationStore();
-const notifications = computed(() => store.notifications);
+const notificationStore = useNotificationStore();
+const { notifications } = storeToRefs(notificationStore);
 
 const typeToColor = {
   success: 'success',
@@ -36,7 +37,6 @@ const typeToColor = {
   warning: 'warning'
 };
 
-// Icônes Material Design officielles
 const typeToIcon = {
   success: 'mdi-check-circle',
   error: 'mdi-alert-circle',
@@ -44,28 +44,7 @@ const typeToIcon = {
   warning: 'mdi-alert'
 };
 
-const remove = (id: number) => store.removeNotification(id);
+const removeNotification = (id: number) => {
+  notificationStore.removeNotification(id);
+};
 </script>
-
-<style scoped>
-.notifications {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  z-index: 10000;
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 0.5rem;
-}
-
-:deep(.notification-toast) {
-  position: static !important;
-  margin: 0 !important;
-  transform: none !important;
-}
-
-/* Correction couleur des icônes */
-:deep(.va-toast__icon) {
-  color: inherit !important;
-}
-</style>

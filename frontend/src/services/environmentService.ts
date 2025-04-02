@@ -1,5 +1,5 @@
 // src/services/environmentService.ts
-import api from '@/services/api';
+import api from '@/services/api.ts';
 
 export async function createEnvironment(env: { name: string }) {
   return api.post('/environments/', env);

@@ -1,6 +1,6 @@
 // src/store/entities.ts
 import { defineStore } from 'pinia';
-import api from '@/services/api';
+import api from '@/services/api.ts';
 
 interface Environment {
   id: number;
