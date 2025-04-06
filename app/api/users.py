@@ -265,9 +265,8 @@ def reset_password_request(reset_req: PasswordResetRequest, background_tasks: Ba
     user = user_repo.get_user_by_email(db, reset_req.email)
     if not user:
         return response.success_response(None, "Si cet email est enregistré, vous recevrez un lien de réinitialisation.")
-    token = auth.create_access_token(data={"sub": str(user.id), "token_type": "password_reset"})
-    reset_link = f"https://votre-app.com/reset_password?token={token}"
-    background_tasks.add_task(email.send_reset_email, user.email, reset_link)
+    token = auth.create_access_token(data={"sub": str(user.id)}, token_type= "password_reset")
+    background_tasks.add_task(email.send_reset_email, user.email, token)
     audit.log_action(db, user.id, "Réinitialisation mot de passe", "Lien de réinitialisation envoyé par email")
     return response.success_response(None, "Si cet email est enregistré, vous recevrez un lien de réinitialisation.")
 

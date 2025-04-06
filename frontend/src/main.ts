@@ -9,10 +9,10 @@ import { createVuestic } from 'vuestic-ui';
 import 'vuestic-ui/css'
 import 'vuestic-ui/styles/essential.css'
 import 'vuestic-ui/styles/typography.css'
-import 'uno.css';
+import 'virtual:uno.css'
 import 'nprogress/nprogress.css'
-import NProgress from  'nprogress'
-import '@/styles/nprogress.css' // ou ton chemin
+import NProgress from 'nprogress'
+//import '@/styles/nprogress.css' // ou ton chemin
 import 'material-icons/iconfont/material-icons.css'
 
 const app = createApp(App);
@@ -39,11 +39,6 @@ app.use(createVuestic({
     }
   }
 }));
-
-// Réinitialiser le store d'authentification
-import { useAuthStore } from '@/store/auth.ts';
-const authStore = useAuthStore();
-authStore.initialize();
 
 app.mount('#app');
 

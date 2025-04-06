@@ -1,59 +1,131 @@
 // src/services/api.ts
-import axios from 'axios';
+import axios, {
+  type AxiosError,
+  type AxiosInstance,
+  type AxiosRequestConfig,
+  type InternalAxiosRequestConfig,
+  type AxiosResponse,
+  type AxiosRequestHeaders
+} from 'axios';
 import { useAuthStore } from '@/store/auth.ts';
 import { useNotificationStore } from '@/store/notifications.ts';
 
-// Configuration de base avec timeout
-const api = axios.create({
+// Déclaration des types étendus
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    _retry?: boolean;
+  }
+}
+
+interface ApiError {
+  message: string;
+  status?: number;
+  data?: unknown;
+}
+
+const api: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   withCredentials: true,
-  timeout: 5000, // 5 secondes de timeout
+  timeout: 5000,
   timeoutErrorMessage: 'La requête a pris trop de temps, veuillez réessayer',
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
-// Intercepteur pour gérer les erreurs de manière centralisée
+let isRefreshing = false;
+let failedRequests: ((token: string) => void)[] = [];
+
+// Correction du typage de l'intercepteur de réponse
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const notificationStore = useNotificationStore();
+  (response: AxiosResponse) => response, // Conservation de la réponse Axios native
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
     const authStore = useAuthStore();
+    const notificationStore = useNotificationStore();
 
     // Gestion des erreurs réseau/timeout
     if (error.code === 'ECONNABORTED' || !error.response) {
       notificationStore.addNotification({
         type: 'error',
-        message: 'Serveur indisponible ou connexion lente'
+        message: error.message || 'Problème de connexion au serveur'
       });
       return Promise.reject(error);
     }
 
-    // Gestion des erreurs HTTP
-    const { status, data } = error.response;
+    if (error.response.status === 401 && !originalRequest?._retry) {
+      if (isRefreshing) {
+        return new Promise<AxiosResponse>((resolve) => {
+          failedRequests.push((newToken: string) => {
+            originalRequest.headers = {
+              ...originalRequest.headers,
+              Authorization: `Bearer ${newToken}`
+            } as AxiosRequestHeaders;
+            resolve(api(originalRequest));
+          });
+        });
+      }
 
-    if (status === 401) {
+      isRefreshing = true;
+      originalRequest._retry = true;
+
       try {
-        await authStore.renewSession();
-        return api.request(error.config); // Retry la requête originale
-      } catch (renewError) {
+        const newToken = await authStore.renewSession();
+        isRefreshing = false;
+
+        failedRequests.forEach(cb => cb(authStore.accessToken));
+        failedRequests = [];
+
+        return api(originalRequest);
+      } catch (refreshError) {
         authStore.logout();
         notificationStore.addNotification({
           type: 'error',
-          message: 'Session expirée, veuillez vous reconnecter'
+          message: 'Session expirée - Veuillez vous reconnecter'
+        });
+        return Promise.reject({
+          message: 'Session expirée - Veuillez vous reconnecter',
+          status: 401
         });
       }
-    } else {
-      const message = data?.detail || `Erreur serveur (${status})`;
-      notificationStore.addNotification({ type: 'error', message });
     }
 
-    return Promise.reject(error);
+    // Gestion des erreurs standardisées
+    const errorMessage = (error.response?.data as any)?.message
+      || 'Erreur de communication avec le serveur';
+
+    notificationStore.addNotification({
+      type: 'error',
+      message: errorMessage
+    });
+
+    return Promise.reject({
+      message: errorMessage,
+      status: error.response?.status,
+      data: error.response?.data
+    } as ApiError);
   }
 );
 
-// Fonction helper pour les requêtes courantes
-export const apiGet = (url: string, params = {}) => api.get(url, { params });
-export const apiPost = (url: string, data = {}) => api.post(url, data);
-export const apiPut = (url: string, data = {}) => api.put(url, data);
-export const apiDelete = (url: string) => api.delete(url);
+export const isAxiosError = (error: unknown): error is AxiosError => {
+  return typeof error === 'object'
+    && error !== null
+    && 'isAxiosError' in error
+    && (error as AxiosError).isAxiosError;
+};
+
+// Helpers typés correctement
+export const apiGet = <T>(url: string, config?: AxiosRequestConfig) =>
+  api.get<T>(url, config);
+
+export const apiPost = <T>(url: string, data?: unknown, config?: AxiosRequestConfig) =>
+  api.post<T>(url, data, config);
+
+export const apiPut = <T>(url: string, data?: unknown, config?: AxiosRequestConfig) =>
+  api.put<T>(url, data, config);
+
+export const apiDelete = <T>(url: string, config?: AxiosRequestConfig) =>
+  api.delete<T>(url, config);
 
 export default api;
+export type { ApiError };

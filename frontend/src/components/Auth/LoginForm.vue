@@ -8,16 +8,19 @@
         type="email"
         placeholder="Votre email"
         label="Email"
-        :error="v$.email.$error && v$.email.$errors[0]?.$message"
+        :error="hasEmailError"
+        :error-messages="EmailError"
         @blur="v$.email.$touch()"
         class="w-full"
+        :class="{ 'va-input--error': v$.email.$error }"
       />
       <VaInput
         v-model="state.password"
         type="password"
         placeholder="Votre mot de passe"
         label="Mot de passe"
-        :error="v$.password.$error && v$.password.$errors[0]?.$message"
+        :error="hasPasswordError"
+        :error-messages="PasswordError"
         @blur="v$.password.$touch()"
         class="w-full"
       />
@@ -30,9 +33,14 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { reactive, computed } from 'vue';
 import { useVuelidate } from '@vuelidate/core';
 import { required, email, helpers } from '@vuelidate/validators';
+
+const hasEmailError = computed(() => v$.value.email.$error);
+const EmailError = computed(() => (v$.value.email.$error && v$.value.email?.$errors[0]?.$message) || '');
+const hasPasswordError = computed(() => v$.value.password.$error);
+const PasswordError = computed(() => (v$.value.password.$error && v$.value.password?.$errors[0]?.$message) || '');
 
 interface Emits {
   (e: 'submit', payload: { isValid: boolean; credentials: { email: string; password: string } }): void;

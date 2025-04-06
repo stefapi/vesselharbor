@@ -1,13 +1,7 @@
 // src/store/users.ts
 import { defineStore } from 'pinia';
 import { listUsers } from '@/services/userService.ts';
-
-export interface User {
-  id: number;
-  email: string;
-  is_superadmin: boolean;
-  // Vous pouvez ajouter d'autres propriétés selon le retour de l'API
-}
+import type { User } from '@/types/user.ts'; // Importation du type partagé
 
 export const useUsersStore = defineStore('users', {
   state: () => ({

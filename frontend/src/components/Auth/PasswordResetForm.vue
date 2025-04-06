@@ -1,17 +1,13 @@
 <template>
   <div class="w-full max-w-sm p-6 rounded-xl shadow bg-white">
-    <!-- Message d'erreur API -->
-    <div v-if="apiError" class="mb-4 p-3 text-sm text-red-600 bg-red-50 rounded">
-      {{ apiError }}
-    </div>
-
-    <form @submit.prevent="submit" class="space-y-4">
+    <form @submit.prevent="handlesubmit" class="space-y-4">
       <VaInput
         v-model="state.newPassword"
         type="password"
         label="Nouveau mot de passe"
         placeholder="••••••"
-        :error="v$.newPassword.$error && v$.newPassword.$errors[0]?.$message"
+        :error="v$.newPassword.$error"
+        :error-messages="v$.newPassword.$error && v$.newPassword.$errors[0]?.$message || ''"
         @blur="v$.newPassword.$touch()"
         class="w-full"
       />
@@ -21,7 +17,8 @@
         type="password"
         label="Confirmer le mot de passe"
         placeholder="••••••"
-        :error="v$.confirmPassword.$error && v$.confirmPassword.$errors[0]?.$message"
+        :error="v$.confirmPassword.$error"
+        :error-messages="v$.confirmPassword.$error && v$.confirmPassword.$errors[0]?.$message|| ''"
         @blur="v$.confirmPassword.$touch()"
         class="w-full"
       />
@@ -30,7 +27,6 @@
         type="submit"
         color="primary"
         class="w-full"
-        :loading="isSubmitting"
       >
         {{ buttonText }}
       </VaButton>
@@ -38,64 +34,67 @@
   </div>
 </template>
 
-<script setup>
-import { reactive, ref } from 'vue'
+<script setup lang="ts">
+import { reactive} from 'vue'
 import { useVuelidate } from '@vuelidate/core'
-import { required, minLength, sameAs } from '@vuelidate/validators'
+import { required, minLength, sameAs, helpers } from '@vuelidate/validators'
+
+interface Emits {
+  (e: 'submit', payload: {
+    isValid: boolean
+    credentials: {
+      newPassword: string
+      confirmPassword: string
+    }
+  }): void
+}
+
+const emit = defineEmits<Emits>();
+
 
 const props = defineProps({
   buttonText: {
     type: String,
     default: 'Réinitialiser'
-  },
-  onSubmit: {
-    type: Function,
-    required: true
   }
 })
+// Utiliser des refs au lieu de reactive afin d'avoir une version à jour de newPassword
+const newPassword = ref('')
+const confirmPassword = ref('')
 
 const state = reactive({
-  newPassword: '',
-  confirmPassword: ''
+  newPassword,
+  confirmPassword
 })
 
-const apiError = ref(null)
-const isSubmitting = ref(false)
-
-const rules = {
+// Règles de validation
+const validationRules = {
   newPassword: {
-    required,
-    minLength: minLength(6)
+    required: helpers.withMessage('Le mot de passe est requis', required),
+    minLength: helpers.withMessage('Minimum 6 caractères', minLength(6))
   },
   confirmPassword: {
-    required,
-    sameAs: sameAs(() => state.newPassword)
+    required: helpers.withMessage('La confirmation est requise', required),
+    sameAs: helpers.withMessage(
+      'Les mots de passe ne correspondent pas',
+      sameAs(newPassword)
+    )
   }
 }
 
-const v$ = useVuelidate(rules, state)
+const v$ = useVuelidate(validationRules, state)
 
-const submit = async () => {
-  apiError.value = null
+const handlesubmit = async () => {
   const isValid = await v$.value.$validate()
   if (!isValid) return
 
-  isSubmitting.value = true
-  try {
-    await props.onSubmit(state.newPassword)
-  } catch (error) {
-    handleApiError(error)
-  } finally {
-    isSubmitting.value = false
-  }
-}
+  emit('submit', {
+    isValid,
+    credentials: {
+      newPassword: newPassword.value,
+      confirmPassword: confirmPassword.value
+    }
+  });
+};
 
-const handleApiError = (error) => {
-  if (error.response?.data?.message) {
-    apiError.value = error.response.data.message
-  } else {
-    apiError.value = "Une erreur est survenue, veuillez réessayer"
-    console.error("Erreur lors de la réinitialisation", error)
-  }
-}
 </script>

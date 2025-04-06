@@ -1,61 +1,75 @@
+<!-- src/views/Auth/ForgotPasswordView.vue -->
 <template>
-  <div class="forgot-password">
-    <h1>Mot de passe oublié</h1>
-    <form @submit.prevent="submit">
-      <div>
-        <label for="email">Entrez votre email</label>
-        <Field name="email" id="email" type="email" placeholder="Votre email" />
-        <ErrorMessage name="email" class="error" />
-      </div>
-      <button type="submit">Envoyer le lien de réinitialisation</button>
-    </form>
-    <router-link to="/login">Retour à la connexion</router-link>
+  <div class="min-h-screen flex items-center justify-center bg-gray-100">
+    <va-card class="w-full max-w-md p-6">
+      <h1 class="text-xl font-bold mb-4 text-center">Mot de passe oublié</h1>
+      <NotificationsList />
+      <ForgotPasswordForm @submit="handleFormSubmit" />
+      <router-link
+        to="/login"
+        class="block text-center text-primary hover:text-primary-dark transition-colors mt-4"
+      >
+        Retour à la connexion
+      </router-link>
+    </va-card>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-import { useForm, Field, ErrorMessage } from 'vee-validate';
-import * as yup from 'yup';
+<script setup lang="ts">
+import { useNotificationStore } from '@/store/notifications';
 import { useRouter } from 'vue-router';
-import api from '@/services/api';
+import ForgotPasswordForm from '@/components/Auth/ForgotPasswordForm.vue';
+import { isAxiosError } from '@/services/api';
+import {reset_password} from "@/services/authService.js";
 
-export default defineComponent({
-  name: 'ForgotPasswordView',
-  components: { Field, ErrorMessage },
-  setup() {
-    const router = useRouter();
-    const schema = yup.object({
-      email: yup.string().email('Email invalide').required('Email requis'),
+interface ForgotPasswordSubmitEvent {
+  isValid: boolean
+  email: string
+}
+
+const notificationStore = useNotificationStore();
+const router = useRouter();
+
+const handleFormSubmit = async (event: ForgotPasswordSubmitEvent) => {
+  if (!event.isValid) {
+    notificationStore.addNotification({
+      type: 'error',
+      message: 'Veuillez corriger les erreurs dans le formulaire'
+    });
+    return;
+  }
+
+  try {
+    await reset_password_request(event.email );
+
+    notificationStore.addNotification({
+      type: 'success',
+      message: 'Si cet email est enregistré, vous recevrez un lien de réinitialisation'
     });
 
-    const { handleSubmit } = useForm({
-      validationSchema: schema,
-    });
+    setTimeout(() => {
+      router.push({ name: 'Login' });
+    }, 150);
 
-    const submit = handleSubmit(async (values) => {
-      try {
-        await api.post('/users/reset_password_request', values);
-        alert("Si cet email est enregistré, vous recevrez un lien de réinitialisation.");
-        router.push({ name: 'Login' });
-      } catch (error) {
-        console.error("Erreur lors de la demande de réinitialisation", error);
-      }
-    });
+  } catch (error: unknown) {
+    handlePasswordResetError(error);
+  }
+};
 
-    return { submit };
-  },
-});
+const handlePasswordResetError = (error: unknown) => {
+  let errorMessage = "Erreur lors de la demande de réinitialisation";
+
+  if (isAxiosError(error)) {
+    errorMessage = error.response?.data?.message || errorMessage;
+    if (error.response?.status === 404) {
+      errorMessage = "Aucun compte associé à cet email";
+    }
+  }
+
+  notificationStore.addNotification({
+    type: 'error',
+    message: errorMessage
+  });
+};
+
 </script>
-
-<style scoped>
-.forgot-password {
-  max-width: 400px;
-  margin: auto;
-  padding: 2rem;
-}
-.error {
-  color: red;
-}
-</style>
-

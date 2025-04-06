@@ -56,7 +56,7 @@ const handleFormSubmit = async (event: LoginSubmitEvent) => {
     // Redirection après un léger délai pour laisser le store se mettre à jour
     setTimeout(() => {
       router.push({ name: 'Dashboard' });
-    }, 100);
+    }, 150);
 
   } catch (error: unknown) {
     handleLoginError(error);
@@ -79,10 +79,4 @@ const handleLoginError = (error: unknown) => {
   });
 };
 
-const isAxiosError = (error: unknown): error is AxiosError => {
-  return typeof error === 'object'
-    && error !== null
-    && 'isAxiosError' in error
-    && (error as AxiosError).isAxiosError;
-};
 </script>

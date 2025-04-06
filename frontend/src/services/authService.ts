@@ -2,14 +2,6 @@
 import api from '@/services/api.ts';
 
 /**
- * Crée un nouvel utilisateur.
- * Le payload doit contenir l'email et le mot de passe.
- */
-export async function createUser(user: { email: string; password: string }) {
-  return api.post('/users', user);
-}
-
-/**
  * Authentifie un utilisateur.
  */
 export async function login(credentials: { username: string; password: string }) {
@@ -29,45 +21,39 @@ export async function login(credentials: { username: string; password: string })
 }
 
 /**
- * Récupère la liste des utilisateurs.
- * On peut filtrer par email et utiliser la pagination.
- */
-export async function listUsers(params: any = {}) {
-  return api.get('/users', { params });
-}
-
-/**
- * Supprime un utilisateur.
- */
-export async function deleteUser(userId: number) {
-  return api.delete(`/users/${userId}`);
-}
-
-/**
- * Met à jour le statut superadmin d'un utilisateur.
- */
-export async function updateSuperadmin(userId: number, isSuperadmin: boolean) {
-  return api.put(`/users/${userId}/superadmin`, { is_superadmin: isSuperadmin });
-}
-
-/**
- * Permet de changer le mot de passe de l'utilisateur (self-update).
- */
-export async function changePassword(userId: number, passwords: { old_password: string; new_password: string }) {
-  return api.put(`/users/${userId}/password`, passwords);
-}
-
-/**
- * Récupère la liste des groupes assignés à un utilisateur.
- */
-export async function getUserGroups(userId: number) {
-  return api.get(`/users/${userId}/groups`);
-}
-
-/**
  * Récupère les informations de l'utilisateur connecté.
  */
 export async function getUser() {
-  return api.get(`/me`);
+  const authStore = useAuthStore();
+  return api.get(`/me`, {
+          headers: { Authorization: `Bearer ${authStore.accessToken}` },
+        });
 
+}
+
+/**
+ * Envoie une demande de changement de mot de passe.
+ */
+export async function reset_password_request(email: string) {
+  await api.post('/users/reset_password_request', { email});
+}
+
+/**
+ * Change le mot de passe d'un utilisateur à partir d'un token
+ */
+export async function reset_password(token: string, new_password: string) {
+  await api.post('/users/reset_password', {
+      token,
+      new_password
+    });
+}
+
+
+/**
+ * Rafraîchit le token d'accès à partir du refresh token stocké.
+ */
+export async function refresh() {
+  const authStore = useAuthStore();
+  const refreshToken = authStore.refreshToken;
+  return await api.post('/refresh-token', { refresh_token: refreshToken });
 }

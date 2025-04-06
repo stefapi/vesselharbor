@@ -1,4 +1,3 @@
-<!-- src/views/Users/AccountView.vue -->
 <template>
   <div>
     <h1>Mon Compte</h1>
@@ -7,27 +6,21 @@
       <p>Superadmin : {{ authStore.user.is_superadmin ? 'Oui' : 'Non' }}</p>
     </div>
     <h2>Modifier mes droits</h2>
-    <UserForm mode="edit" :initialData="authStore.user" @success="onSuccess" />
+    <UserForm mode="edit" :initial-data="authStore.user" @success="onSuccess" />
     <h2>Changer mon mot de passe</h2>
     <ChangePasswordForm />
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
 import { useAuthStore } from '@/store/auth';
 import UserForm from '@/components/UserForm.vue';
 import ChangePasswordForm from '@/components/Auth/ChangePasswordForm.vue';
 
-export default defineComponent({
-  components: { UserForm, ChangePasswordForm },
-  setup() {
-    const authStore = useAuthStore();
-    const onSuccess = () => {
-      // Optionnel : rafraîchir les infos utilisateur
-    };
-    return { authStore, onSuccess };
-  },
-});
-</script>
+const authStore = useAuthStore();
 
+const onSuccess = () => {
+  // Optionnel : rafraîchir les infos utilisateur
+  // Exemple possible : authStore.fetchUser();
+};
+</script>

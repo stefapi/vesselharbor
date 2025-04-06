@@ -60,6 +60,7 @@ declare global {
   const getElement: typeof import('./services/elementService')['getElement']
   const getEnvironment: typeof import('./services/environmentService')['getEnvironment']
   const getGroupFunctions: typeof import('./services/groupService')['getGroupFunctions']
+  const getUser: typeof import('./services/authService')['getUser']
   const getUserGroups: typeof import('./services/userService')['getUserGroups']
   const h: typeof import('vue')['h']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
@@ -76,7 +77,7 @@ declare global {
   const listEnvironments: typeof import('./services/environmentService')['listEnvironments']
   const listGroups: typeof import('./services/groupService')['listGroups']
   const listUsers: typeof import('./services/userService')['listUsers']
-  const login: typeof import('./services/userService')['login']
+  const login: typeof import('./services/authService')['login']
   const makeDestructurable: typeof import('@vueuse/core')['makeDestructurable']
   const mapActions: typeof import('pinia')['mapActions']
   const mapGetters: typeof import('pinia')['mapGetters']
@@ -122,6 +123,7 @@ declare global {
   const refDefault: typeof import('@vueuse/core')['refDefault']
   const refThrottled: typeof import('@vueuse/core')['refThrottled']
   const refWithControl: typeof import('@vueuse/core')['refWithControl']
+  const refresh: typeof import('./services/authService')['refresh']
   const removeFunctionFromGroup: typeof import('./services/groupService')['removeFunctionFromGroup']
   const removeUserFromGroup: typeof import('./services/groupService')['removeUserFromGroup']
   const resolveComponent: typeof import('vue')['resolveComponent']
@@ -354,14 +356,14 @@ declare global {
   export type { Component, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
   // @ts-ignore
+  export type { ApiError } from './services/api'
+  import('./services/api')
+  // @ts-ignore
   export type { Group } from './store/group'
   import('./store/group')
   // @ts-ignore
   export type { Notification } from './store/notifications'
   import('./store/notifications')
-  // @ts-ignore
-  export type { User } from './store/users'
-  import('./store/users')
 }
 
 // for vue template auto import
@@ -423,6 +425,7 @@ declare module 'vue' {
     readonly getElement: UnwrapRef<typeof import('./services/elementService')['getElement']>
     readonly getEnvironment: UnwrapRef<typeof import('./services/environmentService')['getEnvironment']>
     readonly getGroupFunctions: UnwrapRef<typeof import('./services/groupService')['getGroupFunctions']>
+    readonly getUser: UnwrapRef<typeof import('./services/authService')['getUser']>
     readonly getUserGroups: UnwrapRef<typeof import('./services/userService')['getUserGroups']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
@@ -439,7 +442,7 @@ declare module 'vue' {
     readonly listEnvironments: UnwrapRef<typeof import('./services/environmentService')['listEnvironments']>
     readonly listGroups: UnwrapRef<typeof import('./services/groupService')['listGroups']>
     readonly listUsers: UnwrapRef<typeof import('./services/userService')['listUsers']>
-    readonly login: UnwrapRef<typeof import('./services/userService')['login']>
+    readonly login: UnwrapRef<typeof import('./services/authService')['login']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
     readonly mapActions: UnwrapRef<typeof import('pinia')['mapActions']>
     readonly mapGetters: UnwrapRef<typeof import('pinia')['mapGetters']>
@@ -485,6 +488,7 @@ declare module 'vue' {
     readonly refDefault: UnwrapRef<typeof import('@vueuse/core')['refDefault']>
     readonly refThrottled: UnwrapRef<typeof import('@vueuse/core')['refThrottled']>
     readonly refWithControl: UnwrapRef<typeof import('@vueuse/core')['refWithControl']>
+    readonly refresh: UnwrapRef<typeof import('./services/authService')['refresh']>
     readonly removeFunctionFromGroup: UnwrapRef<typeof import('./services/groupService')['removeFunctionFromGroup']>
     readonly removeUserFromGroup: UnwrapRef<typeof import('./services/groupService')['removeUserFromGroup']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>

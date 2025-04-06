@@ -92,9 +92,8 @@ export default defineConfig({
       extensions: ['vue', 'md'],
       resolvers: [
         (componentName) => {
-          if (componentName.startsWith('Va'))
-            return { name: componentName, from: 'vuestic-ui' }
-          },
+          if (componentName.startsWith('Va')) return { name: componentName, from: 'vuestic-ui' }
+        },
         IconsResolver({
           prefix: 'i', // Préfixe optionnel (défaut: 'i')
           enabledCollections: ['carbon', 'fa', 'mdi', 'twemoji'], // Collections activées
@@ -137,7 +136,12 @@ export default defineConfig({
       extensions: ['.ar.vue', '.md'],
       dts: 'src/types/typed-router.d.ts',
     }),
-    dts({ rollupTypes: true }),
+    dts({
+      rollupTypes: true,
+      entryRoot: 'src', // root directory for the declaration files
+      cleanVueFileName: true, // removes .vue suffix from filenames
+      staticImport: true, // uses static imports in declaration files
+    }),
     // https://github.com/JohnCampionJr/vite-plugin-vue-layouts
     Layouts(),
     // 🧪 Outils d’inspection des plugins Vite
@@ -172,6 +176,7 @@ export default defineConfig({
     },
   },
   server: {
+    // @ts-ignore
     https: false,
     port: 3000,
   },
