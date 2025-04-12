@@ -1,9 +1,8 @@
 <!-- src/views/Auth/LoginView.vue -->
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-100">
-    <va-card class="w-full max-w-md p-6">
-      <h1 class="text-2xl font-bold mb-4 text-center">Connexion</h1>
-      <NotificationsList />
+    <VaCard class="w-full max-w-md p-6">
+      <VaCardTitle class="text-xl font-bold mb-4 text-center" >Connexion</VaCardTitle>
       <LoginForm @submit="handleFormSubmit" />
       <div class="mt-4 text-center">
         <router-link
@@ -13,7 +12,7 @@
           Mot de passe oublié ?
         </router-link>
       </div>
-    </va-card>
+    </VaCard>
   </div>
 </template>
 

@@ -1,27 +1,18 @@
 <template>
-  <div class="dashboard">
-    <h1>Bienvenue sur le Dashboard</h1>
-    <p>Vous êtes connecté en tant que {{ authStore.user.email }}</p>
-    <!-- Vous pouvez ajouter ici des liens ou des statistiques -->
-  </div>
+  <VaCard class="p-4 max-w-800px mx-auto">
+    <VaCardTitle class="mb-4 text-center">Bienvenue sur le Dashboard</VaCardTitle>
+    <VaCardContent>
+      <p class="text-lg">
+        Vous êtes connecté en tant que
+        <span class="font-semibold text-primary">{{ authStore.user.email }}</span>
+      </p>
+    </VaCardContent>
+    <!-- Ajoutez ici des composants Vuestic pour les statistiques -->
+  </VaCard>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-import { useAuthStore } from '@/store/auth';
+<script setup lang="ts">
+import { useAuthStore } from '@/store/auth'
 
-export default defineComponent({
-  name: 'DashboardView',
-  setup() {
-    const authStore = useAuthStore();
-    return { authStore };
-  },
-});
+const authStore = useAuthStore()
 </script>
-
-<style scoped>
-.dashboard {
-  padding: 2rem;
-}
-</style>
-

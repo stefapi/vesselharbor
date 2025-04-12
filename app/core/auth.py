@@ -23,7 +23,7 @@ def create_access_token(data: dict, expires_delta: datetime.timedelta = None, to
 def decode_access_token(token: str) -> dict:
     try:
         payload = jwt.decode(token, SECRET_KEY)
-        # Vous pouvez ajouter ici une vérification de l'expiration si besoin
+        payload.validate()
         return payload
     except JoseError:
         raise Exception("Token invalide ou expiré")

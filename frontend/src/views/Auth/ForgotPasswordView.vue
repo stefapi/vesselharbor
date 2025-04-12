@@ -1,9 +1,8 @@
 <!-- src/views/Auth/ForgotPasswordView.vue -->
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-100">
-    <va-card class="w-full max-w-md p-6">
+    <VaCard class="w-full max-w-md p-6">
       <h1 class="text-xl font-bold mb-4 text-center">Mot de passe oublié</h1>
-      <NotificationsList />
       <ForgotPasswordForm @submit="handleFormSubmit" />
       <router-link
         to="/login"
@@ -11,7 +10,7 @@
       >
         Retour à la connexion
       </router-link>
-    </va-card>
+    </VaCard>
   </div>
 </template>
 

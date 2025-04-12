@@ -1,40 +1,43 @@
 <!-- src/App.vue -->
 <template>
-  <MainLayout>
-    <router-view />
+  <MainLayout class="u-min-h-screen u-bg-white u-text-gray-800">
   </MainLayout>
+  <NotificationsList/>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
 import MainLayout from '@/layouts/MainLayout.vue';
-
-export default defineComponent({
-  name: 'App',
-  components: { MainLayout },
-});
+import NotificationsList from '@/components/Common/NotificationsList.vue';
 </script>
 
-<style>
-/* Exemple : barre fine en haut avec une couleur UnoCSS */
-#nprogress::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 3px;
-  width: 100%;
-  background-color: var(--nprogress-color, #3b82f6); /* tailwind blue-500 */
-  z-index: 9999;
-  animation: nprogress-stripe 2s linear infinite;
-}
-
-@keyframes nprogress-stripe {
-  0% {
-    background-position: 1rem 0;
+<style lang="scss">
+// Utilisation des variables CSS de Vuestic
+#nprogress {
+  &::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    background-image: linear-gradient(
+      90deg,
+      var(--va-primary) 0%,
+      var(--va-success) 50%,
+      var(--va-primary) 100%
+    );
+    background-size: 200% auto;
+    z-index: 9999;
+    animation: nprogress-stripe 1.5s linear infinite;
   }
-  100% {
-    background-position: 0 0;
+
+  @keyframes nprogress-stripe {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
   }
 }
 </style>

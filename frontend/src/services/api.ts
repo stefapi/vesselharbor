@@ -34,7 +34,7 @@ const api: AxiosInstance = axios.create({
 });
 
 let isRefreshing = false;
-let failedRequests: ((token: string) => void)[] = [];
+let failedRequests: (() => void)[] = [];
 
 // Correction du typage de l'intercepteur de réponse
 api.interceptors.response.use(
@@ -56,11 +56,7 @@ api.interceptors.response.use(
     if (error.response.status === 401 && !originalRequest?._retry) {
       if (isRefreshing) {
         return new Promise<AxiosResponse>((resolve) => {
-          failedRequests.push((newToken: string) => {
-            originalRequest.headers = {
-              ...originalRequest.headers,
-              Authorization: `Bearer ${newToken}`
-            } as AxiosRequestHeaders;
+          failedRequests.push(() => {
             resolve(api(originalRequest));
           });
         });
@@ -68,12 +64,12 @@ api.interceptors.response.use(
 
       isRefreshing = true;
       originalRequest._retry = true;
-
       try {
-        const newToken = await authStore.renewSession();
-        isRefreshing = false;
+        // Appel direct au refresh token
+        await authStore.refreshTokenAction();
 
-        failedRequests.forEach(cb => cb(authStore.accessToken));
+        isRefreshing = false;
+        failedRequests.forEach(cb => cb());
         failedRequests = [];
 
         return api(originalRequest);

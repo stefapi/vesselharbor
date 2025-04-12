@@ -1,6 +1,11 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
+import {
+  presetUno,
+  presetAttributify,
+  presetIcons
+} from 'unocss'
 import Inspect from 'vite-plugin-inspect'
 import VueDevTools from 'vite-plugin-vue-devtools'
 import Components from 'unplugin-vue-components/vite'
@@ -25,6 +30,7 @@ import { FileSystemIconLoader } from 'unplugin-icons/loaders'
 import { VueRouterAutoImports } from 'unplugin-vue-router'
 import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'node:path'
+import ElementPlus from 'unplugin-element-plus/vite'
 
 export default defineConfig({
   plugins: [
@@ -32,6 +38,9 @@ export default defineConfig({
       launchEditor: 'pycharm',
     }),
     mkcert(),
+    ElementPlus({
+      useSource: true, // Active les styles SCSS personnalisables
+    }),
     // https://github.com/antfu/vite-plugin-pwa
     VitePWA({
       registerType: 'autoUpdate',
@@ -66,7 +75,16 @@ export default defineConfig({
         ],
       },
     }),
-    UnoCSS({ inspector: true }), // Ajout du plugin UnoCSS
+    UnoCSS({
+      presets: [presetUno(), presetAttributify(), presetIcons()],
+      theme: {
+        colors: {
+          primary: 'var(--va-primary)',
+          danger: 'var(--va-danger)',
+        },
+      },
+      inspector: true,
+    }), // Ajout du plugin UnoCSS
     // ⚡ Auto-import d’API Vue + VueUse + Pinia + Router
     AutoImport({
       imports: ['vue', 'vue-router', 'pinia', '@vueuse/core', VueRouterAutoImports],

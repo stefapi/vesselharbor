@@ -66,6 +66,7 @@ declare global {
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
   const inject: typeof import('vue')['inject']
   const injectLocal: typeof import('@vueuse/core')['injectLocal']
+  const isAxiosError: typeof import('./services/api')['isAxiosError']
   const isDefined: typeof import('@vueuse/core')['isDefined']
   const isProxy: typeof import('vue')['isProxy']
   const isReactive: typeof import('vue')['isReactive']
@@ -126,6 +127,8 @@ declare global {
   const refresh: typeof import('./services/authService')['refresh']
   const removeFunctionFromGroup: typeof import('./services/groupService')['removeFunctionFromGroup']
   const removeUserFromGroup: typeof import('./services/groupService')['removeUserFromGroup']
+  const reset_password: typeof import('./services/authService')['reset_password']
+  const reset_password_request: typeof import('./services/authService')['reset_password_request']
   const resolveComponent: typeof import('vue')['resolveComponent']
   const resolveRef: typeof import('@vueuse/core')['resolveRef']
   const resolveUnref: typeof import('@vueuse/core')['resolveUnref']
@@ -431,6 +434,7 @@ declare module 'vue' {
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectLocal: UnwrapRef<typeof import('@vueuse/core')['injectLocal']>
+    readonly isAxiosError: UnwrapRef<typeof import('./services/api')['isAxiosError']>
     readonly isDefined: UnwrapRef<typeof import('@vueuse/core')['isDefined']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
@@ -491,6 +495,8 @@ declare module 'vue' {
     readonly refresh: UnwrapRef<typeof import('./services/authService')['refresh']>
     readonly removeFunctionFromGroup: UnwrapRef<typeof import('./services/groupService')['removeFunctionFromGroup']>
     readonly removeUserFromGroup: UnwrapRef<typeof import('./services/groupService')['removeUserFromGroup']>
+    readonly reset_password: UnwrapRef<typeof import('./services/authService')['reset_password']>
+    readonly reset_password_request: UnwrapRef<typeof import('./services/authService')['reset_password_request']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
     readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>

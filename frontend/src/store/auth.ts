@@ -1,8 +1,9 @@
 // src/store/auth.ts
 import { defineStore } from 'pinia'
-import { login as loginService, refresh } from '@/services/authService.ts'
+import { logout as logoutService,login as loginService, refresh } from '@/services/authService.ts'
 import { getUser } from '@/services/authService.ts'
 import type { User } from '@/types/user.ts' // Importation du type partagé
+import { useRouter } from 'vue-router'
 
 interface Credentials {
   username: string
@@ -13,8 +14,6 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null as User | null,
     isAuthenticated: false,
-    accessToken: localStorage.getItem('authToken') || '',
-    refreshToken: localStorage.getItem('refreshToken') || '',
     renewOngoing: false,
     isInitialized: false, // Flag d'initialisation
   }),
@@ -51,27 +50,17 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     // Méthode à appeler au démarrage de l'application pour recharger l'état
     async initialize() {
-      if (this.accessToken) {
-        console.log('Renewing session')
-        try {
-          await this.renewSession()
-          console.log('Session renewed')
-        } catch (error) {
-          console.error('Error renewing session:', error)
-          this.logout()
-        }
+      try {
+        await this.renewSession();
+      } catch (error) {
+        this.logout();
       }
-      this.isInitialized = true
+      this.isInitialized = true;
     },
 
     async login(credentials: Credentials) {
       try {
         const response = await loginService(credentials)
-        // Supposons que la réponse contient access_token et refresh_token
-        this.accessToken = response.data.data.access_token
-        this.refreshToken = response.data.data.refresh_token
-        localStorage.setItem('authToken', response.data.data.access_token)
-        localStorage.setItem('refreshToken', response.data.data.refresh_token)
         await this.renewSession()
       } catch (error) {
         this.logout()
@@ -79,58 +68,32 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    async renewSession() {
+     async renewSession() {
       try {
-        // Appel à l'endpoint '/me' pour récupérer les informations de l'utilisateur.
-        // On passe le token d'accès dans l'en-tête Authorization.
-        //const response = await api.get('/me', {
-        //  headers: { Authorization: `Bearer ${this.accessToken}` },
-        //});
-
-        // Si le refreshToken est vide, on ne peut pas rafraîchir la session
-        if (!this.refreshToken || this.refreshToken === 'undefined'|| this.renewOngoing) {
-          this.logout()
-          this.renewOngoing = false
-          throw new Error('Session expired - No refresh token available')
-        }
-        this.renewOngoing = true
-        const response = await getUser()
-        this.user = response.data
-        this.isAuthenticated = true
+        // On tente d'abord de rafraîchir le token avant de récupérer l'utilisateur
+        await this.refreshTokenAction();
+        const response = await getUser();
+        this.user = response.data;
+        this.isAuthenticated = true;
       } catch (error) {
-        // En cas d'erreur, on essaie de rafraîchir le token.
-        if (this.isAuthenticated) {
-          await this.refreshTokenAction()
-        }
-        // Si l'échec persiste, on déconnecte l'utilisateur.
-        if (!this.isAuthenticated) {
-          this.logout()
-          this.renewOngoing = false
-          throw error
-        }
+        this.logout();
+        throw error;
       }
-      this.renewOngoing = false
     },
 
     async refreshTokenAction() {
       try {
-        // Appel à l'endpoint '/refresh-token' en fournissant le refresh token.
-        const response = await refresh()
-        this.accessToken = response.data.access_token
-        localStorage.setItem('authToken', response.data.access_token)
+        const response = await refresh();
       } catch (error) {
-        this.logout()
-        throw error
+        this.logout();
+        throw new Error('Échec du rafraîchissement du token');
       }
     },
 
     logout() {
-      localStorage.removeItem('authToken')
-      localStorage.removeItem('refreshToken')
       this.user = null
       this.isAuthenticated = false
-      this.accessToken = ''
-      this.refreshToken = ''
+      logoutService()
     },
   },
 })

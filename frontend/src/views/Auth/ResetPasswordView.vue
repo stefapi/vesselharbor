@@ -2,9 +2,8 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-100">
     <div class="w-full max-w-md">
-      <va-card class="p-6">
+      <VaCard class="p-6">
         <h1 class="text-xl font-bold mb-4 text-center">Réinitialisation du mot de passe</h1>
-        <NotificationsList />
         <PasswordResetForm
           button-text="Réinitialiser"
           @submit="handlePasswordReset"
@@ -16,7 +15,7 @@
           <va-icon name="arrow_back" class="mr-1" />
           Retour à la connexion
         </router-link>
-      </va-card>
+      </VaCard>
     </div>
   </div>
 </template>
@@ -24,8 +23,7 @@
 <script setup lang="ts">
 import { useNotificationStore } from '@/store/notifications';
 import { useRouter, useRoute } from 'vue-router';
-import { isAxiosError } from 'axios';
-import api from '@/services/api';
+import {isAxiosError} from '@/services/api';
 import PasswordResetForm from '@/components/Auth/PasswordResetForm.vue';
 import {reset_password} from "@/services/authService.js";
 

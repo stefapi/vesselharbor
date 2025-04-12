@@ -1,8 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+from fastapi import Response, Request
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Dict, cast, Any
 from datetime import timedelta
+from fastapi.security import OAuth2
+from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
+from fastapi.security.utils import get_authorization_scheme_param
+from starlette.status import HTTP_401_UNAUTHORIZED
 from ..schema.user import UserCreate, UserOut, ChangePassword, ChangeSuperadmin
 from ..schema.auth import Token
 from ..schema.password_reset import PasswordResetRequest, PasswordReset
@@ -15,7 +20,62 @@ from ..repositories import user_repo
 from ..core import auth
 
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+
+class OAuth2PasswordBearerOrKey(OAuth2):
+    """
+    OAuth2 flow that supports either Bearer token in Authorization header
+    OR API key from (in order of precedence):
+    - access_token cookie
+    - X-API-KEY header
+    - X-API-KEY cookie
+    - key query parameter
+
+    Read more about it in the
+    [FastAPI docs for Simple OAuth2 with Password and Bearer](https://fastapi.tiangolo.com/tutorial/security/simple-oauth2/).
+    """
+
+    def __init__(
+        self,
+        tokenUrl: str,
+        scheme_name: Optional[str] = None,
+        scopes: Optional[Dict[str, str]] = None,
+        description: Optional[str] = None,
+        auto_error: bool = True,
+    ):
+        if not scopes:
+            scopes = {}
+        flows = OAuthFlowsModel(
+            password=cast(Any, {"tokenUrl": tokenUrl, "scopes": scopes})
+        )
+        super().__init__(
+            flows=flows,
+            scheme_name=scheme_name,
+            description=description,
+            auto_error=auto_error,
+        )
+
+    async def __call__(self, request: Request) -> Optional[str]:
+        authorization = request.headers.get("Authorization")
+        scheme, param = get_authorization_scheme_param(authorization)
+        if authorization and scheme.lower() == "bearer":
+            return param
+        key = request.cookies.get("access_token") # get access token from cookie
+        key = key if key else request.headers.get("X-API-KEY") # key passed as a header
+        key = key if key else request.cookies.get("X-API-KEY") # key passed as a cookie
+        key = key if key else request.query_params.get("key") # insecure method key passed as a query parameter
+        if not key:
+            if self.auto_error:
+                raise HTTPException(
+                    status_code=HTTP_401_UNAUTHORIZED,
+                    detail="Not authenticated",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            else:
+                return None
+        return key
+
+
+oauth2_scheme = OAuth2PasswordBearerOrKey(tokenUrl="/login")
 
 def get_db():
     db = SessionLocal()
@@ -78,14 +138,53 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
         401: {"description": "Non autorisé"}
     }
 )
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db),response_item: Response = None):
+    if "x-forwarded-for" in request.headers:
+        ip = request.headers["x-forwarded-for"]
+        if "," in ip:  # if there are multiple IPs, the first one is canonically the true client
+            ip = str(ip.split(",")[0])
+    else:
+        # request.client should never be null, except sometimes during testing
+        ip = request.client.host if request.client else "unknown"
     user = user_repo.get_user_by_email(db, form_data.username)
     if not user or not security.verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Email ou mot de passe incorrect")
-    access_token = auth.create_access_token(data={"sub": str(user.id)}, expires_delta=timedelta(minutes=60), token_type="access")
+    access_token = auth.create_access_token(data={"sub": str(user.id)}, expires_delta=timedelta(minutes=1), token_type="access")
     refresh_token = auth.create_access_token(data={"sub": str(user.id)}, expires_delta=timedelta(days=7), token_type="refresh")
-    audit.log_action(db, user.id, "Login", "Connexion réussie")
-    return response.success_response({"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}, "Login réussi")
+    audit.log_action(db, user.id, "Login", "Connexion réussie de ip " + ip)
+    response_item.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        samesite="strict",
+        secure=True,  # à activer en prod avec HTTPS
+        max_age=timedelta(minutes=1)
+    )
+    response_item.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        samesite="strict",
+        secure=True,  # à activer en prod avec HTTPS
+        max_age=timedelta(days=7),
+        path="/" # TODO mettre un path dans /auth pour logout et refresh-token
+    )
+    return response.success_response({"token_type": "bearer"}, "Login réussi")
+
+@router.post("/logout", response_model=dict,
+    summary="Se delogger",
+    description="Deloggue l'utilisateur et supprime les tokens",
+    responses={
+        400: {"description": "Email ou mot de passe incorrect"},
+        401: {"description": "Non autorisé"}
+    })
+async def logout(response_item: Response):
+    """
+    Logout from the site
+    """
+    response_item.delete_cookie("access_token")
+    response_item.delete_cookie("refresh_token")
+    return response.success_response({}, "Login réussi")
 
 @router.post(
     "/refresh-token",
@@ -96,8 +195,9 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         400: {"description": "Refresh token invalide ou expiré"}
     }
 )
-def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
+def refresh_token(request: Request,response_item: Response = None,db: Session = Depends(get_db)):
     try:
+        refresh_token = request.cookies.get("refresh_token")
         payload = auth.decode_access_token(refresh_token)
     except Exception:
         raise HTTPException(status_code=400, detail="Refresh token invalide ou expiré")
@@ -106,8 +206,17 @@ def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
     user_id = payload.get("sub")
     if not user_id:
         raise HTTPException(status_code=400, detail="Refresh token invalide")
-    new_access_token = auth.create_access_token(data={"sub": str(user_id)}, expires_delta=timedelta(minutes=60), token_type="access")
-    return response.success_response({"access_token": new_access_token, "token_type": "bearer"}, "Token renouvelé avec succès")
+    access_token = auth.create_access_token(data={"sub": str(user_id)}, expires_delta=timedelta(minutes=1), token_type="access")
+    response_item.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        samesite="strict",
+        secure=True,  # à activer en prod avec HTTPS
+        max_age=timedelta(minutes=1)
+    )
+
+    return response.success_response({"token_type": "access"}, "Token renouvelé avec succès")
 
 
 @router.delete(

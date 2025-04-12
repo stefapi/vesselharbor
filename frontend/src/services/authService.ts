@@ -24,10 +24,7 @@ export async function login(credentials: { username: string; password: string })
  * Récupère les informations de l'utilisateur connecté.
  */
 export async function getUser() {
-  const authStore = useAuthStore();
-  return api.get(`/me`, {
-          headers: { Authorization: `Bearer ${authStore.accessToken}` },
-        });
+  return api.get(`/me`);
 
 }
 
@@ -53,7 +50,21 @@ export async function reset_password(token: string, new_password: string) {
  * Rafraîchit le token d'accès à partir du refresh token stocké.
  */
 export async function refresh() {
-  const authStore = useAuthStore();
-  const refreshToken = authStore.refreshToken;
-  return await api.post('/refresh-token', { refresh_token: refreshToken });
+  try {
+    return await api.post('/refresh-token');
+  } catch (error: any) {
+    // Si l'erreur est 400, on l'ignore silencieusement
+    if (error.response?.status === 400) {
+      return null;
+    }
+    // Sinon, on relance l'erreur
+    throw error;
+  }
+}
+
+/**
+ * Déconnecte l'utilisateur.
+ */
+export async function logout() {
+  return await api.post('/logout');
 }
