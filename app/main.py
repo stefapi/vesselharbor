@@ -11,7 +11,7 @@ from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 # Charger les modèles et créer la base de données...
-from .models import user, environment, user_assignment, group, function, group_function,  element, audit_log
+from .models import user, environment, group, function,  element, audit_log, organization, policy, rule, tag
 from .database.session import engine
 from .database.base import Base
 
@@ -25,7 +25,8 @@ db = SessionLocal()
 seed(db)
 db.close()
 # Import des routeurs
-from .api import users, environments, groups, elements, audit_logs
+from .api import users, environments, groups, elements, audit_logs, auth, organizations, functions, policies, rules, \
+    tags
 
 app = FastAPI()
 
@@ -39,10 +40,16 @@ app.add_middleware(
 )
 
 # Enregistrement des routeurs
+app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(organizations.router)
 app.include_router(environments.router)
 app.include_router(groups.router)
 app.include_router(elements.router)
+app.include_router(policies.router)
+app.include_router(rules.router)
+app.include_router(functions.router)
+app.include_router(tags.router)
 app.include_router(audit_logs.router)
 
 # Enregistrement des gestionnaires d'erreurs globales

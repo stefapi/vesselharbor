@@ -1,9 +1,10 @@
 from sqlalchemy.orm import Session
 from ..models.group import Group
-from ..models.user_assignment import UserAssignment
+from ..models.tag import Tag
+from ..models.user import User
 
-def create_group(db: Session, environment_id: int, name: str, description: str = None) -> Group:
-    group = Group(name=name, description=description, environment_id=environment_id)
+def create_group(db: Session, organization_id: int, name: str, description: str = None) -> Group:
+    group = Group(name=name, description=description, organization_id=organization_id)
     db.add(group)
     db.commit()
     db.refresh(group)
@@ -25,30 +26,29 @@ def delete_group(db: Session, group: Group):
     db.delete(group)
     db.commit()
 
-def list_groups_by_environment(db: Session, environment_id: int):
-    return db.query(Group).filter(Group.environment_id == environment_id).all()
+def list_groups_by_organization(db: Session, organization_id: int):
+    return db.query(Group).filter(Group.organization_id == organization_id).all()
 
-def assign_user_to_group(db: Session, group, user):
-    # On suppose que l'utilisateur doit déjà être affecté à l'environnement
-    ue = db.query(UserAssignment).filter(
-         UserAssignment.user_id == user.id,
-         UserAssignment.environment_id == group.environment_id
-    ).first()
-    if ue:
-         ue.group_id = group.id
-         db.commit()
-         db.refresh(ue)
-    else:
-         raise Exception("L'utilisateur n'est pas affecté à l'environnement de ce groupe.")
+def add_user_to_group(db: Session, group: Group, user: User):
+    if user not in group.users:
+        group.users.append(user)
+        db.commit()
+        db.refresh(group)
 
-def remove_user_from_group(db: Session, group, user):
-    ue = db.query(UserAssignment).filter(
-         UserAssignment.user_id == user.id,
-         UserAssignment.environment_id == group.environment_id,
-         UserAssignment.group_id == group.id
-    ).first()
-    if ue:
-         ue.group_id = None
-         db.commit()
-         db.refresh(ue)
+def remove_user_from_group(db: Session, group: Group, user: User):
+    if user in group.users:
+        group.users.remove(user)
+        db.commit()
+        db.refresh(group)
 
+def add_tag_to_group(db: Session, group: Group, tag: Tag):
+    if tag not in group.tags:
+        group.tags.append(tag)
+        db.commit()
+        db.refresh(group)
+
+def remove_tag_from_group(db: Session, group: Group, tag: Tag):
+    if tag in group.tags:
+        group.tags.remove(tag)
+        db.commit()
+        db.refresh(group)

@@ -4,29 +4,38 @@ import App from '@/App.vue';
 import router from '@/router/index.js';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css' // ou SCSS si personnalisé
 import 'virtual:uno.css'
-import 'nprogress/nprogress.css'
+import '@/styles/unocss.css'
 import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
+import '@/styles/nprogress.css'
 import 'material-icons/iconfont/material-icons.css'
+import  { createHead } from '@unhead/vue/client'
+import { useOfflineSyncStore } from '@/store/offlineSync.ts'
+import { isOfflineSyncEnabled } from '@/utils/env.ts'
+
 
 const app = createApp(App);
 
-router.beforeEach((to, from, next) => {
-  NProgress.start()
-  next()
-})
-
-router.afterEach(() => {
-  NProgress.done()
-})
+NProgress.configure({ showSpinner: true })
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
+const head = createHead()
+app.use(head);
 app.use(pinia);
 app.use(router);
-app.use(ElementPlus)
+
 
 app.mount('#app');
 
+// ✅ Initialisation de la synchronisation offline (si activée)
+if (isOfflineSyncEnabled) {
+  const syncStore = useOfflineSyncStore()
+  // 1. Charge le nombre d’actions en attente
+  syncStore.updatePendingCount()
+  // 2. Démarre la boucle automatique (toutes les 5 min)
+  syncStore.startAutoSyncLoop()
+  // 3. Réagit au retour en ligne
+  syncStore.initSyncListener()
+}

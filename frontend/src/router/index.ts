@@ -1,5 +1,8 @@
 // src/router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
+// @ts-ignore
+import { routes as autoRoutes } from 'vue-router/auto-routes'
+import type { RouteRecordRaw } from 'vue-router'
 import LoginView from '@/views/Auth/LoginView.vue'
 import ForgotPasswordView from '@/views/Auth/ForgotPasswordView.vue'
 import ResetPasswordView from '@/views/Auth/ResetPasswordView.vue'
@@ -10,8 +13,9 @@ import EnvironmentManagementView from '@/views/Environments/EnvironmentManagemen
 import EnvironmentUsersView from '@/views/Users/EnvironmentUsersView.vue'
 import UsersView from '@/views/Users/UsersView.vue'
 import { useAuthStore } from '@/store/auth.ts'
+import NProgress from 'nprogress'
 
-const routes = [
+const manualRoutes: RouteRecordRaw[] = [
   { path: '/login', name: 'Login', component: LoginView },
   { path: '/forgot-password', name: 'ForgotPassword', component: ForgotPasswordView },
   { path: '/reset-password', name: 'ResetPassword', component: ResetPasswordView },
@@ -24,6 +28,12 @@ const routes = [
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('@/views/NotFound.vue') },
 ]
 
+// Fusion des routes manuelles et auto
+const routes: RouteRecordRaw[] = [
+  ...manualRoutes,
+  ...autoRoutes, // routes définies dans src/pages
+]
+
 const router = createRouter({
   history: createWebHistory(),
   routes,
@@ -33,7 +43,7 @@ router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   const publicPages = ['Login', 'ForgotPassword', 'ResetPassword', '?uno']
   const loginPages = ['Login', 'ForgotPassword', 'ResetPassword']
-
+  NProgress.start()
   function proceed() {
     if (authStore.isAuthenticated && loginPages.includes(to.name as string)) {
       return next({ name: 'Dashboard' })
@@ -51,6 +61,7 @@ router.beforeEach((to, from, next) => {
         }
       }
     }
+
     next()
   }
   // Attendre l'initialisation complète du store
@@ -72,4 +83,7 @@ router.beforeEach((to, from, next) => {
   }
 })
 
+router.afterEach(() => {
+  NProgress.done()
+})
 export default router

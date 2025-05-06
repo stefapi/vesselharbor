@@ -1,47 +1,52 @@
 <!-- src/components/UserForm.vue -->
 <template>
-  <div class="w-full max-w-sm p-6 rounded-xl shadow bg-white">
-    <form @submit.prevent="handleSubmit" class="space-y-4">
+  <div class="u-w-full u-max-w-sm u-p-6 u-rounded-xl u-shadow u-bg-white">
+    <form @submit.prevent="handleSubmit" class="u-space-y-4">
       <!-- Mode création -->
       <template v-if="mode === 'create'">
-        <VaInput
-          v-model="state.email"
-          type="email"
-          placeholder="Entrez l'email"
+        <el-form-item
           label="Email"
-          :error="v$.email.$error && v$.email.$errors[0]?.$message"
-          @blur="v$.email.$touch()"
-          class="w-full"
-        />
-        <VaInput
-          v-model="state.password"
-          type="password"
-          placeholder="Entrez le mot de passe"
+          :error="EmailError"
+        >
+          <el-input
+            v-model="state.email"
+            type="email"
+            placeholder="Entrez l'email"
+            @blur="v$.email.$touch()"
+          />
+        </el-form-item>
+
+        <el-form-item
           label="Mot de passe"
-          :error="v$.password.$error && v$.password.$errors[0]?.$message"
-          @blur="v$.password.$touch()"
-          class="w-full"
-        />
+          :error="PasswordError"
+        >
+          <el-input
+            v-model="state.password"
+            type="password"
+            placeholder="Entrez le mot de passe"
+            show-password
+            @blur="v$.password.$touch()"
+          />
+        </el-form-item>
       </template>
 
       <!-- Mode édition -->
       <template v-else-if="mode === 'edit' && initialData">
-        <VaInput
-          :model-value="initialData.email"
-          label="Email"
-          disabled
-          class="w-full"
-        />
-        <VaCheckbox
-          v-model="state.is_superadmin"
-          label="Superadmin"
-          class="mt-2"
-        />
+        <el-form-item label="Email">
+          <el-input :model-value="initialData.email" disabled />
+        </el-form-item>
+
+        <el-form-item>
+          <el-checkbox v-model="state.is_superadmin">
+            Superadmin
+          </el-checkbox>
+        </el-form-item>
       </template>
 
-      <VaButton type="submit" color="primary" class="w-full">
+      <!-- Bouton -->
+      <el-button type="primary" native-type="submit" class="u-w-full">
         {{ mode === 'create' ? 'Créer' : 'Mettre à jour' }}
-      </VaButton>
+      </el-button>
     </form>
   </div>
 </template>

@@ -1,3 +1,4 @@
+# app/schema/auth.py
 from pydantic import BaseModel
 
 class Token(BaseModel):

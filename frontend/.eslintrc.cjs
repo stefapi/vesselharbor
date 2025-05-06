@@ -7,24 +7,14 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module',
   },
-  extends: [
-    'eslint:recommended',
-    'plugin:vue/vue3-recommended',
-    'plugin:@typescript-eslint/recommended',
-    'plugin:prettier/recommended',
-  ],
-  plugins: [
-    'vue',
-    '@typescript-eslint',
-    'import',
-    'unused-imports',
-    'unocss',
-    'prettier',
-  ],
+  extends: ['eslint:recommended', 'plugin:vue/vue3-recommended', 'plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'],
+  plugins: ['vue', '@typescript-eslint', 'import', 'unused-imports', 'unocss', 'prettier'],
   rules: {
     // Typescript
     '@typescript-eslint/no-unused-vars': 'off',
     'unused-imports/no-unused-imports': 'error',
+    'import/extensions': 'off',
+    'import/no-unresolved': 'off',
 
     // Vue
     'vue/multi-word-component-names': 'off',
@@ -34,10 +24,13 @@ module.exports = {
     'unocss/order': 'warn',
 
     // Style
-    'import/order': ['warn', {
-      groups: ['builtin', 'external', 'internal'],
-      alphabetize: { order: 'asc', caseInsensitive: true },
-    }],
+    'import/order': [
+      'warn',
+      {
+        groups: ['builtin', 'external', 'internal'],
+        alphabetize: { order: 'asc', caseInsensitive: true },
+      },
+    ],
 
     // Prettier
     'prettier/prettier': 'warn',

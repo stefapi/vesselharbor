@@ -1,5 +1,5 @@
 // src/services/groupService.ts
-import api from '@/services/api';
+import api from '@/services/api.ts';
 
 /**
  * Crée un nouveau groupe dans l'environnement spécifié.

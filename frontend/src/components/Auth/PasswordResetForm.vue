@@ -1,38 +1,45 @@
 <template>
-  <div class="w-full max-w-sm p-6 rounded-xl shadow bg-white">
-    <form @submit.prevent="handlesubmit" class="space-y-4">
-      <VaInput
-        v-model="state.newPassword"
-        type="password"
+  <div class="u-w-full u-max-w-sm u-p-6 u-rounded-xl u-shadow u-bg-white">
+    <form @submit.prevent="handlesubmit" class="u-space-y-4">
+      <!-- Nouveau mot de passe -->
+      <el-form-item
         label="Nouveau mot de passe"
-        placeholder="••••••"
-        :error="v$.newPassword.$error"
-        :error-messages="v$.newPassword.$error && v$.newPassword.$errors[0]?.$message || ''"
-        @blur="v$.newPassword.$touch()"
-        class="w-full"
-      />
+        :error="NewPasswordError"
+      >
+        <el-input
+          v-model="newPassword"
+          type="password"
+          placeholder="••••••"
+          @blur="v$.newPassword.$touch()"
+          show-password
+        />
+      </el-form-item>
 
-      <VaInput
-        v-model="state.confirmPassword"
-        type="password"
+      <!-- Confirmation -->
+      <el-form-item
         label="Confirmer le mot de passe"
-        placeholder="••••••"
-        :error="v$.confirmPassword.$error"
-        :error-messages="v$.confirmPassword.$error && v$.confirmPassword.$errors[0]?.$message|| ''"
-        @blur="v$.confirmPassword.$touch()"
-        class="w-full"
-      />
+        :error="ConfirmPasswordError"
+      >
+        <el-input
+          v-model="confirmPassword"
+          type="password"
+          placeholder="••••••"
+          @blur="v$.confirmPassword.$touch()"
+          show-password
+        />
+      </el-form-item>
 
-      <VaButton
-        type="submit"
-        color="primary"
-        class="w-full"
+      <el-button
+        type="primary"
+        native-type="submit"
+        class="u-w-full"
       >
         {{ buttonText }}
-      </VaButton>
+      </el-button>
     </form>
   </div>
 </template>
+
 
 <script setup lang="ts">
 import { reactive} from 'vue'

@@ -1,23 +1,22 @@
+# app/schema/group.py
 from pydantic import BaseModel
 from typing import List, Optional
-from ..schema.function import FunctionOut
-from ..schema.user import UserOut
+from .tag import TagOut
 
 class GroupCreate(BaseModel):
     name: str
     description: Optional[str] = None
+    organization_id: int
 
 class GroupUpdate(BaseModel):
-    name: Optional[str]
-    description: Optional[str]
+    name: Optional[str] = None
+    description: Optional[str] = None
 
 class GroupOut(BaseModel):
     id: int
     name: str
     description: Optional[str]
-    # Facultatif : inclure fonctions et utilisateurs associés
-    functions: List[FunctionOut] = []
-    users: List[UserOut] = []
+    tags: List[TagOut] = []
 
     model_config = {
         "from_attributes": True

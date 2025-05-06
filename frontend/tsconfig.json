@@ -31,10 +31,11 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "src/**/*.md",
-    "tests/**/*.ts",
-    "types/**/*.d.ts",
+    "src/tests/**/*.ts",
+    "src/types/**/*.d.ts",
     "vite.config.ts",
-    "vitest.config.ts"
+    "vitest.config.ts",
+    "src/types/typed-router.d.ts"
   ],
   "exclude": [
     "node_modules",

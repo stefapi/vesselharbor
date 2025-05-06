@@ -1,5 +1,7 @@
+# app/schema/function.py
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
+from .rule import RuleOut
 
 class FunctionCreate(BaseModel):
     name: str

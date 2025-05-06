@@ -5,3 +5,4 @@ declare module '*.vue' {
   export default component
 }
 /// <reference types="@histoire/plugin-vue/components" />
+/// <reference types="unplugin-vue-router/client" />

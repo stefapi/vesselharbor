@@ -1,23 +1,27 @@
 <!-- src/components/Auth/ForgotPasswordForm.vue -->
 <template>
-  <form @submit.prevent="handleSubmit" class="space-y-4">
-    <VaInput
-      v-model="state.email"
-      type="email"
-      placeholder="Votre email"
+  <form @submit.prevent="handleSubmit" class="u-space-y-4">
+    <el-form-item
+      :error="v$.email.$error ? v$.email.$errors[0]?.$message : ''"
+      class="u-w-full"
       label="Email"
-      :error="v$.email.$error && v$.email.$errors[0]?.$message"
-      @blur="v$.email.$touch()"
-      class="w-full"
-    />
+    >
+      <el-input
+        v-model="state.email"
+        type="email"
+        placeholder="Votre email"
+        @blur="v$.email.$touch()"
+        class="u-w-full"
+      />
+    </el-form-item>
 
-    <VaButton
-      type="submit"
-      color="primary"
-      class="w-full"
+    <el-button
+      type="primary"
+      native-type="submit"
+      class="u-w-full"
     >
       Envoyer le lien de réinitialisation
-    </VaButton>
+    </el-button>
   </form>
 </template>
 

@@ -1,29 +1,45 @@
 <!-- src/components/ChangePasswordForm.vue -->
 <template>
-  <div class="w-full max-w-sm p-6 rounded-xl shadow bg-white">
-    <form @submit.prevent="handleSubmit" class="space-y-4">
-      <VaInput
-        v-model="state.oldPassword"
-        type="password"
-        placeholder="Ancien mot de passe"
+  <div class="u-w-full u-max-w-sm u-p-6 u-rounded-xl u-shadow u-bg-white">
+    <form @submit.prevent="handleSubmit" class="u-space-y-4">
+      <!-- Ancien mot de passe -->
+      <el-form-item
         label="Ancien mot de passe"
-        :error="v$.oldPassword.$error && v$.oldPassword.$errors[0]?.$message"
-        @blur="v$.oldPassword.$touch()"
-        class="w-full"
-      />
-      <VaInput
-        v-model="state.newPassword"
-        type="password"
-        placeholder="Nouveau mot de passe"
-        label="Nouveau mot de passe"
-        :error="v$.newPassword.$error && v$.newPassword.$errors[0]?.$message"
-        @blur="v$.newPassword.$touch()"
-        class="w-full"
-      />
+        :error="OldPasswordError"
+        class="u-w-full"
+      >
+        <el-input
+          v-model="state.oldPassword"
+          type="password"
+          placeholder="Ancien mot de passe"
+          @blur="v$.oldPassword.$touch()"
+          show-password
+        />
+      </el-form-item>
 
-      <VaButton type="submit" color="primary" class="w-full">
+      <!-- Nouveau mot de passe -->
+      <el-form-item
+        label="Nouveau mot de passe"
+        :error="NewPasswordError"
+        class="u-w-full"
+      >
+        <el-input
+          v-model="state.newPassword"
+          type="password"
+          placeholder="Nouveau mot de passe"
+          @blur="v$.newPassword.$touch()"
+          show-password
+        />
+      </el-form-item>
+
+      <!-- Bouton -->
+      <el-button
+        type="primary"
+        native-type="submit"
+        class="u-w-full"
+      >
         Changer le mot de passe
-      </VaButton>
+      </el-button>
     </form>
   </div>
 </template>

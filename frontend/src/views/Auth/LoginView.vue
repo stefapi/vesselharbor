@@ -1,18 +1,17 @@
 <!-- src/views/Auth/LoginView.vue -->
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-100">
-    <VaCard class="w-full max-w-md p-6">
-      <VaCardTitle class="text-xl font-bold mb-4 text-center" >Connexion</VaCardTitle>
+  <div class="u-min-h-screen u-flex u-items-center u-justify-center">
+    <el-card class="u-w-full u-max-w-md u-p-6">
+      <div class="u-text-xl u-font-bold u-text-center u-mb-4 ">Connexion</div>
       <LoginForm @submit="handleFormSubmit" />
-      <div class="mt-4 text-center">
+      <div class="u-mt-4 u-text-center">
         <router-link
           to="/forgot-password"
-          class="va-text-primary va-link hover:va-link--hover"
         >
           Mot de passe oublié ?
         </router-link>
       </div>
-    </VaCard>
+    </el-card>
   </div>
 </template>
 

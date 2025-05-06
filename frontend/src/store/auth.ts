@@ -4,6 +4,7 @@ import { logout as logoutService,login as loginService, refresh } from '@/servic
 import { getUser } from '@/services/authService.ts'
 import type { User } from '@/types/user.ts' // Importation du type partagé
 import { useRouter } from 'vue-router'
+import { clearAllOfflineData } from '@/services/clearOfflineData.ts'
 
 interface Credentials {
   username: string
@@ -93,6 +94,9 @@ export const useAuthStore = defineStore('auth', {
     logout() {
       this.user = null
       this.isAuthenticated = false
+
+
+      clearAllOfflineData()
       logoutService()
     },
   },

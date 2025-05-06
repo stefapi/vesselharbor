@@ -1,35 +1,44 @@
 <!-- src/components/Auth/LoginForm.vue -->
 <template>
-  <div class="w-full max-w-sm p-6 rounded-xl shadow bg-white">
-    <form @submit.prevent="handleSubmit" class="space-y-4">
-      <!-- Champs avec validation intégrée -->
-      <VaInput
-        v-model="state.email"
-        type="email"
-        placeholder="Votre email"
+    <form @submit.prevent="handleSubmit" class="u-space-y-4">
+      <!-- Champ Email -->
+      <el-form-item
         label="Email"
-        :error="hasEmailError"
-        :error-messages="EmailError"
-        @blur="v$.email.$touch()"
-        class="w-full"
-        :class="{ 'va-input--error': v$.email.$error }"
-      />
-      <VaInput
-        v-model="state.password"
-        type="password"
-        placeholder="Votre mot de passe"
-        label="Mot de passe"
-        :error="hasPasswordError"
-        :error-messages="PasswordError"
-        @blur="v$.password.$touch()"
-        class="w-full"
-      />
+        :error="EmailError"
+        class="u-w-full"
+      >
+        <el-input
+          v-model="state.email"
+          type="email"
+          placeholder="Votre email"
+          @blur="v$.email.$touch()"
+        />
+      </el-form-item>
 
-      <VaButton type="submit" color="primary" class="w-full">
+      <!-- Champ Mot de passe -->
+      <el-form-item
+        label="Mot de passe"
+        :error="PasswordError"
+        class="u-w-full"
+      >
+        <el-input
+          v-model="state.password"
+          type="password"
+          placeholder="Votre mot de passe"
+          @blur="v$.password.$touch()"
+          show-password
+        />
+      </el-form-item>
+
+      <!-- Bouton -->
+      <el-button
+        type="primary"
+        native-type="submit"
+        class="u-w-full"
+      >
         Se connecter
-      </VaButton>
+      </el-button>
     </form>
-  </div>
 </template>
 
 <script setup lang="ts">

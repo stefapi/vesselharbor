@@ -1,22 +1,30 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+# app/models/group.py
+from sqlalchemy import Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from ..database.base import Base
+
+from .tag import group_tags  # table intermédiaire
+from .policy import policy_groups
+
+user_groups = Table(
+    "user_groups",
+    Base.metadata,
+    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
+    Column("group_id", Integer, ForeignKey("groups.id"), primary_key=True),
+)
 
 class Group(Base):
     __tablename__ = "groups"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    description = Column(String, nullable=True)
-    environment_id = Column(Integer, ForeignKey("environments.id"), nullable=True)  # Optionnel : si NULL, groupe global
+    name = Column(String(80), nullable=False)
+    description = Column(String(1024), nullable=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
 
-    # Relation avec Environment (si défini)
-    environment = relationship("Environment", back_populates="groups")
-    # Relation many-to-many avec Function via la table d'association group_functions (non montrée ici)
-    functions = relationship("Function", secondary="group_functions", back_populates="groups")
-    # Relation avec les affectations d’utilisateurs
-    user_assignments = relationship("UserAssignment", back_populates="group")
+    organization = relationship("Organization", back_populates="groups")
+    tags = relationship("Tag", secondary=group_tags, back_populates="groups")
+    users = relationship("User", secondary=user_groups, back_populates="groups")
+    policies = relationship("Policy", secondary=policy_groups, back_populates="groups")
 
     def __repr__(self):
-        env = self.environment.name if self.environment else "Global"
-        return f"<Group(id={self.id}, name='{self.name}', environment='{env}')>"
+        return f"<Group(id={self.id}, name='{self.name}', org='{self.organization.name}')>"
