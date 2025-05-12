@@ -48,6 +48,9 @@ export default defineConfig({
     },
   },
   shortcuts: {
+    'full-reset': 'u-m-0 u-p-0 u-box-border',
+    'form': 'u-space-y-4',
+    'form-item': 'u-w-full u-space-y-2',
     btn: 'u-bg-primary u-text-white u-px-4 u-py-2 u-rounded hover:u-bg-primary/90 u-transition',
     card: 'u-bg-white u-rounded-lg u-shadow-sm u-p-6',
     'shiki-block': 'u-bg-code-bg u-text-black u-p-4 u-rounded u-text-sm u-leading-relaxed u-overflow-auto',
@@ -68,6 +71,6 @@ export default defineConfig({
     'tag-success': 'tag u-bg-success/10 u-text-success u-border-success/20',
 
     'markdown-body': 'u-m-auto u-text-left u-max-w-full',
-    'markdown-body-card': 'u-w-full u-max-w-3xl u-p-6 u-shadow-md u-bg-white dark:u-bg-gray-800 u-border-none',
+    'markdown-body-card': 'u-w-full u-max-w-3xl u-shadow-md u-bg-white dark:u-bg-gray-800 u-border-none',
   },
 })

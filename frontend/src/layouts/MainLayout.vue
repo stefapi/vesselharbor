@@ -1,5 +1,5 @@
 <template>
-  <el-container class="u-h-screen u-bg-white dark:u-bg-gray-900 u-flex u-flex-col">
+  <el-container class=" u-bg-white dark:u-bg-gray-900 u-flex u-flex-col">
     <!-- NAVBAR -->
     <el-header v-if="isAuthenticated" class="u-bg-primary u-text-white u-h-16 u-px-4 u-flex u-items-center u-justify-between">
       <div class="u-flex u-items-center">
@@ -30,7 +30,7 @@
     </el-header>
 
     <!-- BODY -->
-    <el-container class="u-flex-1 u-h-0">
+    <el-container class="u-flex">
       <!-- SIDEBAR -->
       <el-aside
         v-if="isAuthenticated"
@@ -50,9 +50,9 @@
       </el-aside>
 
       <!-- CONTENT -->
-      <el-main class="u-p-6 u-overflow-auto u-h-full">
+      <el-main class="">
         <div class="u-w-full u-max-w-4xl u-mx-auto">
-          <router-view />
+          <slot />
         </div>
       </el-main>
     </el-container>

@@ -1,14 +1,14 @@
 <!-- src/views/Auth/ForgotPasswordView.vue -->
 <template>
-  <div class="u-min-h-screen u-flex u-items-center u-justify-center u-bg-gray-100">
-    <el-card class="u-w-full u-max-w-md u-p-6 u-rounded u-shadow">
-      <h1 class="u-text-xl u-font-bold u-mb-4 u-text-center">Mot de passe oublié</h1>
+  <div class="u-min-h-[calc(100vh-1rem)] u-w-full u-flex u-items-center u-justify-center u-bg-gray-100">
+    <el-card class="u-w-full u-max-w-md">
+      <h1 class="u-text-2xl u-font-bold u-text-center">Mot de passe oublié</h1>
 
       <ForgotPasswordForm @submit="handleFormSubmit" />
 
       <router-link
         to="/login"
-        class="u-block u-text-center u-text-primary hover:u-text-primary-dark u-transition-colors u-mt-4"
+        class="u-block u-text-center u-text-primary u-mt-4"
       >
         Retour à la connexion
       </router-link>
