@@ -2,7 +2,7 @@
 <template>
   <div>
     <h1>Gestion de l'Environnement : {{ environment.name }}</h1>
-    
+
     <!-- Section Modification de l'environnement -->
     <section>
       <h2>Modifier l'environnement</h2>
@@ -15,7 +15,7 @@
       </form>
       <button @click="deleteEnv" class="delete-btn">Supprimer l'environnement</button>
     </section>
-    
+
     <hr />
 
     <!-- Section Gestion des éléments -->
@@ -43,7 +43,7 @@
         </li>
       </ul>
     </section>
-    
+
     <hr />
 
     <!-- Section Gestion des utilisateurs -->
@@ -51,7 +51,7 @@
       <h2>Utilisateurs de l'environnement</h2>
       <ul>
         <li v-for="user in users" :key="user.id">
-          {{ user.email }} - {{ user.role }} 
+          {{ user.email }} - {{ user.role }}
           <button @click="editUserRights(user)">Modifier droits</button>
         </li>
       </ul>
@@ -73,15 +73,15 @@ export default defineComponent({
     const envId = Number(route.params.envId);
     const environment = ref({ name: '' });
     const envName = ref('');
-    
+
     // Gestion des éléments
     const elements = ref([] as any[]);
     const showElementForm = ref(false);
     const newElement = ref({ name: '', description: '' });
-    
+
     // Gestion des utilisateurs de l'environnement
     const users = ref([] as any[]);
-    
+
     const fetchEnvironment = async () => {
       try {
         const response = await getEnvironment(envId);

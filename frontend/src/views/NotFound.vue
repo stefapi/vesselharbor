@@ -1,21 +1,22 @@
 <!-- src/views/NotFound.vue -->
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-    <h1 class="text-4xl font-bold mb-4">404 - Page non trouvée</h1>
-    <p class="mb-6">La page que vous cherchez n'existe pas.</p>
-    <router-link to="/" class="text-blue-500 hover:underline">
-      Retourner à l'accueil
-    </router-link>
-  </div>
+  <el-container class="u-min-h-screen u-flex u-flex-col u-items-center u-justify-center u-bg-gray-100 u-p-4">
+    <el-card class="u-text-center u-max-w-md u-w-full">
+      <h1 class="u-text-4xl u-font-bold u-mb-4">404 - Page non trouvée</h1>
+      <p class="u-mb-6">La page que vous cherchez n'existe pas.</p>
+      <router-link to="/">
+        <el-button type="primary" plain>
+          Retourner à l'accueil
+        </el-button>
+      </router-link>
+    </el-card>
+  </el-container>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-export default defineComponent({
-  name: 'NotFound',
-});
+<script lang="ts" setup>
+defineOptions({ name: 'NotFound' });
 </script>
 
 <style scoped>
-/* Vous pouvez ajouter des styles complémentaires ici */
+/* Styles complémentaires éventuels */
 </style>
