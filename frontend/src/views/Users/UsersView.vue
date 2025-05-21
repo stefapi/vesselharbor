@@ -51,6 +51,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 
 // Composants
@@ -64,10 +65,12 @@ import UsersTable from '@/components/Users/UsersTable.vue'
 import { deleteUser as deleteUserService } from '@/services/userService'
 import { useNotificationStore } from '@/store/notifications'
 import { useUsersStore } from '@/store/users'
+import { useAuthStore } from '@/store/auth'
 
-// Stores
+// Stores et router
 const usersStore = useUsersStore()
 const notificationStore = useNotificationStore()
+const router = useRouter()
 
 // State local
 const filterEmail = ref('')
@@ -107,8 +110,8 @@ const closeDrawer = () => {
 
 // Édition
 const editUser = (user: any) => {
-  editingUser.value = user
-  showForm.value = true
+  // Rediriger vers la vue détaillée de l'utilisateur
+  router.push(`/users/${user.id}`)
 }
 const onFormSuccess = () => {
   closeDrawer()
@@ -117,21 +120,72 @@ const onFormSuccess = () => {
 
 // Suppression avec boîte de confirmation
 const confirmDelete = async (userId: number) => {
+  // Importer le store d'authentification pour vérifier l'utilisateur courant
+  const authStore = useAuthStore()
+
+  // Empêcher la suppression de soi-même
+  if (authStore.user && authStore.user.id === userId) {
+    notificationStore.addNotification({
+      type: 'warning',
+      message: "Vous ne pouvez pas supprimer votre propre compte"
+    })
+    return
+  }
+
+  // Trouver l'utilisateur à supprimer
+  const userToDelete = usersStore.users.find(u => u.id === userId)
+
+  if (!userToDelete) {
+    notificationStore.addNotification({
+      type: 'error',
+      message: "Utilisateur introuvable"
+    })
+    return
+  }
+
   try {
-    await ElMessageBox.confirm(
-      'Êtes-vous sûr de vouloir supprimer cet utilisateur ?',
-      'Confirmation',
-      {
-        confirmButtonText: 'Supprimer',
-        cancelButtonText: 'Annuler',
-        type: 'warning' as const // ✅ Correction ici : type explicite
-      }
-    )
+    // Message de confirmation spécial pour les superadmins
+    if (userToDelete.is_superadmin) {
+      await ElMessageBox.confirm(
+        'Attention ! Vous êtes sur le point de supprimer un utilisateur avec des droits Superadmin. ' +
+        'Cette action est irréversible et peut avoir des conséquences importantes sur la sécurité du système. ' +
+        'Êtes-vous absolument sûr de vouloir continuer ?',
+        'Confirmation - Suppression Superadmin',
+        {
+          confirmButtonText: 'Supprimer définitivement',
+          cancelButtonText: 'Annuler',
+          type: 'danger' as const,
+          distinguishCancelAndClose: true
+        }
+      )
+    } else {
+      // Message standard pour les utilisateurs normaux
+      await ElMessageBox.confirm(
+        'Êtes-vous sûr de vouloir supprimer cet utilisateur ?',
+        'Confirmation',
+        {
+          confirmButtonText: 'Supprimer',
+          cancelButtonText: 'Annuler',
+          type: 'warning' as const
+        }
+      )
+    }
+
+    // Procéder à la suppression
     await deleteUserService(userId)
-    notificationStore.addNotification({ type: 'success', message: 'Utilisateur supprimé avec succès' })
+    notificationStore.addNotification({
+      type: 'success',
+      message: 'Utilisateur supprimé avec succès'
+    })
     fetchUsers()
-  } catch {
-    notificationStore.addNotification({ type: 'error', message: "Erreur lors de la suppression de l'utilisateur" })
+  } catch (error) {
+    // Ne pas afficher d'erreur si l'utilisateur a simplement annulé l'opération
+    if (error !== 'cancel' && error !== 'close') {
+      notificationStore.addNotification({
+        type: 'error',
+        message: "Erreur lors de la suppression de l'utilisateur"
+      })
+    }
   }
 }
 

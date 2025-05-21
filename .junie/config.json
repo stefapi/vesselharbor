@@ -1,0 +1,42 @@
+{
+  "project": {
+    "name": "FastAPI Vue Template",
+    "version": "1.0.0",
+    "description": "A template project using FastAPI and Vue.js"
+  },
+  "development": {
+    "backend": {
+      "port": 8010,
+      "host": "0.0.0.0",
+      "reload": true
+    },
+    "frontend": {
+      "port": 5173,
+      "host": "localhost"
+    }
+  },
+  "docker": {
+    "image": "myapp",
+    "tag": "latest",
+    "ports": {
+      "external": 80,
+      "internal": 80
+    }
+  },
+  "testing": {
+    "backend": {
+      "framework": "pytest",
+      "directory": "app/tests"
+    },
+    "frontend": {
+      "unit": {
+        "framework": "vitest",
+        "directory": "frontend/tests"
+      },
+      "e2e": {
+        "framework": "playwright",
+        "directory": "frontend/tests"
+      }
+    }
+  }
+}

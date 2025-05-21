@@ -9,6 +9,7 @@ declare global {
   const EffectScope: typeof import('vue')['EffectScope']
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
   const addFunctionToGroup: typeof import('./services/groupService')['addFunctionToGroup']
+  const addUserToGroup: typeof import('./services/userService')['addUserToGroup']
   const api: typeof import('./services/api')['default']
   const apiDelete: typeof import('./services/api')['apiDelete']
   const apiGet: typeof import('./services/api')['apiGet']
@@ -65,7 +66,7 @@ declare global {
   const getEnvironment: typeof import('./services/environmentService')['getEnvironment']
   const getGroupFunctions: typeof import('./services/groupService')['getGroupFunctions']
   const getQueuedActions: typeof import('./services/offlineQueue')['getQueuedActions']
-  const getUser: typeof import('./services/authService')['getUser']
+  const getUser: typeof import('./services/userService')['getUser']
   const getUserGroups: typeof import('./services/userService')['getUserGroups']
   const h: typeof import('vue')['h']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
@@ -82,7 +83,7 @@ declare global {
   const listElements: typeof import('./services/elementService')['listElements']
   const listEnvironmentUsers: typeof import('./services/environmentUserService')['listEnvironmentUsers']
   const listEnvironments: typeof import('./services/environmentService')['listEnvironments']
-  const listGroups: typeof import('./services/groupService')['listGroups']
+  const listGroups: typeof import('./services/userService')['listGroups']
   const listUsers: typeof import('./services/userService')['listUsers']
   const login: typeof import('./services/authService')['login']
   const logout: typeof import('./services/authService')['logout']
@@ -134,7 +135,7 @@ declare global {
   const refWithControl: typeof import('@vueuse/core')['refWithControl']
   const refresh: typeof import('./services/authService')['refresh']
   const removeFunctionFromGroup: typeof import('./services/groupService')['removeFunctionFromGroup']
-  const removeUserFromGroup: typeof import('./services/groupService')['removeUserFromGroup']
+  const removeUserFromGroup: typeof import('./services/userService')['removeUserFromGroup']
   const replayOfflineActions: typeof import('./services/replayOfflineActions')['replayOfflineActions']
   const reset_password: typeof import('./services/authService')['reset_password']
   const reset_password_request: typeof import('./services/authService')['reset_password_request']
@@ -391,6 +392,7 @@ declare module 'vue' {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly addFunctionToGroup: UnwrapRef<typeof import('./services/groupService')['addFunctionToGroup']>
+    readonly addUserToGroup: UnwrapRef<typeof import('./services/userService')['addUserToGroup']>
     readonly api: UnwrapRef<typeof import('./services/api')['default']>
     readonly apiDelete: UnwrapRef<typeof import('./services/api')['apiDelete']>
     readonly apiGet: UnwrapRef<typeof import('./services/api')['apiGet']>
@@ -447,7 +449,7 @@ declare module 'vue' {
     readonly getEnvironment: UnwrapRef<typeof import('./services/environmentService')['getEnvironment']>
     readonly getGroupFunctions: UnwrapRef<typeof import('./services/groupService')['getGroupFunctions']>
     readonly getQueuedActions: UnwrapRef<typeof import('./services/offlineQueue')['getQueuedActions']>
-    readonly getUser: UnwrapRef<typeof import('./services/authService')['getUser']>
+    readonly getUser: UnwrapRef<typeof import('./services/userService')['getUser']>
     readonly getUserGroups: UnwrapRef<typeof import('./services/userService')['getUserGroups']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
@@ -464,7 +466,7 @@ declare module 'vue' {
     readonly listElements: UnwrapRef<typeof import('./services/elementService')['listElements']>
     readonly listEnvironmentUsers: UnwrapRef<typeof import('./services/environmentUserService')['listEnvironmentUsers']>
     readonly listEnvironments: UnwrapRef<typeof import('./services/environmentService')['listEnvironments']>
-    readonly listGroups: UnwrapRef<typeof import('./services/groupService')['listGroups']>
+    readonly listGroups: UnwrapRef<typeof import('./services/userService')['listGroups']>
     readonly listUsers: UnwrapRef<typeof import('./services/userService')['listUsers']>
     readonly login: UnwrapRef<typeof import('./services/authService')['login']>
     readonly logout: UnwrapRef<typeof import('./services/authService')['logout']>
@@ -516,7 +518,7 @@ declare module 'vue' {
     readonly refWithControl: UnwrapRef<typeof import('@vueuse/core')['refWithControl']>
     readonly refresh: UnwrapRef<typeof import('./services/authService')['refresh']>
     readonly removeFunctionFromGroup: UnwrapRef<typeof import('./services/groupService')['removeFunctionFromGroup']>
-    readonly removeUserFromGroup: UnwrapRef<typeof import('./services/groupService')['removeUserFromGroup']>
+    readonly removeUserFromGroup: UnwrapRef<typeof import('./services/userService')['removeUserFromGroup']>
     readonly replayOfflineActions: UnwrapRef<typeof import('./services/replayOfflineActions')['replayOfflineActions']>
     readonly reset_password: UnwrapRef<typeof import('./services/authService')['reset_password']>
     readonly reset_password_request: UnwrapRef<typeof import('./services/authService')['reset_password_request']>

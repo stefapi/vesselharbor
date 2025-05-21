@@ -1,0 +1,123 @@
+classDiagram
+direction BT
+class audit_logs {
+   integer user_id
+   varchar action
+   varchar details
+   datetime timestamp
+   integer id
+}
+class elements {
+   varchar(80) name
+   varchar(1024) description
+   integer environment_id
+   integer id
+}
+class environments {
+   varchar(80) name
+   varchar(1024) description
+   integer organization_id
+   integer id
+}
+class functions {
+   varchar(80) name
+   varchar(1024) description
+   integer id
+}
+class group_tags {
+   integer group_id
+   integer tag_id
+}
+class groups {
+   varchar(80) name
+   varchar(1024) description
+   integer organization_id
+   integer id
+}
+class organizations {
+   varchar(80) name
+   varchar(1024) description
+   integer id
+}
+class policies {
+   varchar(80) name
+   varchar(1024) description
+   varchar(80) access_schedule
+   integer organization_id
+   integer id
+}
+class policy_groups {
+   integer policy_id
+   integer group_id
+}
+class policy_tags {
+   integer policy_id
+   integer tag_id
+}
+class policy_users {
+   integer user_id
+   integer policy_id
+}
+class rules {
+   integer policy_id
+   integer function_id
+   integer environment_id
+   integer element_id
+   integer id
+}
+class sqlite_master {
+   text type
+   text name
+   text tbl_name
+   int rootpage
+   text sql
+}
+class tags {
+   varchar(80) value
+   integer id
+}
+class user_groups {
+   integer user_id
+   integer group_id
+}
+class user_organizations {
+   integer user_id
+   integer organization_id
+}
+class user_tags {
+   integer user_id
+   integer tag_id
+}
+class users {
+   varchar(256) username
+   varchar(256) first_name
+   varchar(256) last_name
+   varchar(256) email
+   varchar(1024) hashed_password
+   boolean is_superadmin
+   integer id
+}
+
+audit_logs  -->  users : user_id:id
+elements  -->  environments : 'environment_id:id'
+environments  -->  organizations : organization_id:id
+group_tags  -->  groups : group_id:id
+group_tags  -->  tags : tag_id:id
+groups  -->  organizations : organization_id:id
+policies  -->  organizations : organization_id:id
+policy_groups  -->  groups : group_id:id
+policy_groups  -->  policies : policy_id:id
+policy_tags  -->  policies : policy_id:id
+policy_tags  -->  tags : tag_id:id
+policy_users  -->  policies : policy_id:id
+policy_users  -->  users : user_id:id
+rules  -->  elements : element_id:id
+rules  -->  environments : environment_id:id
+rules  -->  functions : function_id:id
+rules  -->  policies : policy_id:id
+user_groups  -->  groups : group_id:id
+user_groups  -->  users : user_id:id
+user_organizations  -->  organizations : organization_id:id
+user_organizations  -->  users : user_id:id
+user_tags  -->  tags : tag_id:id
+user_tags  -->  users : user_id:id

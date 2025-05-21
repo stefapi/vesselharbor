@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "fastapivue.fullname" . }}-caddy-config
+  labels:
+    {{- include "fastapivue.labels" . | nindent 4 }}
+    app.kubernetes.io/component: caddy
+data:
+  Caddyfile: |
+    :80 {
+        # Les requêtes commençant par /api sont redirigées vers le backend
+        @api {
+            path /api/*
+        }
+        reverse_proxy @api {{ include "fastapivue.fullname" . }}-backend:{{ .Values.service.backend.port }}
+
+        # Toutes les autres requêtes vont vers le frontend
+        reverse_proxy {{ include "fastapivue.fullname" . }}-frontend:{{ .Values.service.frontend.port }}
+    }

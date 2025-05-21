@@ -12,6 +12,7 @@ import EnvironmentElementsView from '@/views/Environments/EnvironmentElementsVie
 import EnvironmentManagementView from '@/views/Environments/EnvironmentManagementView.vue'
 import EnvironmentUsersView from '@/views/Users/EnvironmentUsersView.vue'
 import UsersView from '@/views/Users/UsersView.vue'
+import UserView from '@/views/Users/UserView.vue'
 import { useAuthStore } from '@/store/auth.ts'
 import NProgress from 'nprogress'
 
@@ -25,6 +26,7 @@ const manualRoutes: RouteRecordRaw[] = [
   { path: '/environment/:envId/manage', name: 'EnvironmentManagement', component: EnvironmentManagementView, meta: { requiresAuth: true, requiredRole: 'envAdmin' } },
   { path: '/environment/:envId/users', name: 'EnvironmentUsers', component: EnvironmentUsersView, meta: { requiresAuth: true, requiredRole: 'envAdmin' } },
   { path: '/users', name: 'Users', component: UsersView, meta: { requiresAuth: true, requiredRole: 'superadmin' } },
+  { path: '/users/:id', name: 'UserView', component: UserView, meta: { requiresAuth: true, requiredRole: 'superadmin' } },
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('@/views/NotFound.vue') },
 ]
 

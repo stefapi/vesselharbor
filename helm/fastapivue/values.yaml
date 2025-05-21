@@ -1,0 +1,87 @@
+# Default values for fastapivue.
+# This is a YAML-formatted file.
+
+replicaCount:
+  backend: 1
+  frontend: 1
+  caddy: 1
+
+image:
+  backend:
+    repository: myorg/backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  frontend:
+    repository: myorg/frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  caddy:
+    repository: caddy
+    tag: latest
+    pullPolicy: IfNotPresent
+
+service:
+  backend:
+    type: ClusterIP
+    port: 8010
+  frontend:
+    type: ClusterIP
+    port: 5000
+  caddy:
+    type: ClusterIP
+    port: 80
+    nodePort: 30080
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations: {}
+  hosts:
+    - host: fastapivue.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  backend:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  frontend:
+    limits:
+      cpu: 300m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  caddy:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+env:
+  # Common environment variables
+  common: {}
+  # Backend specific environment variables
+  backend: {}
+  # Frontend specific environment variables
+  frontend: {}

@@ -1,82 +1,140 @@
-# Présentation du projet
+# FastAPI Vue Template
 
-Ce dépôt contient une application **full-stack** découpée en :
+<div align="center">
+  <img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D" alt="Vue.js">
+  <img src="https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white" alt="Docker">
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+</div>
 
-1. **Backend Python**  
-   - Framework : FastAPI  
-   - Gestion de la configuration : `pydantic` & fichiers `.env`  
-   - Persistance : SQLAlchemy (→ base de données relationnelle, par défaut PostgreSQL)  
-   - CLI utilitaire : `click`  
-   - Gestion des dépendances : **poetry**
+<p align="center">
+  <em>A modern full-stack template combining FastAPI and Vue.js for rapid application development</em>
+</p>
 
-2. **Frontend Vue 3**  
-   - Vite comme bundler & serveur de dev  
-   - Pinia pour le state-management  
-   - Vue-Router pour la navigation  
-   - UnoCSS pour la couche CSS utilitaire (+ Explorateur intégré)  
-   - PWA prête via `vite-plugin-pwa`  
-   - Tests e2e : Playwright  
-   - Tests unitaires : Vitest  
-   - Gestion des dépendances : **pnpm**
+## ✨ Features
 
-Le backend écoute par défaut sur le port **8010** (Swagger UI : `/docs`) et le frontend de développement sur **5173** (hot-reload).  
-Un conteneur Docker unique peut servir l’application compilée, ou plusieurs services peuvent être orchestrés via **docker-compose** (backend, frontend, base de données).
+- **Modern Stack**: FastAPI backend + Vue 3 frontend with TypeScript
+- **Docker Ready**: Containerized development and production environments
+- **Authentication**: JWT-based authentication system
+- **Database**: SQLAlchemy ORM with PostgreSQL
+- **API Documentation**: Auto-generated with Swagger UI and ReDoc
+- **State Management**: Pinia for predictable state management
+- **Styling**: UnoCSS for utility-first CSS
+- **Testing**: Comprehensive testing setup with pytest, Vitest, and Playwright
+- **Hot Reload**: Development environment with hot reload for both frontend and backend
+- **PWA Support**: Progressive Web App ready with vite-plugin-pwa
 
----
+## 🚀 Quick Start
 
-## Installation & lancement rapides
+### Prerequisites
 
-### Prérequis
+- Docker ≥ 20.10 and docker-compose v2
+- Node.js ≥ 18 and pnpm ≥ 8 (for frontend development)
+- Python ≥ 3.13 and poetry ≥ 1.8 (for backend development)
 
-• Docker ≥ 20.10  
-• docker-compose v2  
-• Node .js ≥ 18 + pnpm ≥ 8 (pour le dev frontend)  
-• Python ≥ 3.13 + poetry ≥ 1.8 (pour le dev backend)
+### Using Docker (Recommended)
 
-### Clonage
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/fastapivue-template.git
+cd fastapivue-template
 
-```shell script
-git clone https://<votre-forguerie>/<orga>/<repo>.git
-cd <repo>
+# Copy environment files
+cp .env.example .env
+cp backend/.env.example backend/.env
+
+# Start the application
+docker compose up --build -d
 ```
 
+Visit:
+- Frontend: http://localhost/
+- API Documentation: http://localhost/docs
 
----
+## 📖 Documentation
 
-## 1. Démarrage avec Docker 🐳
+Comprehensive documentation is available in the `.junie` directory:
 
-### 1.1 Image tout-en-un
+- [API Endpoints](.junie/api-endpoints.md)
+- [Architecture](.junie/architecture.md)
+- [Logical Architecture](.junie/architecture-logique.md)
+- [Project Guidelines](.junie/guidelines.md)
+- [Changelog](.junie/changelog.md)
 
-```shell script
-# Construction
-docker build -t monapp:latest .
 
-# Exécution (port 80 externe ⇒ 80 interne)
-docker run -d --name monapp -p 80:80 monapp:latest
+## 💻 Development
+
+### Backend (FastAPI)
+
+```bash
+cd backend
+poetry install
+cp .env.example .env
+
+# Start development server with auto-reload
+poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8010
+
+# Run tests
+poetry run pytest
 ```
 
 
 Visitez : `http://localhost/` pour le front et `http://localhost/docs` pour l’API.
 
-### 1.2 Stack complète via docker-compose
+### Frontend (Vue 3)
 
-```shell script
-# Lancement
-docker compose up --build -d
+```bash
+cd frontend
+pnpm install
+pnpm dev  # Starts Vite dev server at http://localhost:5173
 
-# Arrêt
-docker compose down
+# Run unit tests
+pnpm test:unit
+
+# Run end-to-end tests
+pnpm test:e2e
 ```
 
+### Full-Stack Development
 
-Services typiques déclarés dans `docker-compose.yml` :
+For simultaneous frontend and backend development:
 
-| Service      | Port hôte | Rôle                            |
-|--------------|-----------|--------------------------------|
-| db           | 5432      | PostgreSQL                     |
-| backend      | 8010      | API FastAPI                    |
-| frontend     | 80        | Fichiers statiques Vite build  |
-| nginx (opt.) | 80 / 443  | Reverse-proxy & TLS            |
+1. Start PostgreSQL via Docker or a local service
+2. Start the backend with hot reload
+3. Start the frontend dev server
+4. Access the application at http://localhost:5173
+
+## 🏗️ Project Structure
+
+```
+./
+├── app/                  # FastAPI backend
+│   ├── alembic/          # Database migrations
+│   ├── api/              # API endpoints
+│   ├── core/             # Core application components
+│   ├── db/               # Database models and session
+│   ├── models/           # Pydantic models
+│   ├── services/         # Business logic
+│   └── tests/            # Backend tests
+├── frontend/             # Vue 3 frontend
+│   ├── public/           # Static assets
+│   ├── src/              # Source code
+│   │   ├── assets/       # Images, fonts, etc.
+│   │   ├── components/   # Vue components
+│   │   ├── composables/  # Composition API hooks
+│   │   ├── layouts/      # Page layouts
+│   │   ├── router/       # Vue Router configuration
+│   │   ├── services/     # API service layer
+│   │   ├── store/        # Pinia stores
+│   │   └── views/        # Page components
+│   └── tests/            # Frontend tests
+├── .junie/               # Project documentation
+├── docker/               # Additional Dockerfiles
+├── docker-compose.yml    # Docker Compose configuration
+└── .env.example          # Environment variables example
+```
 
 Avant le premier `up`, copiez le fichier d’exemple d’environnement :
 
@@ -97,127 +155,42 @@ MODE=production
 ```
 
 
----
+## 🔧 Configuration
 
-## 2. Environnement de développement
+- **Database**: Change `DATABASE_URL` in `backend/.env`
+- **CORS**: Adjust `BACKEND_CORS_ORIGINS` in `backend/.env`
+- **Frontend Port**: Modify `frontend/vite.config.ts`
+- **PWA**: Edit the `pwa` section in `frontend/vite.config.ts`
 
-### 2.1 Backend
+## 🚢 Deployment
 
-```shell script
-cd backend
-poetry install                # installe les dépendances
-cp .env.example .env          # variables d’environnement locales
+### Production Deployment
 
-# Lancer le serveur auto-reload
-poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8010
-```
+1. Build Docker images: `docker compose build --no-cache`
+2. Push to your Docker registry
+3. On your server, pull and start the containers:
 
-
-Tests :
-
-```shell script
-poetry run pytest
-```
-
-
-Migration (si Alembic est utilisé) :
-
-```shell script
-poetry run alembic upgrade head
-```
-
-
-### 2.2 Frontend
-
-```shell script
-cd frontend
-pnpm install                  # installe les dépendances
-pnpm dev                      # démarre Vite (http://localhost:5173)
-```
-
-
-Outils intégrés :
-
-| Outil                     | URL locale                                            |
-|---------------------------|-------------------------------------------------------|
-| UnoCSS Explorer           | `http://localhost:5173/__unocss`                     |
-| Vite Inspector            | `http://localhost:5173/__inspect/`                   |
-| Vue 3 DevTools            | `http://localhost:5173/__devtools__/`                |
-
-Tests :
-
-```shell script
-# Unités & composants
-pnpm test:unit               # (alias vitest)
-
-# End-to-end
-pnpm test:e2e                # (alias playwright test)
-```
-
-
-### 2.3 Hot reload cross-stack
-
-Pour coder simultanément sur le front et le back :
-
-1. Lancez Postgres via Docker (ou un service local).  
-2. Démarrez le backend en mode `--reload`.  
-3. Démarrez le frontend avec `pnpm dev`.  
-4. Ouvrez http://localhost:5173 ; toute sauvegarde de fichier entraîne un rafraîchissement automatique.
-
----
-
-## 3. Structure des dossiers (vue d’ensemble)
-
-```
-<repo>/
-├── backend/                 # API FastAPI
-│   ├── app/                 # code source Python
-│   ├── tests/
-│   └── pyproject.toml
-├── frontend/                # Vue 3 + Vite
-│   ├── src/
-│   ├── public/
-│   └── vitest.config.ts
-├── docker/                  # Dockerfiles additionnels
-├── docker-compose.yml
-├── .env.example             # variables globales
-└── README.md
-```
-
-
----
-
-## 4. Personnalisation & configuration
-
-• **Base de données** : changez `DATABASE_URL` dans `backend/.env`.  
-• **CORS** : ajustez `settings.py` (liste `ALLOWED_ORIGINS`).  
-• **Port front** : modifiez `frontend/vite.config.ts`.  
-• **PWA** : éditez `frontend/vite.config.ts` section `pwa`, puis exécutez `pnpm build`.
-
----
-
-## 5. Déploiement (production)
-
-1. Construisez les images : `docker compose build --no-cache`.  
-2. Poussez-les sur votre registry Docker.  
-3. Sur le serveur cible, récupérez vos `docker-compose.yml` & `.env` puis :  
-
-```shell script
+```bash
 docker compose pull
 docker compose up -d
 ```
 
+For production environments, add a reverse proxy (Traefik, Nginx, Caddy) to handle TLS/HTTP-2.
 
-Ajoutez un **reverse-proxy** (Traefik, Nginx, Caddy) pour gérer TLS / HTTP-2.
+## 🤝 Contributing
 
----
+Contributions are welcome! Please check our [Contributing Guidelines](.junie/contributing.md) before submitting pull requests.
 
-## 6. Ressources utiles
 
-• Swagger / Redoc : `http://localhost:8010/docs` & `/redoc`  
-• Logs de conteneur : `docker compose logs -f backend`  
-• Couverture tests front : `pnpm coverage` (rapport HTML dans `coverage/`)  
+## 📄 License
 
----
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-Bon développement !
+## 🙏 Acknowledgements
+
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [Vue.js](https://vuejs.org/)
+- [Pinia](https://pinia.vuejs.org/)
+- [UnoCSS](https://github.com/unocss/unocss)
+- [SQLAlchemy](https://www.sqlalchemy.org/)
+- [Docker](https://www.docker.com/)

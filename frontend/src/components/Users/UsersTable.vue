@@ -1,7 +1,30 @@
 <template>
   <el-table :data="users" stripe border class="u-rounded-xl u-shadow-sm" style="width: 100%">
     <el-table-column prop="id" label="ID" width="80" />
-    <el-table-column prop="email" label="Email" />
+    <el-table-column prop="email" label="Email">
+      <template #default="{ row }">
+        <router-link :to="`/users/${row.id}`" class="u-text-blue-500 hover:u-underline">
+          {{ row.email }}
+        </router-link>
+      </template>
+    </el-table-column>
+
+    <!-- Nombre de groupes -->
+    <el-table-column label="Groupes" width="100" align="center">
+      <template #default="{ row }">
+        <el-tag type="info" v-if="row.user_assignments && row.user_assignments.length">
+          {{ row.user_assignments.length }}
+        </el-tag>
+        <span v-else>-</span>
+      </template>
+    </el-table-column>
+
+    <!-- Date de création (si disponible) -->
+    <el-table-column label="Créé le" width="150" v-if="hasCreatedDate">
+      <template #default="{ row }">
+        {{ row.created_at ? new Date(row.created_at).toLocaleDateString() : '-' }}
+      </template>
+    </el-table-column>
 
     <!-- Superadmin : visible seulement si l'utilisateur courant est superadmin -->
     <el-table-column
@@ -55,12 +78,15 @@ import { useAuthStore } from '@/store/auth'
 const authStore = useAuthStore()
 
 const isSuperadmin = computed(() => authStore.user?.is_superadmin === true)
+const hasCreatedDate = computed(() => props.users.some(user => user.created_at))
 
 const props = defineProps<{
   users: Array<{
     id: number
     email: string
     is_superadmin: boolean
+    created_at?: string
+    user_assignments?: Array<any>
   }>
 }>()
 

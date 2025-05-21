@@ -12,5 +12,7 @@ export interface User {
   email: string;
   is_superadmin: boolean;
   user_assignments?: UserAssignment[];
+  created_at?: string;
+  updated_at?: string;
   // Ajouter d'autres propriétés communes si nécessaire
 }

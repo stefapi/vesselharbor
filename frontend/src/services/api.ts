@@ -133,10 +133,12 @@ api.interceptors.response.use(
 
     const errorMessage = (error.response?.data as any)?.message || 'Erreur de communication avec le serveur'
 
-    notificationStore.addNotification({
-      type: 'error',
-      message: errorMessage,
-    })
+    if (error.response?.status != 400) {
+      notificationStore.addNotification({
+        type: 'error',
+        message: errorMessage,
+      })
+    }
 
     return Promise.reject({
       message: errorMessage,

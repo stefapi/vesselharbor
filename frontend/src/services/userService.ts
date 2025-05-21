@@ -45,3 +45,31 @@ export async function changePassword(userId: number, passwords: { old_password: 
 export async function getUserGroups(userId: number) {
   return api.get(`/users/${userId}/groups`);
 }
+
+/**
+ * Récupère les détails d'un utilisateur spécifique.
+ */
+export async function getUser(userId: number) {
+  return api.get(`/users/${userId}`);
+}
+
+/**
+ * Ajoute un utilisateur à un groupe.
+ */
+export async function addUserToGroup(userId: number, groupId: number) {
+  return api.post(`/users/${userId}/groups`, { group_id: groupId });
+}
+
+/**
+ * Retire un utilisateur d'un groupe.
+ */
+export async function removeUserFromGroup(userId: number, groupId: number) {
+  return api.delete(`/users/${userId}/groups/${groupId}`);
+}
+
+/**
+ * Récupère la liste de tous les groupes disponibles.
+ */
+export async function listGroups() {
+  return api.get('/groups');
+}

@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fastapivue.fullname" . }}-caddy
+  labels:
+    {{- include "fastapivue.labels" . | nindent 4 }}
+    app.kubernetes.io/component: caddy
+spec:
+  replicas: {{ .Values.replicaCount.caddy }}
+  selector:
+    matchLabels:
+      {{- include "fastapivue.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: caddy
+  template:
+    metadata:
+      labels:
+        {{- include "fastapivue.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: caddy
+    spec:
+      volumes:
+        - name: caddy-config
+          configMap:
+            name: {{ include "fastapivue.fullname" . }}-caddy-config
+      containers:
+        - name: {{ .Chart.Name }}-caddy
+          image: "{{ .Values.image.caddy.repository }}:{{ .Values.image.caddy.tag }}"
+          imagePullPolicy: {{ .Values.image.caddy.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - name: caddy-config
+              mountPath: /etc/caddy/Caddyfile
+              subPath: Caddyfile
+          resources:
+            {{- toYaml .Values.resources.caddy | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
