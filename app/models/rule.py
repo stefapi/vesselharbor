@@ -7,10 +7,10 @@ class Rule(Base):
     __tablename__ = "rules"
 
     id = Column(Integer, primary_key=True)
-    policy_id = Column(Integer, ForeignKey("policies.id"), nullable=False)
+    policy_id = Column(Integer, ForeignKey("policies.id", ondelete="CASCADE"), nullable=False)
     function_id = Column(Integer, ForeignKey("functions.id"), nullable=False)
-    environment_id = Column(Integer, ForeignKey("environments.id"), nullable=True)
-    element_id = Column(Integer, ForeignKey("elements.id"), nullable=True)
+    environment_id = Column(Integer, ForeignKey("environments.id", ondelete="CASCADE"), nullable=True)
+    element_id = Column(Integer, ForeignKey("elements.id", ondelete="CASCADE"), nullable=True)
 
     policy = relationship("Policy", back_populates="rules")
     function = relationship("Function", back_populates="rules")

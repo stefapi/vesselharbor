@@ -9,15 +9,17 @@ from ..models.user import User
 from ..models.tag import Tag
 from ..models.group import Group
 from ..models.policy import Policy
-from ..repositories import tag_repo
+from ..models.function import Function
+from ..repositories import tag_repo, policy_repo, rule_repo, group_repo
 from ..api.users import get_current_user
 from ..helper import response, permissions, audit
 from ..schema.organization import OrganizationOut, OrganizationCreate, OrganizationUpdate
 from ..schema.tag import TagOut
 from ..schema.group import GroupOut
-from ..schema.policy import PolicyOut
+from ..schema.policy import PolicyOut, PolicyCreate
 from ..schema.environment import EnvironmentOut
 from ..models.environment import Environment
+from ..schema.user import UserOut
 
 router = APIRouter(prefix="/organizations", tags=["organizations"])
 
@@ -50,9 +52,6 @@ def get_organization(org_id: int, current_user: User = Depends(get_current_user)
 
 @router.post("", response_model=dict)
 def create_organization(org_in: OrganizationCreate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if not current_user.is_superadmin:
-        raise HTTPException(status_code=403, detail="Seul un superadmin peut créer une organisation")
-
     if org_in.name == '':
         org_in.name = generate_codename()
     # Check if an organization with the same name already exists
@@ -60,10 +59,65 @@ def create_organization(org_in: OrganizationCreate, current_user: User = Depends
     if existing_org:
         raise HTTPException(status_code=400, detail="Une organisation avec ce nom existe déjà")
 
+    # Create the organization
     org = Organization(name=org_in.name, description=org_in.description)
     db.add(org)
     db.commit()
     db.refresh(org)
+
+    # Add the user to the organization
+    if current_user not in org.users:
+        org.users.append(current_user)
+        db.commit()
+
+    # Create admin function
+    admin_function = db.query(Function).filter(Function.name == "admin").first()
+    if not admin_function:
+        raise HTTPException(status_code=500, detail="Fonction admin non trouvée")
+
+
+
+    # Create admin policy for the organization
+    admin_policy = policy_repo.create_policy(db, PolicyCreate(
+        name=f"Admin {org.name}",
+        description=f"Politique d'administration pour {org.name}",
+        organization_id=org.id,
+        access_schedule=None
+    ))
+
+    # Create an admin rule for the policy
+    rule_repo.create_rule(db, admin_policy.id, admin_function.id)
+
+    # Create readonly policy for the organization
+    readonly_policy = policy_repo.create_policy(db, PolicyCreate(
+        name=f"Readonly {org.name}",
+        description=f"Politique de lecture seule pour {org.name}",
+        organization_id=org.id,
+        access_schedule=None
+    ))
+
+    # Add read-only rules to the policy
+    read_functions = ["organization:read", "env:read", "element:read", "group:read", "tag:read", "policy:read", "rule:read"]
+    for func_name in read_functions:
+        func = db.query(Function).filter(Function.name == func_name).first()
+        if func:
+            rule_repo.create_rule(db, readonly_policy.id, func.id)
+
+    # Create 'admin' group
+    admin_group = group_repo.create_group(db, org.id, "admin", "Administrateurs de l'organisation")
+    # Assign admin policy to 'admin' group
+    policy_repo.add_group(db, admin_policy, admin_group)
+
+    # Create 'editors' group
+    editors_group = group_repo.create_group(db, org.id, "editors", "Éditeurs avec accès en lecture seule")
+    # Assign readonly policy to 'editors' group
+    policy_repo.add_group(db, readonly_policy, editors_group)
+
+    # If the user is not a superadmin, make them an admin of the organization
+    if not current_user.is_superadmin:
+        # Add the creator to the admin group
+        group_repo.add_user_to_group(db, admin_group, current_user)
+
     audit.log_action(db, current_user.id, "Création organisation", f"Organisation '{org.name}'")
     # Convert Organization object to OrganizationOut object for proper serialization
     serializable_org = OrganizationOut.model_validate(org)
@@ -97,6 +151,16 @@ def delete_organization(org_id: int, current_user: User = Depends(get_current_us
         raise HTTPException(status_code=404, detail="Organisation non trouvée")
     if not permissions.has_permission(db, current_user, org.id, "organization:delete"):
         raise HTTPException(status_code=403, detail="Permission insuffisante")
+
+    # If the user is not a superadmin, check if any user in the organization belongs to other organizations
+    if not current_user.is_superadmin:
+        for user in org.users:
+            if len(user.organizations) <= 1:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Impossible de supprimer l'organisation car certains utilisateurs appartiennent à d'autres organisations"
+                )
+
     db.delete(org)
     db.commit()
     audit.log_action(db, current_user.id, "Suppression organisation", f"Organisation '{org.name}'")

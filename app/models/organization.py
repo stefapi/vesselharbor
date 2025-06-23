@@ -7,8 +7,8 @@ from ..database.base import Base
 user_organizations = Table(
     "user_organizations",
     Base.metadata,
-    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
-    Column("organization_id", Integer, ForeignKey("organizations.id"), primary_key=True),
+    Column("user_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+    Column("organization_id", Integer, ForeignKey("organizations.id", ondelete="CASCADE"), primary_key=True),
 )
 
 class Organization(Base):

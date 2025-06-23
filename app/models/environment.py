@@ -10,7 +10,7 @@ class Environment(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(80), unique=True, index=True, nullable=False)
     description = Column(String(1024), nullable=True)
-    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
 
     organization = relationship("Organization", back_populates="environments")
     elements = relationship("Element", back_populates="environment")

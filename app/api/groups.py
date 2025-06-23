@@ -58,6 +58,14 @@ def delete_group(group_id: int, current_user: User = Depends(get_current_user), 
         raise HTTPException(status_code=404, detail="Groupe non trouvé")
     if not permissions.has_permission(db, current_user, group.organization_id, "group:delete"):
         raise HTTPException(status_code=403, detail="Permission insuffisante")
+
+    # Prevent non-superadmin users from deleting 'admin' and 'editors' groups
+    if not current_user.is_superadmin and group.name in ["admin", "editors"]:
+        raise HTTPException(
+            status_code=403,
+            detail="Seul un superadmin peut supprimer les groupes 'admin' et 'editors'"
+        )
+
     group_repo.delete_group(db, group)
     audit.log_action(db, current_user.id, "Suppression groupe", f"Groupe '{group.name}' supprimé")
     return response.success_response(None, "Groupe supprimé")

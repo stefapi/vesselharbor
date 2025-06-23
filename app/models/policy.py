@@ -8,16 +8,16 @@ from .tag import policy_tags
 policy_groups = Table(
     "policy_groups",
     Base.metadata,
-    Column("policy_id", Integer, ForeignKey("policies.id"), primary_key=True),
-    Column("group_id", Integer, ForeignKey("groups.id"), primary_key=True),
+    Column("policy_id", Integer, ForeignKey("policies.id", ondelete="CASCADE"), primary_key=True),
+    Column("group_id", Integer, ForeignKey("groups.id", ondelete="CASCADE"), primary_key=True),
 )
 
 # Table de liaison user <-> policy
 policy_users = Table(
     "policy_users",
     Base.metadata,
-    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
-    Column("policy_id", Integer, ForeignKey("policies.id"), primary_key=True),
+    Column("user_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+    Column("policy_id", Integer, ForeignKey("policies.id", ondelete="CASCADE"), primary_key=True),
 )
 
 
@@ -30,7 +30,7 @@ class Policy(Base):
     description = Column(String(1024), nullable=True)
 
     access_schedule = Column(String(80), nullable=True)
-    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
 
     organization = relationship("Organization", back_populates="policies")
     rules = relationship("Rule", back_populates="policy", cascade="all, delete-orphan")

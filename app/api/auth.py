@@ -40,7 +40,7 @@ class OAuth2PasswordBearerOrKey(OAuth2):
     async def __call__(self, request: Request) -> Optional[str]:
         authorization = request.headers.get("Authorization")
         scheme, param = get_authorization_scheme_param(authorization)
-        if authorization and scheme.lower() == "bearer":
+        if authorization and scheme.lower() == "bearer" and param.lower() != 'undefined':
             return param
         key = request.cookies.get("access_token")
         key = key or request.headers.get("X-API-KEY")
@@ -116,9 +116,9 @@ def refresh_token(request: Request, response_item: Response = None, db: Session 
     response_item.set_cookie("access_token", access_token, httponly=True, samesite="strict", secure=True, max_age=timedelta(minutes=1))
     return response.success_response({"token_type": "access"}, "Token renouvelé avec succès")
 
-@router.get("/me", summary="Profil utilisateur connecté", response_model=UserOut)
+@router.get("/me", summary="Profil utilisateur connecté", response_model=dict)
 def get_me(current_user: User = Depends(get_current_user)):
-    return current_user
+    return response.success_response(UserOut.model_validate(current_user), "Information sur mon profil")
 
 @router.post("/users/reset_password_request", response_model=dict, summary="Demander une réinitialisation de mot de passe")
 def reset_password_request(reset_req: PasswordResetRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):

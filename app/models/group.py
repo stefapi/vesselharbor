@@ -9,8 +9,8 @@ from .policy import policy_groups
 user_groups = Table(
     "user_groups",
     Base.metadata,
-    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
-    Column("group_id", Integer, ForeignKey("groups.id"), primary_key=True),
+    Column("user_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+    Column("group_id", Integer, ForeignKey("groups.id", ondelete="CASCADE"), primary_key=True),
 )
 
 class Group(Base):
@@ -19,12 +19,12 @@ class Group(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(80), nullable=False)
     description = Column(String(1024), nullable=True)
-    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
 
     organization = relationship("Organization", back_populates="groups")
     tags = relationship("Tag", secondary=group_tags, back_populates="groups")
     users = relationship("User", secondary=user_groups, back_populates="groups")
-    policies = relationship("Policy", secondary=policy_groups, back_populates="groups")
+    policies = relationship("Policy", secondary=policy_groups, back_populates="groups", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Group(id={self.id}, name='{self.name}', org='{self.organization.name}')>"
