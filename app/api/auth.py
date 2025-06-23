@@ -65,7 +65,7 @@ def get_db():
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
     try:
-        payload = auth.decode_access_token(token)
+        payload = auth.decode_token(token)
         user_id = payload.get("sub")
         if user_id is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide")
@@ -82,11 +82,11 @@ def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db
     user = user_repo.get_user_by_email(db, form_data.username)
     if not user or not security.verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Email ou mot de passe incorrect")
-    access_token = auth.create_access_token(data={"sub": str(user.id)}, expires_delta=timedelta(minutes=1), token_type="access")
-    refresh_token = auth.create_access_token(data={"sub": str(user.id)}, expires_delta=timedelta(days=7), token_type="refresh")
+    access_token = auth.create_token(data={"sub": str(user.id)}, expires_delta=timedelta(minutes=1), token_type="access")
+    refresh_token = auth.create_token(data={"sub": str(user.id)}, expires_delta=timedelta(days=7), token_type="refresh")
     audit.log_action(db, user.id, "Login", f"Connexion réussie depuis IP {ip}")
-    response_item.set_cookie("access_token", access_token, httponly=True, samesite="strict", secure=True, max_age=timedelta(minutes=1))
-    response_item.set_cookie("refresh_token", refresh_token, httponly=True, samesite="strict", secure=True, max_age=timedelta(days=7), path="/")
+    response_item.set_cookie("access_token", access_token, httponly=True, samesite="strict", secure=True, max_age=timedelta(minutes=1).total_seconds())
+    response_item.set_cookie("refresh_token", refresh_token, httponly=True, samesite="strict", secure=True, max_age=timedelta(days=7).total_seconds(), path="/")
     return response.success_response({"token_type": "bearer"}, "Login réussi")
 
 @router.post("/logout", response_model=dict, summary="Se déconnecter")
@@ -97,9 +97,14 @@ async def logout(response_item: Response):
 
 @router.post("/refresh-token", response_model=dict, summary="Renouveler le token")
 def refresh_token(request: Request, response_item: Response = None, db: Session = Depends(get_db)):
+    refresh_token = request.cookies.get("refresh_token")
+    if refresh_token is None:
+        authorization = request.headers.get("Authorization")
+        scheme, param = get_authorization_scheme_param(authorization)
+        if authorization and scheme.lower() == "bearer":
+            refresh_token = param
     try:
-        refresh_token = request.cookies.get("refresh_token")
-        payload = auth.decode_access_token(refresh_token)
+        payload = auth.decode_token(refresh_token)
     except Exception:
         raise HTTPException(status_code=400, detail="Refresh token invalide ou expiré")
     if payload.get("token_type") != "refresh":
@@ -107,7 +112,7 @@ def refresh_token(request: Request, response_item: Response = None, db: Session 
     user_id = payload.get("sub")
     if not user_id:
         raise HTTPException(status_code=400, detail="Refresh token invalide")
-    access_token = auth.create_access_token(data={"sub": str(user_id)}, expires_delta=timedelta(minutes=1), token_type="access")
+    access_token = auth.create_token(data={"sub": str(user_id)}, expires_delta=timedelta(minutes=1), token_type="access")
     response_item.set_cookie("access_token", access_token, httponly=True, samesite="strict", secure=True, max_age=timedelta(minutes=1))
     return response.success_response({"token_type": "access"}, "Token renouvelé avec succès")
 
@@ -119,7 +124,7 @@ def get_me(current_user: User = Depends(get_current_user)):
 def reset_password_request(reset_req: PasswordResetRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     user = user_repo.get_user_by_email(db, reset_req.email)
     if user:
-        token = auth.create_access_token(data={"sub": str(user.id)}, token_type="password_reset")
+        token = auth.create_token(data={"sub": str(user.id)}, token_type="password_reset")
         background_tasks.add_task(email.send_reset_email, user.email, token)
         audit.log_action(db, user.id, "Réinitialisation mot de passe", "Lien de réinitialisation envoyé par email")
     return response.success_response(None, "Si cet email est enregistré, vous recevrez un lien de réinitialisation.")
@@ -127,7 +132,7 @@ def reset_password_request(reset_req: PasswordResetRequest, background_tasks: Ba
 @router.post("/users/reset_password", response_model=dict, summary="Réinitialiser le mot de passe")
 def reset_password(reset: PasswordReset, db: Session = Depends(get_db)):
     try:
-        payload = auth.decode_access_token(reset.token)
+        payload = auth.decode_token(reset.token)
     except Exception:
         raise HTTPException(status_code=400, detail="Token invalide ou expiré")
     if payload.get("token_type") != "password_reset":

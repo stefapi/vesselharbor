@@ -29,7 +29,7 @@ def get_db():
 )
 def list_functions(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     # Ici on suppose que l'accès est global à toutes les fonctions
-    if not permissions.has_global_permission(current_user, "function:read"):
+    if not permissions.has_permission(db, current_user, None, "function:read"):
         raise HTTPException(status_code=403, detail="Permission insuffisante pour lister les fonctions")
     functions = function_repo.list_functions(db)
     return response.success_response(functions, "Liste des fonctions récupérée")
@@ -44,7 +44,7 @@ def get_function(function_id: int, current_user: User = Depends(get_current_user
     function = function_repo.get_function(db, function_id)
     if not function:
         raise HTTPException(status_code=404, detail="Fonction non trouvée")
-    if not permissions.has_global_permission(current_user, "function:read"):
+    if not permissions.has_permission(db, current_user, None, "function:read"):
         raise HTTPException(status_code=403, detail="Permission insuffisante pour lire cette fonction")
     return response.success_response(function, "Fonction récupérée")
 
@@ -55,7 +55,7 @@ def get_function(function_id: int, current_user: User = Depends(get_current_user
     description="Crée une nouvelle fonction.",
 )
 def create_function(data: FunctionCreate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if not permissions.has_global_permission(current_user, "function:create"):
+    if not permissions.has_permission(db, current_user, None, "function:create"):
         raise HTTPException(status_code=403, detail="Permission insuffisante pour créer une fonction")
     function = function_repo.create_function(db, name=data.name, description=data.description)
     audit.log_action(db, current_user.id, "Création fonction", f"Fonction créée : {function.name}")
@@ -71,7 +71,7 @@ def update_function(function_id: int, data: FunctionUpdate, current_user: User =
     function = function_repo.get_function(db, function_id)
     if not function:
         raise HTTPException(status_code=404, detail="Fonction non trouvée")
-    if not permissions.has_global_permission(current_user, "function:update"):
+    if not permissions.has_permission(db, current_user, None, "function:update"):
         raise HTTPException(status_code=403, detail="Permission insuffisante pour modifier cette fonction")
     function = function_repo.update_function(db, function, name=data.name, description=data.description)
     audit.log_action(db, current_user.id, "Mise à jour fonction", f"Fonction mise à jour : {function.name}")
@@ -87,7 +87,7 @@ def delete_function(function_id: int, current_user: User = Depends(get_current_u
     function = function_repo.get_function(db, function_id)
     if not function:
         raise HTTPException(status_code=404, detail="Fonction non trouvée")
-    if not permissions.has_global_permission(current_user, "function:delete"):
+    if not permissions.has_permission(db, current_user, None, "function:delete"):
         raise HTTPException(status_code=403, detail="Permission insuffisante pour supprimer cette fonction")
     audit.log_action(db, current_user.id, "Suppression fonction", f"Fonction supprimée : {function.name}")
     function_repo.delete_function(db, function)

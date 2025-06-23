@@ -26,14 +26,14 @@ seed(db)
 db.close()
 # Import des routeurs
 from .api import users, environments, groups, elements, audit_logs, auth, organizations, functions, policies, rules, \
-    tags
+    tags, user_groups, teapot, health
 
 app = FastAPI()
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3001"],  # Vue's origin
+    allow_origins=["http://localhost:3001", "http://localhost:5173", "http://localhost:8080"],  # Vue's origins
     allow_credentials=True,
     allow_methods=["*"],  # Allows all HTTP methods
     allow_headers=["*"],  # Allows all headers
@@ -42,6 +42,7 @@ app.add_middleware(
 # Enregistrement des routeurs
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(user_groups.router)
 app.include_router(organizations.router)
 app.include_router(environments.router)
 app.include_router(groups.router)
@@ -51,6 +52,8 @@ app.include_router(rules.router)
 app.include_router(functions.router)
 app.include_router(tags.router)
 app.include_router(audit_logs.router)
+app.include_router(teapot.router)
+app.include_router(health.router)
 
 # Enregistrement des gestionnaires d'erreurs globales
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)

@@ -9,7 +9,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
 
-def create_access_token(data: dict, expires_delta: datetime.timedelta = None, token_type: str = "access") -> str:
+def create_token(data: dict, expires_delta: datetime.timedelta = None, token_type: str = "access") -> str:
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.datetime.utcnow() + expires_delta
@@ -20,7 +20,7 @@ def create_access_token(data: dict, expires_delta: datetime.timedelta = None, to
     # Authlib peut renvoyer des bytes ; on convertit en str si nécessaire
     return token.decode("utf-8") if isinstance(token, bytes) else token
 
-def decode_access_token(token: str) -> dict:
+def decode_token(token: str) -> dict:
     try:
         payload = jwt.decode(token, SECRET_KEY)
         payload.validate()

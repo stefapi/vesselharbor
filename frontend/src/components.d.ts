@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AddGroupDialog: typeof import('./components/Users/AddGroupDialog.vue')['default']
     ChangePassword: typeof import('./components/Users/ChangePassword.vue')['default']
     ChangePasswordForm: typeof import('./components/Auth/ChangePasswordForm.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
@@ -71,8 +72,10 @@ declare module 'vue' {
     UserFilters: typeof import('./components/Users/UserFilters.vue')['default']
     UserForm: typeof import('./components/UserForm.vue')['default']
     UserFormDrawer: typeof import('./components/Users/UserFormDrawer.vue')['default']
+    UserGroupsCard: typeof import('./components/Users/UserGroupsCard.vue')['default']
     UserGroupsDialog: typeof import('./components/Users/UserGroupsDialog.vue')['default']
     UserGroupsManager: typeof import('./components/UserGroupsManager.vue')['default']
+    UserInfoCard: typeof import('./components/Users/UserInfoCard.vue')['default']
     UsersPagination: typeof import('./components/Users/UsersPagination.vue')['default']
     UsersTable: typeof import('./components/Users/UsersTable.vue')['default']
   }

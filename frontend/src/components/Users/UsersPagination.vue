@@ -21,9 +21,9 @@
 import { computed } from 'vue'
 
 const props = defineProps<{
-  total: number
-  perPage: number
-  currentPage: number
+  total?: number
+  perPage?: number
+  currentPage?: number
 }>()
 
 const emit = defineEmits<{

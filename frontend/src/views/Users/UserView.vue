@@ -17,97 +17,27 @@
       <el-row :gutter="20">
         <!-- Informations utilisateur -->
         <el-col :span="12">
-          <el-card class="u-mb-4">
-            <template #header>
-              <div class="u-flex u-items-center u-justify-between">
-                <h2 class="u-text-lg u-font-bold">Informations utilisateur</h2>
-              </div>
-            </template>
-            <div v-if="user">
-              <el-descriptions :column="1" border>
-                <el-descriptions-item label="ID">{{ user.id }}</el-descriptions-item>
-                <el-descriptions-item label="Email">{{ user.email }}</el-descriptions-item>
-                <el-descriptions-item label="Superadmin">
-                  <el-tag :type="user.is_superadmin ? 'success' : 'info'">
-                    {{ user.is_superadmin ? 'Oui' : 'Non' }}
-                  </el-tag>
-                </el-descriptions-item>
-              </el-descriptions>
-            </div>
-            <div v-else class="u-text-center u-py-4">
-              <el-skeleton :rows="3" animated />
-            </div>
-          </el-card>
+          <UserInfoCard :user="user" />
         </el-col>
 
         <!-- Groupes de l'utilisateur -->
         <el-col :span="12">
-          <el-card>
-            <template #header>
-              <div class="u-flex u-items-center u-justify-between">
-                <h2 class="u-text-lg u-font-bold">Groupes</h2>
-                <el-button type="primary" size="small" @click="showAddGroupDialog = true">
-                  Ajouter un groupe
-                </el-button>
-              </div>
-            </template>
-            <div v-if="userGroups.length > 0">
-              <el-table :data="userGroups" style="width: 100%">
-                <el-table-column prop="name" label="Nom du groupe" />
-                <el-table-column prop="environment_name" label="Environnement">
-                  <template #default="{ row }">
-                    {{ row.environment_name || 'Global' }}
-                  </template>
-                </el-table-column>
-                <el-table-column label="Actions" width="100" align="center">
-                  <template #default="{ row }">
-                    <el-button
-                      type="danger"
-                      size="small"
-                      icon
-                      @click="removeGroupFromUser(row.id)"
-                    >
-                      <i-mdi-delete />
-                    </el-button>
-                  </template>
-                </el-table-column>
-              </el-table>
-            </div>
-            <div v-else class="u-text-center u-py-4">
-              <p>Aucun groupe assigné à cet utilisateur.</p>
-            </div>
-          </el-card>
+          <UserGroupsCard
+            :userGroups="userGroups"
+            @showAddGroupDialog="showAddGroupDialog = true"
+            @removeGroup="removeGroupFromUser"
+          />
         </el-col>
       </el-row>
     </el-main>
 
     <!-- Dialog pour ajouter un groupe -->
-    <el-dialog
+    <AddGroupDialog
       v-model="showAddGroupDialog"
-      title="Ajouter un groupe"
-      width="500px"
-    >
-      <el-form>
-        <el-form-item label="Groupe">
-          <el-select v-model="selectedGroup" placeholder="Sélectionner un groupe" style="width: 100%">
-            <el-option
-              v-for="group in availableGroups"
-              :key="group.id"
-              :label="group.name + (group.environment_name ? ` (${group.environment_name})` : ' (Global)')"
-              :value="group.id"
-            />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="showAddGroupDialog = false">Annuler</el-button>
-          <el-button type="primary" @click="addGroupToUser" :disabled="!selectedGroup">
-            Ajouter
-          </el-button>
-        </span>
-      </template>
-    </el-dialog>
+      :availableGroups="availableGroups"
+      v-model:selectedGroup="selectedGroup"
+      @addGroup="addGroupToUser"
+    />
   </el-container>
 </template>
 
@@ -117,6 +47,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 import { getUserGroups, getUser, addUserToGroup, removeUserFromGroup, listGroups } from '@/services/userService'
 import { useNotificationStore } from '@/store/notifications'
+import UserInfoCard from '@/components/Users/UserInfoCard.vue'
+import UserGroupsCard from '@/components/Users/UserGroupsCard.vue'
+import AddGroupDialog from '@/components/Users/AddGroupDialog.vue'
 
 const route = useRoute()
 const router = useRouter()

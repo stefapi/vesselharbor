@@ -65,13 +65,6 @@ class rules {
    integer element_id
    integer id
 }
-class sqlite_master {
-   text type
-   text name
-   text tbl_name
-   int rootpage
-   text sql
-}
 class tags {
    varchar(80) value
    integer id
@@ -98,26 +91,26 @@ class users {
    integer id
 }
 
-audit_logs  -->  users : user_id:id
-elements  -->  environments : 'environment_id:id'
-environments  -->  organizations : organization_id:id
-group_tags  -->  groups : group_id:id
-group_tags  -->  tags : tag_id:id
-groups  -->  organizations : organization_id:id
-policies  -->  organizations : organization_id:id
-policy_groups  -->  groups : group_id:id
-policy_groups  -->  policies : policy_id:id
-policy_tags  -->  policies : policy_id:id
-policy_tags  -->  tags : tag_id:id
-policy_users  -->  policies : policy_id:id
-policy_users  -->  users : user_id:id
-rules  -->  elements : element_id:id
-rules  -->  environments : environment_id:id
-rules  -->  functions : function_id:id
-rules  -->  policies : policy_id:id
-user_groups  -->  groups : group_id:id
-user_groups  -->  users : user_id:id
-user_organizations  -->  organizations : organization_id:id
-user_organizations  -->  users : user_id:id
-user_tags  -->  tags : tag_id:id
-user_tags  -->  users : user_id:id
+audit_logs  -->  users : user_id|id
+elements  -->  environments : environment_id|id
+environments  -->  organizations : organization_id|id
+group_tags  -->  groups : group_id|id
+group_tags  -->  tags : tag_id|id
+groups  -->  organizations : organization_id|id
+policies  -->  organizations : organization_id|id
+policy_groups  -->  groups : group_id|id
+policy_groups  -->  policies : policy_id|id
+policy_tags  -->  policies : policy_id|id
+policy_tags  -->  tags : tag_id|id
+policy_users  -->  policies : policy_id|id
+policy_users  -->  users : user_id|id
+rules  -->  elements : element_id|id
+rules  -->  environments : environment_id|id
+rules  -->  functions : function_id|id
+rules  -->  policies : policy_id|id
+user_groups  -->  groups : group_id|id
+user_groups  -->  users : user_id|id
+user_organizations  -->  organizations : organization_id|id
+user_organizations  -->  users : user_id|id
+user_tags  -->  tags : tag_id|id
+user_tags  -->  users : user_id|id

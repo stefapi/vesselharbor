@@ -2,7 +2,7 @@
 
 import pytest
 from .conftest import test_data
-from ..core.auth import create_access_token
+from ..core.auth import create_token
 
 def test_reset_password_request(test_client, test_data):
     response = test_client.post(
@@ -14,7 +14,7 @@ def test_reset_password_request(test_client, test_data):
 
 def test_reset_password(test_client, test_data):
     # Simuler un token de réinitialisation
-    reset_token = create_access_token(data={"sub": "1", "token_type": "password_reset"})
+    reset_token = create_token(data={"sub": "1", "token_type": "password_reset"})
     response = test_client.post(
         "/users/reset_password",
         json={"token": reset_token, "new_password": "newadmin123"},

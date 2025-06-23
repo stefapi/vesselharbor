@@ -62,6 +62,13 @@ def delete_group(group_id: int, current_user: User = Depends(get_current_user), 
     audit.log_action(db, current_user.id, "Suppression groupe", f"Groupe '{group.name}' supprimé")
     return response.success_response(None, "Groupe supprimé")
 
+@router.get("", response_model=dict, summary="Lister tous les groupes")
+def list_all_groups(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if not current_user.is_superadmin:
+        raise HTTPException(status_code=403, detail="Permission insuffisante")
+    groups = db.query(Group).all()
+    return response.success_response(groups, "Tous les groupes récupérés")
+
 @router.get("/organization/{org_id}", response_model=dict, summary="Lister les groupes d'une organisation")
 def list_groups_by_org(org_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if not permissions.has_permission(db, current_user, org_id, "group:list"):

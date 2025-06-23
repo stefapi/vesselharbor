@@ -4,7 +4,7 @@ from typing import Optional
 from ..database.session import SessionLocal
 from ..schema.user import UserCreate, UserOut, UserUpdate, ChangePassword, ChangeSuperadmin
 from ..models.user import User
-from ..repositories import user_repo, tag_repo
+from ..repositories import user_repo, tag_repo, group_repo
 from ..api.auth import get_current_user
 from ..helper import audit, response, security, permissions, email
 from datetime import timedelta
@@ -30,7 +30,7 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
 
 @router.get("", response_model=dict, summary="Lister les utilisateurs")
 def list_users(current_user: User = Depends(get_current_user), db: Session = Depends(get_db), skip: int = 0, limit: int = 100, email: Optional[str] = None):
-    if not current_user.is_superadmin:
+    if not permissions.has_permission(db, current_user, None, "user:list"):
         raise HTTPException(status_code=403, detail="Non autorisé")
     query = db.query(User)
     if email:
@@ -43,7 +43,7 @@ def get_user(user_id: int, current_user: User = Depends(get_current_user), db: S
     user = user_repo.get_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-    if current_user.id != user_id and not current_user.is_superadmin:
+    if current_user.id != user_id and  not permissions.has_permission(db, current_user, None, "user:read"):
         raise HTTPException(status_code=403, detail="Non autorisé")
     return user
 
@@ -60,7 +60,7 @@ def update_user(user_id: int, user_in: UserUpdate, current_user: User = Depends(
     user = user_repo.get_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-    if current_user.id != user_id and not current_user.is_superadmin:
+    if current_user.id != user_id and not permissions.has_permission(db, current_user, None, "user:update"):
         raise HTTPException(status_code=403, detail="Modification non autorisée")
     user.first_name = user_in.first_name
     user.last_name = user_in.last_name
@@ -77,6 +77,8 @@ def delete_user(user_id: int, current_user: User = Depends(get_current_user), db
     user = user_repo.get_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    if not permissions.has_permission(db, current_user, None, "user:delete"):
+        raise HTTPException(status_code=403, detail="Non autorisé")
     if user.is_superadmin:
         other_super = db.query(User).filter(User.is_superadmin == True, User.id != user.id).first()
         if not other_super:
@@ -90,11 +92,11 @@ def change_password(user_id: int, cp: ChangePassword, current_user: User = Depen
     user = user_repo.get_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-    if current_user.is_superadmin and current_user.id != user_id:
+    if permissions.has_permission(db, current_user, None, "user:update_password") and current_user.id != user_id:
         if cp.new_password:
             user.hashed_password = security.get_password_hash(cp.new_password)
             db.commit()
-            return response.success_response(None, "Mot de passe réinitialisé par superadmin")
+            return response.success_response(None, "Mot de passe réinitialisé par admin")
         elif cp.send_email:
             token = security.create_password_reset_token(user.id)
             email.send_reset_email(user.email, token)
@@ -115,7 +117,11 @@ def change_password(user_id: int, cp: ChangePassword, current_user: User = Depen
 
 @router.put("/{user_id}/superadmin", response_model=dict, summary="Modifier statut superadmin")
 def change_superadmin(user_id: int, change: ChangeSuperadmin, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if not current_user.is_superadmin or current_user.id == user_id:
+    # Only superadmins can change superadmin status
+    if not current_user.is_superadmin:
+        raise HTTPException(status_code=403, detail="Non autorisé")
+    # Users can't change their own superadmin status
+    if current_user.id == user_id:
         raise HTTPException(status_code=403, detail="Non autorisé")
     user = user_repo.get_user(db, user_id)
     if not user:
@@ -131,14 +137,14 @@ def change_superadmin(user_id: int, change: ChangeSuperadmin, current_user: User
 
 @router.get("/{user_id}/assignments", response_model=dict, summary="Lister affectations")
 def list_user_assignments(user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.id != user_id and not current_user.is_superadmin:
+    if current_user.id != user_id and not permissions.has_permission(db, current_user, None, "user:read_assignments"):
         raise HTTPException(status_code=403, detail="Non autorisé")
     assignments = user_repo.list_assignments(db, user_id)
     return response.success_response(assignments, "Affectations récupérées")
 
 @router.get("/{user_id}/groups", response_model=dict, summary="Groupes du user")
 def list_user_groups(user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.id != user_id and not current_user.is_superadmin:
+    if current_user.id != user_id and not permissions.has_permission(db, current_user, None, "user:read_groups"):
         raise HTTPException(status_code=403, detail="Non autorisé")
     user = user_repo.get_user(db, user_id)
     if not user:
@@ -147,7 +153,7 @@ def list_user_groups(user_id: int, current_user: User = Depends(get_current_user
 
 @router.get("/{user_id}/policies", response_model=dict, summary="Policies du user")
 def list_user_policies(user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.id != user_id and not current_user.is_superadmin:
+    if current_user.id != user_id and not permissions.has_permission(db, current_user, None, "user:read_policies"):
         raise HTTPException(status_code=403, detail="Non autorisé")
     user = user_repo.get_user(db, user_id)
     if not user:
@@ -156,16 +162,16 @@ def list_user_policies(user_id: int, current_user: User = Depends(get_current_us
 
 @router.get("/{user_id}/organizations", response_model=dict, summary="Organisations du user")
 def list_user_organizations(user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.id != user_id and not current_user.is_superadmin:
+    if current_user.id != user_id and not permissions.has_permission(db, current_user, None, "user:read_organizations"):
         raise HTTPException(status_code=403, detail="Non autorisé")
     user = user_repo.get_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     return response.success_response(user.organizations, "Organisations récupérées")
 
-@router.get("/{user_id}/tags", response_model=dict, summary="Lister les tags d’un utilisateur")
+@router.get("/{user_id}/tags", response_model=dict, summary="Lister les tags d'un utilisateur")
 def list_user_tags(user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.id != user_id and not current_user.is_superadmin:
+    if current_user.id != user_id and not permissions.has_permission(db, current_user, None, "user:read_tags"):
         raise HTTPException(status_code=403, detail="Non autorisé")
     user = user_repo.get_user(db, user_id)
     if not user:
@@ -174,22 +180,22 @@ def list_user_tags(user_id: int, current_user: User = Depends(get_current_user),
 
 @router.post("/{user_id}/tags/{tag_id}", response_model=dict, summary="Associer un tag à un utilisateur")
 def add_tag_to_user(user_id: int, tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.id != user_id and not current_user.is_superadmin:
+    if current_user.id != user_id and not permissions.has_permission(db, current_user, None, "user:update_tags"):
         raise HTTPException(status_code=403, detail="Non autorisé")
     user = user_repo.get_user(db, user_id)
     tag = tag_repo.get_tag(db, tag_id)
     if not user or not tag:
         raise HTTPException(status_code=404, detail="Utilisateur ou tag non trouvé")
     user_repo.add_tag_to_user(db, user, tag)
-    return response.success_response(user, "Tag ajouté à l’utilisateur")
+    return response.success_response(user, "Tag ajouté à l'utilisateur")
 
-@router.delete("/{user_id}/tags/{tag_id}", response_model=dict, summary="Dissocier un tag d’un utilisateur")
+@router.delete("/{user_id}/tags/{tag_id}", response_model=dict, summary="Dissocier un tag d'un utilisateur")
 def remove_tag_from_user(user_id: int, tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.id != user_id and not current_user.is_superadmin:
+    if current_user.id != user_id and not permissions.has_permission(db, current_user, None, "user:update_tags"):
         raise HTTPException(status_code=403, detail="Non autorisé")
     user = user_repo.get_user(db, user_id)
     tag = tag_repo.get_tag(db, tag_id)
     if not user or not tag:
         raise HTTPException(status_code=404, detail="Utilisateur ou tag non trouvé")
     user_repo.remove_tag_from_user(db, user, tag)
-    return response.success_response(user, "Tag retiré de l’utilisateur")
+    return response.success_response(user, "Tag retiré de l'utilisateur")

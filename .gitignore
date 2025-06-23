@@ -8,3 +8,4 @@
 **/*.pyo
 **/*.pyclass
 /frontend/stats.html
+/.continue/
