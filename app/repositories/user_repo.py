@@ -75,6 +75,12 @@ def remove_tag_from_user(db: Session, user: User, tag: Tag):
         db.commit()
         db.refresh(user)
 
+        # Check if the tag is still referenced by any entity
+        from ..repositories import tag_repo
+        if not tag_repo.is_tag_referenced(db, tag):
+            # If the tag is no longer referenced, delete it
+            tag_repo.delete_tag(db, tag)
+
 def add_user_to_organization(db: Session, user: User, organization: Organization):
     if organization not in user.organizations:
         user.organizations.append(organization)

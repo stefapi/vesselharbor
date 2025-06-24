@@ -27,6 +27,8 @@ def get_db():
     summary="Créer un élément",
     description="Crée un élément dans un environnement donné.",
     responses={
+        200: {"description": "Élément créé avec succès"},
+        401: {"description": "Non authentifié"},
         403: {"description": "Permission insuffisante"},
         404: {"description": "Environnement non trouvé"},
     }
@@ -55,6 +57,8 @@ def create_element(
     summary="Récupérer un élément",
     description="Renvoie les informations d'un élément spécifique.",
     responses={
+        200: {"description": "Élément récupéré avec succès"},
+        401: {"description": "Non authentifié"},
         403: {"description": "Permission insuffisante"},
         404: {"description": "Élément non trouvé"},
     }
@@ -81,6 +85,8 @@ def get_element(
     summary="Mettre à jour un élément",
     description="Modifie les informations d'un élément.",
     responses={
+        200: {"description": "Élément mis à jour avec succès"},
+        401: {"description": "Non authentifié"},
         403: {"description": "Permission insuffisante"},
         404: {"description": "Élément non trouvé"},
     }
@@ -110,6 +116,8 @@ def update_element(
     summary="Supprimer un élément",
     description="Supprime un élément donné.",
     responses={
+        200: {"description": "Élément supprimé avec succès"},
+        401: {"description": "Non authentifié"},
         403: {"description": "Permission insuffisante"},
         404: {"description": "Élément non trouvé"},
     }
@@ -138,6 +146,8 @@ def delete_element(
     summary="Lister les éléments d'un environnement",
     description="Liste les éléments d'un environnement avec pagination et filtrage par nom.",
     responses={
+        200: {"description": "Liste des éléments récupérée avec succès"},
+        401: {"description": "Non authentifié"},
         403: {"description": "Permission insuffisante"},
         404: {"description": "Environnement non trouvé"},
     }

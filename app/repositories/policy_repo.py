@@ -87,3 +87,9 @@ def remove_tag(db: Session, policy: Policy, tag: Tag):
         policy.tags.remove(tag)
         db.commit()
         db.refresh(policy)
+
+        # Check if the tag is still referenced by any entity
+        from ..repositories import tag_repo
+        if not tag_repo.is_tag_referenced(db, tag):
+            # If the tag is no longer referenced, delete it
+            tag_repo.delete_tag(db, tag)

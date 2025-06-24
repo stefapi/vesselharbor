@@ -24,6 +24,8 @@ def get_db():
     summary="Lister les logs d'audit",
     description="Liste les logs d'audit avec pagination et filtrage par action et user_id (accessible uniquement par superadmin).",
     responses={
+        200: {"description": "Logs d'audit récupérés avec succès"},
+        401: {"description": "Non authentifié"},
         403: {"description": "Non autorisé"}
     }
 )

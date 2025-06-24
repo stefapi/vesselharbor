@@ -18,7 +18,11 @@ def get_db():
     finally:
         db.close()
 
-@router.get("", response_model=dict)
+@router.get("", response_model=dict, responses={
+    200: {"description": "Policies récupérées avec succès"},
+    401: {"description": "Non authentifié"},
+    403: {"description": "Permission insuffisante"}
+})
 def list_policies(
     organization_id: int,
     skip: int = 0,
@@ -31,7 +35,12 @@ def list_policies(
     policies = policy_repo.list_policies(db, organization_id, skip, limit)
     return response.success_response(policies, "Policies récupérées")
 
-@router.get("/{policy_id}", response_model=dict)
+@router.get("/{policy_id}", response_model=dict, responses={
+    200: {"description": "Policy récupérée avec succès"},
+    401: {"description": "Non authentifié"},
+    403: {"description": "Permission insuffisante"},
+    404: {"description": "Policy non trouvée"}
+})
 def get_policy(policy_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     policy = policy_repo.get_policy(db, policy_id)
     if not policy:
@@ -40,7 +49,11 @@ def get_policy(policy_id: int, current_user: User = Depends(get_current_user), d
         raise HTTPException(status_code=403, detail="Permission insuffisante")
     return response.success_response(policy, "Policy récupérée")
 
-@router.post("", response_model=dict)
+@router.post("", response_model=dict, responses={
+    200: {"description": "Policy créée avec succès"},
+    401: {"description": "Non authentifié"},
+    403: {"description": "Permission insuffisante"}
+})
 def create_policy(policy_in: PolicyCreate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if not permissions.has_permission(db, current_user, policy_in.organization_id, "policy:create"):
         raise HTTPException(status_code=403, detail="Permission insuffisante")
@@ -48,7 +61,12 @@ def create_policy(policy_in: PolicyCreate, current_user: User = Depends(get_curr
     audit.log_action(db, current_user.id, "Création policy", f"Policy '{policy.name}' créée")
     return response.success_response(policy, "Policy créée")
 
-@router.put("/{policy_id}", response_model=dict)
+@router.put("/{policy_id}", response_model=dict, responses={
+    200: {"description": "Policy mise à jour avec succès"},
+    401: {"description": "Non authentifié"},
+    403: {"description": "Permission insuffisante"},
+    404: {"description": "Policy non trouvée"}
+})
 def update_policy(policy_id: int, policy_in: PolicyUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     policy = policy_repo.get_policy(db, policy_id)
     if not policy:
@@ -59,7 +77,12 @@ def update_policy(policy_id: int, policy_in: PolicyUpdate, current_user: User = 
     audit.log_action(db, current_user.id, "Mise à jour policy", f"Policy '{policy.name}' mise à jour")
     return response.success_response(policy, "Policy mise à jour")
 
-@router.delete("/{policy_id}", response_model=dict)
+@router.delete("/{policy_id}", response_model=dict, responses={
+    200: {"description": "Policy supprimée avec succès"},
+    401: {"description": "Non authentifié"},
+    403: {"description": "Permission insuffisante"},
+    404: {"description": "Policy non trouvée"}
+})
 def delete_policy(policy_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     policy = policy_repo.get_policy(db, policy_id)
     if not policy:
@@ -72,7 +95,12 @@ def delete_policy(policy_id: int, current_user: User = Depends(get_current_user)
 
 # Gestion des relations : users, groups, tags
 
-@router.post("/{policy_id}/users/{user_id}", response_model=dict)
+@router.post("/{policy_id}/users/{user_id}", response_model=dict, responses={
+    200: {"description": "Utilisateur ajouté à la policy avec succès"},
+    401: {"description": "Non authentifié"},
+    403: {"description": "Permission insuffisante"},
+    404: {"description": "Policy ou user non trouvé"}
+})
 def add_user(policy_id: int, user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     policy = policy_repo.get_policy(db, policy_id)
     user = user_repo.get_user(db, user_id)
@@ -83,7 +111,12 @@ def add_user(policy_id: int, user_id: int, current_user: User = Depends(get_curr
     policy_repo.add_user(db, policy, user)
     return response.success_response(None, "Utilisateur ajouté à la policy")
 
-@router.delete("/{policy_id}/users/{user_id}", response_model=dict)
+@router.delete("/{policy_id}/users/{user_id}", response_model=dict, responses={
+    200: {"description": "Utilisateur retiré de la policy avec succès"},
+    401: {"description": "Non authentifié"},
+    403: {"description": "Permission insuffisante"},
+    404: {"description": "Policy ou user non trouvé"}
+})
 def remove_user(policy_id: int, user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     policy = policy_repo.get_policy(db, policy_id)
     user = user_repo.get_user(db, user_id)
@@ -94,7 +127,12 @@ def remove_user(policy_id: int, user_id: int, current_user: User = Depends(get_c
     policy_repo.remove_user(db, policy, user)
     return response.success_response(None, "Utilisateur retiré de la policy")
 
-@router.post("/{policy_id}/groups/{group_id}", response_model=dict)
+@router.post("/{policy_id}/groups/{group_id}", response_model=dict, responses={
+    200: {"description": "Groupe ajouté à la policy avec succès"},
+    401: {"description": "Non authentifié"},
+    403: {"description": "Permission insuffisante"},
+    404: {"description": "Policy ou groupe non trouvé"}
+})
 def add_group(policy_id: int, group_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     policy = policy_repo.get_policy(db, policy_id)
     group = group_repo.get_group(db, group_id)
@@ -105,7 +143,12 @@ def add_group(policy_id: int, group_id: int, current_user: User = Depends(get_cu
     policy_repo.add_group(db, policy, group)
     return response.success_response(None, "Groupe ajouté à la policy")
 
-@router.delete("/{policy_id}/groups/{group_id}", response_model=dict)
+@router.delete("/{policy_id}/groups/{group_id}", response_model=dict, responses={
+    200: {"description": "Groupe retiré de la policy avec succès"},
+    401: {"description": "Non authentifié"},
+    403: {"description": "Permission insuffisante"},
+    404: {"description": "Policy ou groupe non trouvé"}
+})
 def remove_group(policy_id: int, group_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     policy = policy_repo.get_policy(db, policy_id)
     group = group_repo.get_group(db, group_id)
@@ -116,7 +159,12 @@ def remove_group(policy_id: int, group_id: int, current_user: User = Depends(get
     policy_repo.remove_group(db, policy, group)
     return response.success_response(None, "Groupe retiré de la policy")
 
-@router.post("/{policy_id}/tags/{tag_id}", response_model=dict)
+@router.post("/{policy_id}/tags/{tag_id}", response_model=dict, responses={
+    200: {"description": "Tag ajouté à la policy avec succès"},
+    401: {"description": "Non authentifié"},
+    403: {"description": "Permission insuffisante"},
+    404: {"description": "Policy ou tag non trouvé"}
+})
 def add_tag(policy_id: int, tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     policy = policy_repo.get_policy(db, policy_id)
     tag = tag_repo.get_tag(db, tag_id)
@@ -127,7 +175,12 @@ def add_tag(policy_id: int, tag_id: int, current_user: User = Depends(get_curren
     policy_repo.add_tag(db, policy, tag)
     return response.success_response(None, "Tag ajouté à la policy")
 
-@router.delete("/{policy_id}/tags/{tag_id}", response_model=dict)
+@router.delete("/{policy_id}/tags/{tag_id}", response_model=dict, responses={
+    200: {"description": "Tag retiré de la policy avec succès"},
+    401: {"description": "Non authentifié"},
+    403: {"description": "Permission insuffisante"},
+    404: {"description": "Policy ou tag non trouvé"}
+})
 def remove_tag(policy_id: int, tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     policy = policy_repo.get_policy(db, policy_id)
     tag = tag_repo.get_tag(db, tag_id)

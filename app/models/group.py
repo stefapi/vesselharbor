@@ -24,7 +24,7 @@ class Group(Base):
     organization = relationship("Organization", back_populates="groups")
     tags = relationship("Tag", secondary=group_tags, back_populates="groups")
     users = relationship("User", secondary=user_groups, back_populates="groups")
-    policies = relationship("Policy", secondary=policy_groups, back_populates="groups", cascade="all, delete-orphan")
+    policies = relationship("Policy", secondary=policy_groups, back_populates="groups")
 
     def __repr__(self):
         return f"<Group(id={self.id}, name='{self.name}', org='{self.organization.name}')>"

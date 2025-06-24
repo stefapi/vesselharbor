@@ -28,7 +28,54 @@ def get_db():
     "",
     response_model=dict,
     summary="Lister les environnements",
-    description="Liste les environnements filtrés par nom ou organisation (superadmins voient tout, les autres uniquement ce qu’ils ont le droit de lire)."
+    description="Liste les environnements filtrés par nom ou organisation (superadmins voient tout, les autres uniquement ce qu'ils ont le droit de lire).",
+    responses={
+        200: {
+            "description": "Liste des environnements récupérée avec succès",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "status": "success",
+                        "message": "Liste des environnements récupérée",
+                        "data": [
+                            {
+                                "id": 1,
+                                "name": "Production",
+                                "description": "Environnement de production",
+                                "organization_id": 1,
+                                "organization": {
+                                    "id": 1,
+                                    "name": "ACME Corp",
+                                    "description": "Organisation principale"
+                                },
+                                "elements": [],
+                                "rules": [],
+                                "users": [],
+                                "groups_with_access": []
+                            },
+                            {
+                                "id": 2,
+                                "name": "Développement",
+                                "description": "Environnement de développement",
+                                "organization_id": 1,
+                                "organization": {
+                                    "id": 1,
+                                    "name": "ACME Corp",
+                                    "description": "Organisation principale"
+                                },
+                                "elements": [],
+                                "rules": [],
+                                "users": [],
+                                "groups_with_access": []
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"}
+    }
 )
 def list_environments(
     current_user: User = Depends(get_current_user),
@@ -61,7 +108,12 @@ def list_environments(
     response_model=dict,
     summary="Détail d’un environnement",
     description="Renvoie les détails d’un environnement si l’utilisateur y a accès.",
-    responses={404: {"description": "Environnement non trouvé"}}
+    responses={
+        200: {"description": "Environnement récupéré avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Environnement non trouvé"}
+    }
 )
 def get_environment(
     environment_id: int,
@@ -80,6 +132,12 @@ def get_environment(
     response_model=dict,
     summary="Créer un environnement",
     description="Crée un environnement rattaché à une organisation. Associe une policy d’admin au créateur si nécessaire.",
+    responses={
+        200: {"description": "Environnement créé avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        500: {"description": "La fonction 'admin' est manquante"}
+    }
 )
 def create_environment(
     env: EnvironmentCreate,
@@ -151,6 +209,12 @@ def create_environment(
     response_model=dict,
     summary="Mettre à jour un environnement",
     description="Met à jour un environnement s’il existe et si l’utilisateur a les droits.",
+    responses={
+        200: {"description": "Environnement mis à jour avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Environnement non trouvé"}
+    }
 )
 def update_environment(
     environment_id: int,
@@ -177,6 +241,12 @@ def update_environment(
     response_model=dict,
     summary="Supprimer un environnement",
     description="Supprime un environnement si l’utilisateur a les droits requis.",
+    responses={
+        200: {"description": "Environnement supprimé avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Environnement non trouvé"}
+    }
 )
 def delete_environment(
     environment_id: int,
@@ -199,7 +269,11 @@ def delete_environment(
     "/generate-name",
     response_model=dict,
     summary="Générer un nom aléatoire",
-    description="Génère un nom unique à partir d’un animal ou d’un adjectif."
+    description="Génère un nom unique à partir d'un animal ou d'un adjectif.",
+    responses={
+        200: {"description": "Nom généré avec succès"},
+        401: {"description": "Non authentifié"}
+    }
 )
 def generate_environment_codename(
     current_user: User = Depends(get_current_user),
@@ -224,7 +298,13 @@ def generate_environment_codename(
     "/{environment_id}/users",
     response_model=dict,
     summary="Utilisateurs liés à un environnement",
-    description="Renvoie tous les utilisateurs ayant accès à un environnement via une policy (via les rules)."
+    description="Renvoie tous les utilisateurs ayant accès à un environnement via une policy (via les rules).",
+    responses={
+        200: {"description": "Utilisateurs récupérés avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Environnement non trouvé"}
+    }
 )
 def get_environment_users(
     environment_id: int,

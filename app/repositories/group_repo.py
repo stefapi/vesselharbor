@@ -52,3 +52,9 @@ def remove_tag_from_group(db: Session, group: Group, tag: Tag):
         group.tags.remove(tag)
         db.commit()
         db.refresh(group)
+
+        # Check if the tag is still referenced by any entity
+        from ..repositories import tag_repo
+        if not tag_repo.is_tag_referenced(db, tag):
+            # If the tag is no longer referenced, delete it
+            tag_repo.delete_tag(db, tag)

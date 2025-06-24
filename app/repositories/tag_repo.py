@@ -23,3 +23,10 @@ def list_tags(db: Session):
 def delete_tag(db: Session, tag: Tag):
     db.delete(tag)
     db.commit()
+
+def is_tag_referenced(db: Session, tag: Tag) -> bool:
+    """
+    Check if a tag is referenced by any entity (user, group, policy).
+    Returns True if the tag is referenced, False otherwise.
+    """
+    return bool(tag.users or tag.groups or tag.policies)
