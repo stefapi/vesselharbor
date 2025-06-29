@@ -87,8 +87,7 @@ def test_tag_auto_deletion_from_policy(db: Session):
     policy_data = PolicyCreate(
         name="test_policy_for_tag_auto_deletion",
         description="Test policy for tag auto deletion",
-        organization_id=org_id,
-        access_schedule=None
+        organization_id=org_id
     )
     test_policy = policy_repo.create_policy(db, policy_data)
 
@@ -159,8 +158,7 @@ def test_tag_not_deleted_when_still_referenced(db: Session):
     policy_data = PolicyCreate(
         name="test_policy_for_tag_reference",
         description="Test policy for tag reference",
-        organization_id=org_id,
-        access_schedule=None
+        organization_id=org_id
     )
     test_policy = policy_repo.create_policy(db, policy_data)
 

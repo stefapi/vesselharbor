@@ -1,5 +1,5 @@
 # models/rule.py
-from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy import Column, Integer, ForeignKey, String
 from sqlalchemy.orm import relationship
 from ..database.base import Base
 
@@ -11,6 +11,7 @@ class Rule(Base):
     function_id = Column(Integer, ForeignKey("functions.id"), nullable=False)
     environment_id = Column(Integer, ForeignKey("environments.id", ondelete="CASCADE"), nullable=True)
     element_id = Column(Integer, ForeignKey("elements.id", ondelete="CASCADE"), nullable=True)
+    access_schedule = Column(String(80), nullable=True)
 
     policy = relationship("Policy", back_populates="rules")
     function = relationship("Function", back_populates="rules")

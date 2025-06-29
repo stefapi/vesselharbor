@@ -1,3 +1,59 @@
+from datetime import datetime
+import croniter
+import json
+
+def is_in_cron_interval(test_dt, cron_start_expr, cron_end_expr):
+    """
+    Vérifie si une date est comprise dans l'intervalle défini par deux règles cron.
+
+    :param test_dt: datetime - Date/heure à tester
+    :param cron_start_expr: str - Règle cron pour le début
+    :param cron_end_expr: str - Règle cron pour la fin
+    :return: bool - True si test_dt est dans l'intervalle [début, fin[
+    """
+    # Trouver la dernière occurrence de début <= test_dt
+    iter_start = croniter.croniter(cron_start_expr, test_dt)
+    prev_start = iter_start.get_prev(datetime)
+    next_start = iter_start.get_next(datetime)
+    start_occurrence = prev_start if next_start != test_dt else test_dt
+
+    # Trouver la prochaine occurrence de fin après le début trouvé
+    iter_end = croniter.croniter(cron_end_expr, start_occurrence)
+    end_occurrence = iter_end.get_next(datetime)
+
+    # Vérifier l'intervalle [début, fin[
+    return start_occurrence <= test_dt < end_occurrence
+
+def is_rule_accessible_now(rule):
+    """
+    Vérifie si une règle est accessible au moment actuel en fonction de son access_schedule.
+
+    :param rule: Rule - La règle à vérifier
+    :return: bool - True si la règle est accessible maintenant, False sinon
+    """
+    # Si pas d'access_schedule défini, la règle est toujours accessible
+    if not rule.access_schedule:
+        return True
+
+    try:
+        # Parser le JSON de l'access_schedule
+        if isinstance(rule.access_schedule, str):
+            schedule = json.loads(rule.access_schedule)
+        else:
+            schedule = rule.access_schedule
+
+        # Vérifier que les clés 'start' et 'end' sont présentes
+        if 'start' not in schedule or 'end' not in schedule:
+            return True  # Si le format n'est pas correct, on autorise l'accès
+
+        # Vérifier si l'heure actuelle est dans l'intervalle
+        current_time = datetime.now()
+        return is_in_cron_interval(current_time, schedule['start'], schedule['end'])
+
+    except (json.JSONDecodeError, KeyError, Exception):
+        # En cas d'erreur de parsing ou autre, on autorise l'accès par défaut
+        return True
+
 def has_permission(db, user, target_env: int= None, permission: str = None, target_element:int =None) -> bool:
     """
     Vérifie si l'utilisateur possède la permission demandée dans l'environnement cible ou sur l'élément cible.
@@ -49,17 +105,22 @@ def has_permission(db, user, target_env: int= None, permission: str = None, targ
         for rule in policy.rules:
             # Vérifier que la fonction correspond à la permission demandée
             if rule.function.name == permission or rule.function.name == "admin":
+                # Vérifier d'abord si la règle est accessible selon son horaire
+                if not is_rule_accessible_now(rule):
+                    continue  # Passer à la règle suivante si pas accessible maintenant
+
                 # Cas où les deux sont None: la règle s'applique à tous les environnements et éléments
                 if rule.environment_id is None and rule.element_id is None:
                     return True
 
                 # Cas où target_env et target_element sont tous les deux None
                 if target_env is None and target_element is None:
-                    # On retourne False sauf si les deux éléments des règles sont à None
-                    return rule.environment_id is None and rule.element_id is None
+                    # On retourne True seulement si les deux éléments des règles sont à None
+                    if rule.environment_id is None and rule.element_id is None:
+                        return True
 
                 # Cas où target_element est None: on vérifie par rapport à target_env
-                if target_element is None:
+                elif target_element is None:
                     if rule.environment_id == target_env:
                         return True
 

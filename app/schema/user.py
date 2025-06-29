@@ -9,7 +9,6 @@ class UserCreate(BaseModel):
     last_name: str
     email: EmailStr
     password: str
-    is_superadmin: bool = False
 
 class UserOut(BaseModel):
     id: int

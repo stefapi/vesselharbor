@@ -18,7 +18,10 @@ def get_db():
     finally:
         db.close()
 
-@router.get("", response_model=dict, responses={
+@router.get("", response_model=dict,
+    summary="Lister les policies",
+    description="Récupère la liste des policies pour une organisation donnée avec pagination.",
+    responses={
     200: {"description": "Policies récupérées avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"}
@@ -35,7 +38,10 @@ def list_policies(
     policies = policy_repo.list_policies(db, organization_id, skip, limit)
     return response.success_response(policies, "Policies récupérées")
 
-@router.get("/{policy_id}", response_model=dict, responses={
+@router.get("/{policy_id}", response_model=dict,
+    summary="Obtenir une policy",
+    description="Récupère les détails d'une policy spécifique par son ID.",
+    responses={
     200: {"description": "Policy récupérée avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
@@ -49,7 +55,10 @@ def get_policy(policy_id: int, current_user: User = Depends(get_current_user), d
         raise HTTPException(status_code=403, detail="Permission insuffisante")
     return response.success_response(policy, "Policy récupérée")
 
-@router.post("", response_model=dict, responses={
+@router.post("", response_model=dict,
+    summary="Créer une policy",
+    description="Crée une nouvelle policy dans l'organisation spécifiée.",
+    responses={
     200: {"description": "Policy créée avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"}
@@ -61,7 +70,10 @@ def create_policy(policy_in: PolicyCreate, current_user: User = Depends(get_curr
     audit.log_action(db, current_user.id, "Création policy", f"Policy '{policy.name}' créée")
     return response.success_response(policy, "Policy créée")
 
-@router.put("/{policy_id}", response_model=dict, responses={
+@router.put("/{policy_id}", response_model=dict,
+    summary="Mettre à jour une policy",
+    description="Modifie les informations d'une policy existante.",
+    responses={
     200: {"description": "Policy mise à jour avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
@@ -77,7 +89,10 @@ def update_policy(policy_id: int, policy_in: PolicyUpdate, current_user: User = 
     audit.log_action(db, current_user.id, "Mise à jour policy", f"Policy '{policy.name}' mise à jour")
     return response.success_response(policy, "Policy mise à jour")
 
-@router.delete("/{policy_id}", response_model=dict, responses={
+@router.delete("/{policy_id}", response_model=dict,
+    summary="Supprimer une policy",
+    description="Supprime définitivement une policy existante.",
+    responses={
     200: {"description": "Policy supprimée avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
@@ -95,7 +110,10 @@ def delete_policy(policy_id: int, current_user: User = Depends(get_current_user)
 
 # Gestion des relations : users, groups, tags
 
-@router.post("/{policy_id}/users/{user_id}", response_model=dict, responses={
+@router.post("/{policy_id}/users/{user_id}", response_model=dict,
+    summary="Ajouter un utilisateur à une policy",
+    description="Associe un utilisateur spécifique à une policy pour lui accorder les permissions définies.",
+    responses={
     200: {"description": "Utilisateur ajouté à la policy avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
@@ -111,7 +129,10 @@ def add_user(policy_id: int, user_id: int, current_user: User = Depends(get_curr
     policy_repo.add_user(db, policy, user)
     return response.success_response(None, "Utilisateur ajouté à la policy")
 
-@router.delete("/{policy_id}/users/{user_id}", response_model=dict, responses={
+@router.delete("/{policy_id}/users/{user_id}", response_model=dict,
+    summary="Retirer un utilisateur d'une policy",
+    description="Dissocie un utilisateur d'une policy, lui retirant ainsi les permissions associées.",
+    responses={
     200: {"description": "Utilisateur retiré de la policy avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
@@ -127,7 +148,10 @@ def remove_user(policy_id: int, user_id: int, current_user: User = Depends(get_c
     policy_repo.remove_user(db, policy, user)
     return response.success_response(None, "Utilisateur retiré de la policy")
 
-@router.post("/{policy_id}/groups/{group_id}", response_model=dict, responses={
+@router.post("/{policy_id}/groups/{group_id}", response_model=dict,
+    summary="Ajouter un groupe à une policy",
+    description="Associe un groupe à une policy, accordant ainsi les permissions définies à tous les membres du groupe.",
+    responses={
     200: {"description": "Groupe ajouté à la policy avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
@@ -143,7 +167,10 @@ def add_group(policy_id: int, group_id: int, current_user: User = Depends(get_cu
     policy_repo.add_group(db, policy, group)
     return response.success_response(None, "Groupe ajouté à la policy")
 
-@router.delete("/{policy_id}/groups/{group_id}", response_model=dict, responses={
+@router.delete("/{policy_id}/groups/{group_id}", response_model=dict,
+    summary="Retirer un groupe d'une policy",
+    description="Dissocie un groupe d'une policy, retirant ainsi les permissions associées à tous les membres du groupe.",
+    responses={
     200: {"description": "Groupe retiré de la policy avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
@@ -159,7 +186,10 @@ def remove_group(policy_id: int, group_id: int, current_user: User = Depends(get
     policy_repo.remove_group(db, policy, group)
     return response.success_response(None, "Groupe retiré de la policy")
 
-@router.post("/{policy_id}/tags/{tag_id}", response_model=dict, responses={
+@router.post("/{policy_id}/tags/{tag_id}", response_model=dict,
+    summary="Ajouter un tag à une policy",
+    description="Associe un tag à une policy, permettant d'appliquer la policy à tous les éléments portant ce tag.",
+    responses={
     200: {"description": "Tag ajouté à la policy avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
@@ -175,7 +205,10 @@ def add_tag(policy_id: int, tag_id: int, current_user: User = Depends(get_curren
     policy_repo.add_tag(db, policy, tag)
     return response.success_response(None, "Tag ajouté à la policy")
 
-@router.delete("/{policy_id}/tags/{tag_id}", response_model=dict, responses={
+@router.delete("/{policy_id}/tags/{tag_id}", response_model=dict,
+    summary="Retirer un tag d'une policy",
+    description="Dissocie un tag d'une policy, retirant ainsi l'application de la policy aux éléments portant ce tag.",
+    responses={
     200: {"description": "Tag retiré de la policy avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
@@ -190,3 +223,20 @@ def remove_tag(policy_id: int, tag_id: int, current_user: User = Depends(get_cur
         raise HTTPException(status_code=403, detail="Permission insuffisante")
     policy_repo.remove_tag(db, policy, tag)
     return response.success_response(None, "Tag retiré de la policy")
+
+@router.get("/{policy_id}/groups", response_model=dict,
+    summary="Lister les groupes d'une policy",
+    description="Récupère la liste de tous les groupes associés à une policy spécifique.",
+    responses={
+    200: {"description": "Liste des groupes de la policy récupérée avec succès"},
+    401: {"description": "Non authentifié"},
+    403: {"description": "Permission insuffisante"},
+    404: {"description": "Policy non trouvée"}
+})
+def list_policy_groups(policy_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    policy = policy_repo.get_policy(db, policy_id)
+    if not policy:
+        raise HTTPException(status_code=404, detail="Policy non trouvée")
+    if not permissions.has_permission(db, current_user, policy.organization_id, "policy:read"):
+        raise HTTPException(status_code=403, detail="Permission insuffisante")
+    return response.success_response(policy.groups, "Groupes de la policy récupérés")

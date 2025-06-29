@@ -23,7 +23,7 @@ def get_db():
     finally:
         db.close()
 
-@router.get("/{group_id}", response_model=dict, summary="Détail d'un groupe", responses={
+@router.get("/{group_id}", response_model=dict, summary="Détail d'un groupe", description="Récupère les détails d'un groupe spécifique par son identifiant", responses={
     200: {"description": "Groupe récupéré avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
@@ -37,7 +37,7 @@ def get_group(group_id: int, current_user: User = Depends(get_current_user), db:
         raise HTTPException(status_code=403, detail="Permission insuffisante")
     return response.success_response(group, "Groupe récupéré")
 
-@router.post("/{organization_id}", response_model=dict, summary="Créer un groupe", responses={
+@router.post("/{organization_id}", response_model=dict, summary="Créer un groupe", description="Crée un nouveau groupe dans l'organisation spécifiée", responses={
     200: {"description": "Groupe créé avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"}
@@ -49,7 +49,7 @@ def create_group(organization_id: int, group_in: GroupCreate, current_user: User
     audit.log_action(db, current_user.id, "Création groupe", f"Création du groupe '{group.name}'")
     return response.success_response(group, "Groupe créé")
 
-@router.put("/{group_id}", response_model=dict, summary="Mettre à jour un groupe", responses={
+@router.put("/{group_id}", response_model=dict, summary="Mettre à jour un groupe", description="Met à jour les informations d'un groupe existant", responses={
     200: {"description": "Groupe mis à jour avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
@@ -65,7 +65,7 @@ def update_group(group_id: int, group_in: GroupUpdate, current_user: User = Depe
     audit.log_action(db, current_user.id, "Mise à jour groupe", f"Mise à jour du groupe '{group.name}'")
     return response.success_response(group, "Groupe mis à jour")
 
-@router.delete("/{group_id}", response_model=dict, summary="Supprimer un groupe", responses={
+@router.delete("/{group_id}", response_model=dict, summary="Supprimer un groupe", description="Supprime un groupe existant et toutes ses associations", responses={
     200: {"description": "Groupe supprimé avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante ou seul un superadmin peut supprimer les groupes 'admin' et 'editors'"},
@@ -89,7 +89,7 @@ def delete_group(group_id: int, current_user: User = Depends(get_current_user), 
     audit.log_action(db, current_user.id, "Suppression groupe", f"Groupe '{group.name}' supprimé")
     return response.success_response(None, "Groupe supprimé")
 
-@router.get("", response_model=dict, summary="Lister tous les groupes", responses={
+@router.get("", response_model=dict, summary="Lister tous les groupes", description="Récupère la liste complète de tous les groupes dans le système (réservé aux superadmins)", responses={
     200: {"description": "Liste de tous les groupes récupérée avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante - réservé aux superadmins"}
@@ -100,7 +100,7 @@ def list_all_groups(current_user: User = Depends(get_current_user), db: Session 
     groups = db.query(Group).all()
     return response.success_response(groups, "Tous les groupes récupérés")
 
-@router.get("/organization/{org_id}", response_model=dict, summary="Lister les groupes d'une organisation", responses={
+@router.get("/organization/{org_id}", response_model=dict, summary="Lister les groupes d'une organisation", description="Récupère tous les groupes appartenant à une organisation spécifique", responses={
     200: {"description": "Liste des groupes de l'organisation récupérée avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"}
@@ -111,7 +111,7 @@ def list_groups_by_org(org_id: int, current_user: User = Depends(get_current_use
     groups = db.query(Group).filter(Group.organization_id == org_id).all()
     return response.success_response(groups, "Groupes récupérés")
 
-@router.get("/{group_id}/users", response_model=dict, summary="Lister les utilisateurs d'un groupe", responses={
+@router.get("/{group_id}/users", response_model=dict, summary="Lister les utilisateurs d'un groupe", description="Récupère la liste de tous les utilisateurs appartenant à un groupe spécifique", responses={
     200: {"description": "Liste des utilisateurs du groupe récupérée avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
@@ -125,8 +125,8 @@ def list_group_users(group_id: int, current_user: User = Depends(get_current_use
         raise HTTPException(status_code=403, detail="Permission insuffisante")
     return response.success_response(group.users, "Utilisateurs du groupe récupérés")
 
-@router.post("/{group_id}/users/{user_id}", response_model=dict, summary="Associer un utilisateur", responses={
-    200: {"description": "Utilisateur ajouté au groupe avec succès"},
+@router.post("/{group_id}/users/{user_id}", response_model=dict, summary="Associer un utilisateur", description="Ajoute un utilisateur spécifique à un groupe", responses={
+    200: {"description": "Utilisateur ajouté au groupe avec succès ou déjà présent dans le groupe"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
     404: {"description": "Groupe ou utilisateur non trouvé"}
@@ -138,12 +138,18 @@ def assign_user(group_id: int, user_id: int, current_user: User = Depends(get_cu
         raise HTTPException(status_code=404, detail="Groupe ou utilisateur non trouvé")
     if not permissions.has_permission(db, current_user, group.organization_id, "group:assign_user"):
         raise HTTPException(status_code=403, detail="Permission insuffisante")
+    # Vérifier si l'utilisateur est déjà dans le groupe
+    if user in group.users:
+        return response.success_response(None, "L'utilisateur est déjà dans ce groupe")
+
     group.users.append(user)
     db.commit()
+    audit.log_action(db, current_user.id, "Ajout à un groupe", f"Utilisateur {user.email} ajouté au groupe {group.name}")
+
     return response.success_response(group, "Utilisateur ajouté au groupe")
 
-@router.delete("/{group_id}/users/{user_id}", response_model=dict, summary="Retirer un utilisateur", responses={
-    200: {"description": "Utilisateur retiré du groupe avec succès"},
+@router.delete("/{group_id}/users/{user_id}", response_model=dict, summary="Retirer un utilisateur", description="Retire un utilisateur spécifique d'un groupe", responses={
+    200: {"description": "Utilisateur retiré du groupe avec succès ou n'était pas dans le groupe"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
     404: {"description": "Groupe ou utilisateur non trouvé"}
@@ -155,12 +161,15 @@ def remove_user(group_id: int, user_id: int, current_user: User = Depends(get_cu
         raise HTTPException(status_code=404, detail="Groupe ou utilisateur non trouvé")
     if not permissions.has_permission(db, current_user, group.organization_id, "group:assign_user"):
         raise HTTPException(status_code=403, detail="Permission insuffisante")
-    if user in group.users:
-        group.users.remove(user)
-        db.commit()
+    # Vérifier si l'utilisateur est dans le groupe
+    if user not in group.users:
+        return response.success_response(None, "L'utilisateur n'est pas dans ce groupe")
+
+    group.users.remove(user)
+    db.commit()
     return response.success_response(group, "Utilisateur retiré du groupe")
 
-@router.get("/{group_id}/policy", response_model=dict, summary="Lister les policies d'un groupe", responses={
+@router.get("/{group_id}/policy", response_model=dict, summary="Lister les policies d'un groupe", description="Récupère la liste de toutes les politiques associées à un groupe spécifique", responses={
     200: {"description": "Liste des policies du groupe récupérée avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
@@ -174,7 +183,7 @@ def list_group_policies(group_id: int, current_user: User = Depends(get_current_
         raise HTTPException(status_code=403, detail="Permission insuffisante")
     return response.success_response(group.policies, "Policies du groupe récupérées")
 
-@router.post("/{group_id}/policy", response_model=dict, summary="Associer une policy", responses={
+@router.post("/{group_id}/policy", response_model=dict, summary="Associer une policy", description="Associe une politique spécifique à un groupe", responses={
     200: {"description": "Policy associée au groupe avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
@@ -191,7 +200,7 @@ def assign_policy(group_id: int, policy_id: int, current_user: User = Depends(ge
     db.commit()
     return response.success_response(group, "Policy associée au groupe")
 
-@router.delete("/{group_id}/policy/{policy_id}", response_model=dict, summary="Retirer une policy", responses={
+@router.delete("/{group_id}/policy/{policy_id}", response_model=dict, summary="Retirer une policy", description="Retire une politique spécifique d'un groupe", responses={
     200: {"description": "Policy retirée du groupe avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
@@ -209,7 +218,7 @@ def remove_policy(group_id: int, policy_id: int, current_user: User = Depends(ge
         db.commit()
     return response.success_response(group, "Policy retirée du groupe")
 
-@router.get("/{group_id}/tags", response_model=dict, summary="Lister les tags d'un groupe", responses={
+@router.get("/{group_id}/tags", response_model=dict, summary="Lister les tags d'un groupe", description="Récupère la liste de tous les tags associés à un groupe spécifique", responses={
     200: {"description": "Liste des tags du groupe récupérée avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
@@ -223,7 +232,7 @@ def list_group_tags(group_id: int, current_user: User = Depends(get_current_user
         raise HTTPException(status_code=403, detail="Permission insuffisante")
     return response.success_response(group.tags, "Tags du groupe récupérés")
 
-@router.post("/{group_id}/tags/{tag_id}", response_model=dict, summary="Ajouter un tag à un groupe", responses={
+@router.post("/{group_id}/tags/{tag_id}", response_model=dict, summary="Ajouter un tag à un groupe", description="Associe un tag spécifique à un groupe", responses={
     200: {"description": "Tag ajouté au groupe avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},
@@ -240,7 +249,7 @@ def add_tag_to_group(group_id: int, tag_id: int, current_user: User = Depends(ge
     db.commit()
     return response.success_response(group, "Tag ajouté au groupe")
 
-@router.delete("/{group_id}/tags/{tag_id}", response_model=dict, summary="Retirer un tag d'un groupe", responses={
+@router.delete("/{group_id}/tags/{tag_id}", response_model=dict, summary="Retirer un tag d'un groupe", description="Retire un tag spécifique d'un groupe", responses={
     200: {"description": "Tag retiré du groupe avec succès"},
     401: {"description": "Non authentifié"},
     403: {"description": "Permission insuffisante"},

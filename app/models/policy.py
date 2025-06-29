@@ -29,7 +29,6 @@ class Policy(Base):
     name = Column(String(80), nullable=False)
     description = Column(String(1024), nullable=True)
 
-    access_schedule = Column(String(80), nullable=True)
     organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
 
     organization = relationship("Organization", back_populates="policies")

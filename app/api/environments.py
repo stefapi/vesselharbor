@@ -190,7 +190,9 @@ def create_environment(
         db.add(rule)
 
         # Ajout de l’utilisateur à la policy
-        policy.users.append(current_user)
+        # Get the user from the same session as the policy to avoid session conflicts
+        user_in_session = db.query(User).get(current_user.id)
+        policy.users.append(user_in_session)
 
         db.commit()
         db.refresh(policy)

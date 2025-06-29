@@ -54,8 +54,7 @@ def test_policy_group_cascade_delete(db: Session):
         policy_in=PolicyCreate(
             name="test_policy_for_deletion",
             description="Test policy for deletion",
-            organization_id=org_id,
-            access_schedule=None
+            organization_id=org_id
         )
     )
 

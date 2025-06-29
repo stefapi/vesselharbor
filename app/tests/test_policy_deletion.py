@@ -58,8 +58,7 @@ def test_policy_group_cascade_delete(db: Session):
         policy_in=PolicyCreate(
             name="test_policy_for_group_cascade",
             description="Test policy for group cascade deletion",
-            organization_id=org_id,
-            access_schedule=None
+            organization_id=org_id
         )
     )
 
@@ -107,8 +106,7 @@ def test_policy_tags_cascade_delete(db: Session):
         policy_in=PolicyCreate(
             name="test_policy_for_tag_cascade",
             description="Test policy for tag cascade deletion",
-            organization_id=org_id,
-            access_schedule=None
+            organization_id=org_id
         )
     )
 
@@ -159,8 +157,7 @@ def test_policy_users_cascade_delete(db: Session):
         policy_in=PolicyCreate(
             name="test_policy_for_user_cascade",
             description="Test policy for user cascade deletion",
-            organization_id=1,  # Use an existing organization ID for testing
-            access_schedule=None
+            organization_id=1  # Use an existing organization ID for testing
         )
     )
 
@@ -211,8 +208,7 @@ def test_policy_rules_cascade_delete(db: Session):
         policy_in=PolicyCreate(
             name="test_policy_for_rule_cascade",
             description="Test policy for rule cascade deletion",
-            organization_id=org_id,
-            access_schedule=None
+            organization_id=org_id
         )
     )
 

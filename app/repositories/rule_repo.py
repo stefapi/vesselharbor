@@ -5,12 +5,13 @@ from sqlalchemy.orm import Session
 from ..models.rule import Rule
 
 def create_rule(db: Session, policy_id: int, function_id: int,
-                environment_id: int = None, element_id: int = None) -> Rule:
+                environment_id: int = None, element_id: int = None, access_schedule: dict = None) -> Rule:
     rule = Rule(
         policy_id=policy_id,
         function_id=function_id,
         environment_id=environment_id,
-        element_id=element_id
+        element_id=element_id,
+        access_schedule=access_schedule
     )
     db.add(rule)
     db.commit()
@@ -30,13 +31,16 @@ def list_rules_for_policy(db: Session, policy_id: int):
 def update_rule(db: Session, rule: Rule,
                 function_id: int = None,
                 environment_id: int = None,
-                element_id: int = None) -> Rule:
+                element_id: int = None,
+                access_schedule: dict = None) -> Rule:
     if function_id is not None:
         rule.function_id = function_id
     if environment_id is not None:
         rule.environment_id = environment_id
     if element_id is not None:
         rule.element_id = element_id
+    if access_schedule is not None:
+        rule.access_schedule = access_schedule
     db.commit()
     db.refresh(rule)
     return rule

@@ -8,21 +8,18 @@ from .group import GroupOut
 class PolicyCreate(BaseModel):
     name: str
     description: Optional[str] = None
-    access_schedule: Optional[str] = None
     organization_id: int
 
 
 class PolicyUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    access_schedule: Optional[str] = None
 
 
 class PolicyOut(BaseModel):
     id: int
     name: str
     description: Optional[str]
-    access_schedule: Optional[str]
     organization_id: int
     tags: List[TagOut] = []
     users: List[UserOut] = []

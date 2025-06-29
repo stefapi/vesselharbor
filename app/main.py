@@ -26,7 +26,7 @@ seed(db)
 db.close()
 # Import des routeurs
 from .api import users, environments, groups, elements, audit_logs, auth, organizations, functions, policies, rules, \
-    tags, user_groups, teapot, health
+    tags, teapot, health
 
 app = FastAPI()
 
@@ -42,7 +42,6 @@ app.add_middleware(
 # Enregistrement des routeurs
 app.include_router(auth.router)
 app.include_router(users.router)
-app.include_router(user_groups.router)
 app.include_router(organizations.router)
 app.include_router(environments.router)
 app.include_router(groups.router)

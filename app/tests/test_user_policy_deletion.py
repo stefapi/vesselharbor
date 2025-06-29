@@ -54,8 +54,7 @@ def test_policy_user_cascade_delete(db: Session):
         policy_in=PolicyCreate(
             name="test_policy_for_user_deletion",
             description="Test policy for user deletion",
-            organization_id=1,  # Use an existing organization ID for testing
-            access_schedule=None
+            organization_id=1  # Use an existing organization ID for testing
         )
     )
 

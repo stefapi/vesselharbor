@@ -11,7 +11,6 @@ def create_policy(db: Session, policy_in: PolicyCreate) -> Policy:
     policy = Policy(
         name=policy_in.name,
         description=policy_in.description,
-        access_schedule=policy_in.access_schedule,
         organization_id=policy_in.organization_id,
     )
     db.add(policy)
