@@ -17,6 +17,7 @@ class GroupOut(BaseModel):
     name: str
     description: Optional[str]
     tags: List[TagOut] = []
+    organization_id: int
 
     model_config = {
         "from_attributes": True

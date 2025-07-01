@@ -3,6 +3,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from ..database.base import Base
+from .tag import environment_tags
 
 class Environment(Base):
     __tablename__ = "environments"
@@ -15,6 +16,7 @@ class Environment(Base):
     organization = relationship("Organization", back_populates="environments")
     elements = relationship("Element", back_populates="environment")
     rules = relationship("Rule", back_populates="environment")
+    tags = relationship("Tag", secondary=environment_tags, back_populates="environments")
 
     @property
     def users(self):

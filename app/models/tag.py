@@ -26,6 +26,20 @@ policy_tags = Table(
     Column("tag_id", Integer, ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True),
 )
 
+element_tags = Table(
+    "element_tags",
+    Base.metadata,
+    Column("element_id", Integer, ForeignKey("elements.id", ondelete="CASCADE"), primary_key=True),
+    Column("tag_id", Integer, ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True),
+)
+
+environment_tags = Table(
+    "environment_tags",
+    Base.metadata,
+    Column("environment_id", Integer, ForeignKey("environments.id", ondelete="CASCADE"), primary_key=True),
+    Column("tag_id", Integer, ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True),
+)
+
 class Tag(Base):
     __tablename__ = "tags"
 
@@ -35,6 +49,8 @@ class Tag(Base):
     users = relationship("User", secondary=user_tags, back_populates="tags")
     groups = relationship("Group", secondary=group_tags, back_populates="tags")
     policies = relationship("Policy", secondary=policy_tags, back_populates="tags")
+    elements = relationship("Element", secondary=element_tags, back_populates="tags")
+    environments = relationship("Environment", secondary=environment_tags, back_populates="tags")
 
     def __repr__(self):
         return f"<Tag(id={self.id}, value='{self.value}')>"

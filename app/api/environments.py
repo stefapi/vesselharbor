@@ -4,12 +4,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 
+from ..models import Element
 from ..schema.environment import EnvironmentCreate, EnvironmentOut
 from ..models.environment import Environment
 from ..models.organization import Organization
 from ..models.user import User
 from ..database.session import SessionLocal
-from ..repositories import environment_repo, group_repo, function_repo
+from ..repositories import environment_repo, group_repo, function_repo, tag_repo
 from ..api.users import get_current_user
 from ..helper import permissions, audit, response
 from ..helper.animalname import generate_codename
@@ -147,6 +148,7 @@ def create_environment(
     if not permissions.has_permission(db, current_user, env.organization_id, "env:create"):
         raise HTTPException(status_code=403, detail="Permission insuffisante pour créer un environnement")
 
+    # TODO ajouter un generate codename ici
     environment = environment_repo.create_environment(
         db,
         name=env.name,
@@ -321,3 +323,147 @@ def get_environment_users(
         raise HTTPException(status_code=403, detail="Permission insuffisante")
 
     return response.success_response(environment.users, "Utilisateurs récupérés")
+
+
+@router.get(
+    "/{environment_id}/elements",
+    response_model=dict,
+    summary="Lister les éléments d'un environnement",
+    description="Liste les éléments d'un environnement avec pagination et filtrage par nom.",
+    responses={
+        200: {"description": "Liste des éléments récupérée avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Environnement non trouvé"},
+    }
+)
+def list_elements(
+    environment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    name: Optional[str] = None
+):
+    env = db.query(Environment).filter_by(id=environment_id).first()
+    if not env:
+        raise HTTPException(status_code=404, detail="Environnement non trouvé")
+
+    if not permissions.has_permission(db, current_user, env.organization_id, "element:read"):
+        raise HTTPException(status_code=403, detail="Permission insuffisante pour lister les éléments")
+
+    query = db.query(Element).filter(Element.environment_id == environment_id)
+    if name:
+        query = query.filter(Element.name.ilike(f"%{name}%"))
+    elements = query.offset(skip).limit(limit).all()
+    return response.success_response(elements, "Liste des éléments récupérée")
+
+@router.get(
+    "/{environment_id}/tags",
+    response_model=dict,
+    summary="Lister les tags d'un environnement",
+    description="Récupère tous les tags associés à un environnement.",
+    responses={
+        200: {"description": "Tags récupérés avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Environnement non trouvé"}
+    }
+)
+def list_environment_tags(
+    environment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Vérifier que l'environnement existe
+    environment = db.query(Environment).filter(Environment.id == environment_id).first()
+    if not environment:
+        raise HTTPException(status_code=404, detail="Environnement non trouvé")
+
+    # Vérifier les permissions sur l'organisation de l'environnement
+    org_id = environment.organization_id
+    if not permissions.has_permission(db, current_user, org_id, "env:read"):
+        raise HTTPException(status_code=403, detail="Permission insuffisante pour accéder à cet environnement")
+
+    # Convertir les objets Tag en TagOut pour une sérialisation correcte
+    from ..schema.tag import TagOut
+    serializable_tags = [TagOut.model_validate(tag) for tag in environment.tags]
+
+    return response.success_response(serializable_tags, "Tags de l'environnement récupérés avec succès")
+
+
+@router.post(
+    "/{environment_id}/tags/{tag_id}",
+    response_model=dict,
+    summary="Ajouter un tag à un environnement",
+    description="Associe un tag existant à un environnement."
+)
+def add_tag_to_environment(
+    environment_id: int,
+    tag_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Vérifier que l'environnement existe
+    environment = db.query(Environment).filter(Environment.id == environment_id).first()
+    if not environment:
+        raise HTTPException(status_code=404, detail="Environnement non trouvé")
+
+    # Vérifier les permissions sur l'organisation de l'environnement
+    org_id = environment.organization_id
+    if not permissions.has_permission(db, current_user, org_id, "env:update"):
+        raise HTTPException(status_code=403, detail="Permission insuffisante pour modifier cet environnement")
+
+    # Vérifier que le tag existe
+    tag = tag_repo.get_tag(db, tag_id)
+    if not tag:
+        raise HTTPException(status_code=404, detail="Tag non trouvé")
+
+    # Vérifier si le tag est déjà associé à l'environnement
+    if tag in environment.tags:
+        return response.success_response(environment, "Le tag est déjà associé à cet environnement")
+
+    # Ajouter le tag à l'environnement
+    environment.tags.append(tag)
+    db.commit()
+
+    audit.log_action(db, current_user.id, "Ajout tag à environnement", f"Tag '{tag.value}' ajouté à l'environnement '{environment.name}'")
+    return response.success_response(environment, "Tag ajouté à l'environnement avec succès")
+
+@router.delete(
+    "/{environment_id}/tags/{tag_id}",
+    response_model=dict,
+    summary="Retirer un tag d'un environnement",
+    description="Retire l'association entre un tag et un environnement."
+)
+def remove_tag_from_environment(
+    environment_id: int,
+    tag_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Vérifier que l'environnement existe
+    environment = db.query(Environment).filter(Environment.id == environment_id).first()
+    if not environment:
+        raise HTTPException(status_code=404, detail="Environnement non trouvé")
+
+    # Vérifier les permissions sur l'organisation de l'environnement
+    org_id = environment.organization_id
+    if not permissions.has_permission(db, current_user, org_id, "env:update"):
+        raise HTTPException(status_code=403, detail="Permission insuffisante pour modifier cet environnement")
+
+    # Vérifier que le tag existe
+    tag = tag_repo.get_tag(db, tag_id)
+    if not tag:
+        raise HTTPException(status_code=404, detail="Tag non trouvé")
+
+    # Vérifier si le tag est associé à l'environnement
+    if tag not in environment.tags:
+        return response.success_response(environment, "Le tag n'est pas associé à cet environnement")
+
+    # Retirer le tag de l'environnement
+    environment.tags.remove(tag)
+    db.commit()
+
+    audit.log_action(db, current_user.id, "Retrait tag d'environnement", f"Tag '{tag.value}' retiré de l'environnement '{environment.name}'")
+    return response.success_response(environment, "Tag retiré de l'environnement avec succès")

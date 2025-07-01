@@ -36,6 +36,7 @@ from ..models.policy import Policy, policy_groups
 from ..models.tag import Tag, policy_tags
 from ..models.user import User, policy_users
 from ..models.rule import Rule
+from ..models.function import Function
 from ..repositories import group_repo, policy_repo, user_repo, rule_repo
 from ..schema.policy import PolicyCreate
 

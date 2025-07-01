@@ -273,36 +273,6 @@ def list_organization_tags(org_id: int, current_user: User = Depends(get_current
     serializable_tags = [TagOut.model_validate(tag) for tag in tags]
     return response.success_response(serializable_tags, "Tags de l'organisation récupérés")
 
-@router.post("/{org_id}/tags", response_model=dict, summary="Ajouter un tag à une organisation", description="Ajoute un tag à une organisation, le crée s'il n'existe pas déjà", responses={
-    200: {"description": "Tag ajouté à l'organisation avec succès"},
-    401: {"description": "Non authentifié"},
-    403: {"description": "Permission insuffisante"}
-})
-def add_tag_to_organization(org_id: int, value: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if not permissions.has_permission(db, current_user, org_id, "tag:create"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante")
-    tag = tag_repo.get_tag_by_value(db, value) or tag_repo.create_tag(db, value)
-    audit.log_action(db, current_user.id, "Ajout tag", f"Tag '{value}' ajouté pour l'organisation {org_id}")
-    # Convert Tag object to TagOut object for proper serialization
-    serializable_tag = TagOut.model_validate(tag)
-    return response.success_response(serializable_tag, "Tag ajouté")
-
-@router.delete("/{org_id}/tags/{tag_id}", response_model=dict, summary="Supprimer un tag d'une organisation", description="Supprime un tag spécifié d'une organisation", responses={
-    200: {"description": "Tag supprimé de l'organisation avec succès"},
-    401: {"description": "Non authentifié"},
-    403: {"description": "Permission insuffisante"},
-    404: {"description": "Tag non trouvé"}
-})
-def remove_tag_from_organization(org_id: int, tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    tag = tag_repo.get_tag(db, tag_id)
-    if not tag:
-        raise HTTPException(status_code=404, detail="Tag non trouvé")
-    if not permissions.has_permission(db, current_user, org_id, "tag:delete"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante")
-    tag_repo.delete_tag(db, tag)
-    audit.log_action(db, current_user.id, "Suppression tag", f"Tag '{tag.value}' supprimé de l'organisation {org_id}")
-    return response.success_response(None, "Tag supprimé")
-
 # --- Policies ---
 
 @router.get("/{org_id}/policies", response_model=dict, summary="Lister les politiques d'une organisation", description="Récupère toutes les politiques associées à une organisation", responses={

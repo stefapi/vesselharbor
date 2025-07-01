@@ -17,9 +17,10 @@ class TagWithRelationsOut(TagOut):
     users: Optional[List["UserOut"]] = []
     groups: Optional[List["GroupOut"]] = []
     policies: Optional[List["PolicyOut"]] = []
+    elements: Optional[List["ElementOut"]] = []
+    environments: Optional[List["EnvironmentOut"]] = []
 
     model_config = {"from_attributes": True}
 
 # Pour éviter l'erreur de référence circulaire :
 
-from .group import GroupOut

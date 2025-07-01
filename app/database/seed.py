@@ -28,12 +28,28 @@ DEFAULT_FUNCTIONS = [
     {"name": "element:update", "description": "Mettre à jour un élément."},
     {"name": "element:delete", "description": "Supprimer un élément."},
 
+    # Users
+    {"name": "user:list", "description": "Lister les utilisateurs."},
+    {"name": "user:read", "description": "Voir les utilisateurs."},
+    {"name": "user:create", "description": "Créer un utilisateur."},
+    {"name": "user:update", "description": "Modifier un utilisateur."},
+    {"name": "user:delete", "description": "Supprimer un utilisateur."},
+    {"name": "user:delete", "description": "Supprimer un utilisateur."},
+    {"name": "user:update_password", "description": "Réinitialiser le mot de passe d'un utilisateur."},
+    {"name": "user:assign_user", "description": "Affecter un utilisateur à un utilisateur."},
+    {"name": "user:assign_policy", "description": "Affecter un policy à un utilisateur."},
+    {"name": "user:read_groups", "description": "Lit les groupes d'un utilisateur."},
+    {"name": "user:read_policies", "description": "Lit les policies d'un utilisateur."},
+    {"name": "user:read_organizations", "description": "Lit les organisations d'un utilisateur."},
+    {"name": "user:read_tags", "description": "Lit les tags d'un utilisateur."},
+    {"name": "user:update_tags", "description": "Met à jour les tags d'un utilisateur."},
     # Groups
     {"name": "group:read", "description": "Voir les groupes."},
     {"name": "group:create", "description": "Créer un groupe."},
     {"name": "group:update", "description": "Modifier un groupe."},
     {"name": "group:delete", "description": "Supprimer un groupe."},
     {"name": "group:assign_user", "description": "Affecter un utilisateur à un groupe."},
+    {"name": "group:assign_policy", "description": "Affecter un policy à un groupe."},
 
     # Tags
     {"name": "tag:read", "description": "Voir les tags."},

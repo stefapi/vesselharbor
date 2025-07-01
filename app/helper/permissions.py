@@ -1,5 +1,5 @@
 from datetime import datetime
-import croniter
+from .croniter import croniter
 import json
 
 def is_in_cron_interval(test_dt, cron_start_expr, cron_end_expr):
@@ -54,7 +54,7 @@ def is_rule_accessible_now(rule):
         # En cas d'erreur de parsing ou autre, on autorise l'accès par défaut
         return True
 
-def has_permission(db, user, target_env: int= None, permission: str = None, target_element:int =None) -> bool:
+def has_permission(db, user, target_env: int= None, target_element:int =None, permission: (str or list[str]) = None ) -> bool:
     """
     Vérifie si l'utilisateur possède la permission demandée dans l'environnement cible ou sur l'élément cible.
 
@@ -104,7 +104,13 @@ def has_permission(db, user, target_env: int= None, permission: str = None, targ
     for policy in applicable_policies:
         for rule in policy.rules:
             # Vérifier que la fonction correspond à la permission demandée
-            if rule.function.name == permission or rule.function.name == "admin":
+            if isinstance(permission, list):
+                check = any( str.lower(perm) == rule.function.name for perm in permission )
+            elif permission is None:
+                check = False
+            else:
+                check = str.lower(permission) == rule.function.name
+            if check or rule.function.name == "admin":
                 # Vérifier d'abord si la règle est accessible selon son horaire
                 if not is_rule_accessible_now(rule):
                     continue  # Passer à la règle suivante si pas accessible maintenant

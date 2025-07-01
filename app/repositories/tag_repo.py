@@ -26,7 +26,7 @@ def delete_tag(db: Session, tag: Tag):
 
 def is_tag_referenced(db: Session, tag: Tag) -> bool:
     """
-    Check if a tag is referenced by any entity (user, group, policy).
+    Check if a tag is referenced by any entity (user, group, policy, element, environment).
     Returns True if the tag is referenced, False otherwise.
     """
-    return bool(tag.users or tag.groups or tag.policies)
+    return bool(tag.users or tag.groups or tag.policies or tag.elements or tag.environments)

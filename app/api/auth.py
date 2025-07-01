@@ -10,6 +10,7 @@ from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
 from fastapi.security.utils import get_authorization_scheme_param
 from starlette.status import HTTP_401_UNAUTHORIZED
 
+from ..helper.security import create_password_reset_token
 from ..models.user import User
 from ..database.session import SessionLocal
 from ..helper import security, audit, email, response
@@ -137,7 +138,7 @@ def get_me(current_user: User = Depends(get_current_user)):
 def reset_password_request(reset_req: PasswordResetRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     user = user_repo.get_user_by_email(db, reset_req.email)
     if user:
-        token = auth.create_token(data={"sub": str(user.id)}, token_type="password_reset")
+        token = create_password_reset_token(user.id)
         background_tasks.add_task(email.send_reset_email, user.email, token)
         audit.log_action(db, user.id, "Réinitialisation mot de passe", "Lien de réinitialisation envoyé par email")
     return response.success_response(None, "Si cet email est enregistré, vous recevrez un lien de réinitialisation.")

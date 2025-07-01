@@ -24,8 +24,9 @@ class UserOut(BaseModel):
     }
 
 class ChangePassword(BaseModel):
-    old_password: str
-    new_password: str
+    old_password: str | None
+    new_password: str | None
+    send_email: bool
 
 class ChangeSuperadmin(BaseModel):
     is_superadmin: bool

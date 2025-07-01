@@ -7,11 +7,19 @@ class audit_logs {
    datetime timestamp
    integer id
 }
+class element_tags {
+   integer element_id
+   integer tag_id
+}
 class elements {
    varchar(80) name
    varchar(1024) description
    integer environment_id
    integer id
+}
+class environment_tags {
+   integer environment_id
+   integer tag_id
 }
 class environments {
    varchar(80) name
@@ -42,7 +50,6 @@ class organizations {
 class policies {
    varchar(80) name
    varchar(1024) description
-   varchar(80) access_schedule
    integer organization_id
    integer id
 }
@@ -63,6 +70,7 @@ class rules {
    integer function_id
    integer environment_id
    integer element_id
+   varchar(80) access_schedule
    integer id
 }
 class tags {
@@ -92,7 +100,11 @@ class users {
 }
 
 audit_logs  -->  users : user_id|id
+element_tags  -->  elements : element_id|id
+element_tags  -->  tags : tag_id|id
 elements  -->  environments : environment_id|id
+environment_tags  -->  environments : environment_id|id
+environment_tags  -->  tags : tag_id|id
 environments  -->  organizations : organization_id|id
 group_tags  -->  groups : group_id|id
 group_tags  -->  tags : tag_id|id

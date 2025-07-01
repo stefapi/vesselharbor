@@ -2,6 +2,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from ..database.base import Base
+from .tag import element_tags
 
 class Element(Base):
     __tablename__ = "elements"
@@ -13,6 +14,7 @@ class Element(Base):
 
     environment = relationship("Environment", back_populates="elements")
     rules = relationship("Rule", back_populates="element")  # pour voir où cet élément est utilisé dans des règles
+    tags = relationship("Tag", secondary=element_tags, back_populates="elements")
 
     @property
     def groups(self):

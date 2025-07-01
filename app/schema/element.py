@@ -5,6 +5,7 @@ from typing import Optional, List, TYPE_CHECKING
 from .rule import RuleOut  # si on veut les inclure
 from .user import UserOut
 from .group import GroupOut
+from .tag import TagOut
 if TYPE_CHECKING:
     from .environment import EnvironmentBase
 
@@ -16,6 +17,7 @@ class ElementCreate(BaseModel):
 class ElementUpdate(BaseModel):
     name: Optional[str]
     description: Optional[str]
+    environment_id: Optional[int] = None
 
 class ElementBase(BaseModel):
     id: int
@@ -30,6 +32,7 @@ class ElementOut(ElementBase):
     rules: Optional[List[RuleOut]] = []
     users: Optional[List[UserOut]] = []
     groups: Optional[List[GroupOut]] = []
+    tags: Optional[List[TagOut]] = []
 
     model_config = {
         "from_attributes": True

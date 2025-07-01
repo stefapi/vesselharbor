@@ -2,6 +2,8 @@
 from sqlalchemy.orm import Session
 from ..models.environment import Environment
 from . import element_repo
+from ..models.tag import Tag
+
 
 def get_environment(db: Session, env_id: int) -> Environment:
     return db.query(Environment).filter(Environment.id == env_id).first()
@@ -25,3 +27,21 @@ def delete_environment(db: Session, environment: Environment):
     # Delete the environment (rules will be deleted automatically due to CASCADE)
     db.delete(environment)
     db.commit()
+
+def add_tag_to_environment(db: Session, environment: Environment, tag: Tag):
+    if tag not in environment.tags:
+        environment.tags.append(tag)
+        db.commit()
+        db.refresh(environment)
+
+def remove_tag_from_environment(db: Session, environment: Environment, tag: Tag):
+    if tag in environment.tags:
+        environment.tags.remove(tag)
+        db.commit()
+        db.refresh(environment)
+
+        # Check if the tag is still referenced by any entity
+        from ..repositories import tag_repo
+        if not tag_repo.is_tag_referenced(db, tag):
+            # If the tag is no longer referenced, delete it
+            tag_repo.delete_tag(db, tag)
