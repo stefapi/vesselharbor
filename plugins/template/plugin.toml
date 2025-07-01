@@ -1,0 +1,77 @@
+# plugin.toml - formal model for a plugin
+apiVersion = "1.0"  # Ex: "v1alpha1", "v1beta1", "v1"
+kind = "Plugin"        # Type de ressource (constant)
+
+[metadata]
+name = "Template Plugin"        # Identifiant technique unique
+version = "1.0"     # Version sémantique du plugin
+description = "A sample plugin to demonstrate how to create one" # Résumé des fonctionnalités
+tags = ["template"] # Catégorisation: ["database", "cms"] (Optionnel)
+
+[metadata.annotations] # Métadonnées étendues (Optionnel)
+key = "value"
+
+[[metadata.maintainers]]
+name = "Stéphane Apiou"
+email = "stephane at apiou dot org"       # Optionnel
+url = "www.apiou.org"         # Lien vers documentation
+
+[spec]
+# Configuration de déploiement
+[[spec.runtimes]]
+name = "compose"             # Runtime cible
+version = "3.8+"             # Version requise
+composeTemplate = "string"   # Chemin vers template principal
+overrideTemplates = ["string"] # Templates additionnels (Optionnel)
+fragments = ["string"]       # Fragments réutilisables (Optionnel)
+
+# Gestion des paramètres
+configSchema = "string"      # Chemin vers schema.json
+
+[spec.configProfiles]        # Valeurs par défaut profilées
+dev = "string"               # Chemin vers dev.yaml (Optionnel)
+prod = "string"              # Chemin vers prod.yaml (Optionnel)
+
+# Construction d'images
+[spec.images.serviceName]    # Clé = nom du service dans compose
+context = "string"           # Chemin du contexte Docker
+dockerfile = "string"        # "Dockerfile" par défaut (Optionnel)
+tags = ["string"]            # Liste des tags cibles
+args = { key = "value" }     # Args de build statiques (Optionnel)
+buildArgsFromParams = ["string"] # Mapping paramètre → arg (Optionnel)
+patchesDir = "string"        # Chemin des patches (Optionnel)
+cacheFrom = ["string"]       # Images pour cache build (Optionnel)
+
+# Sécurité et secrets
+[spec.secrets.secretName]    # Clé = identifiant secret
+description = "string"
+generate = false             # Génération automatique (Optionnel)
+external = false             # Doit être fourni (Optionnel)
+minLength = 0                # Contrainte de génération (Optionnel)
+
+# Dépendances
+[spec.dependencies]
+
+[[spec.dependencies.services]] # Services externes requis
+name = "mysql"               # Identifiant technique
+minVersion = "5.7"           # (Optionnel)
+maxVersion = "8.0"           # (Optionnel)
+
+[[spec.dependencies.plugins]] # Plugins complémentaires
+name = "redis-cache"
+version = "~2.0"
+optional = true              # (Optionnel)
+
+# Automatisation
+[spec.hooks]
+preDeploy = "string"         # Script avant déploiement (Optionnel)
+postDeploy = "string"        # Script après déploiement (Optionnel)
+healthCheck = "string"       # Vérification custom (Optionnel)
+
+# Santé de l'application
+[spec.healthChecks.checkName] # Ex: "http-status"
+type = "string"              # "http" | "tcp" | "cmd"
+endpoint = "string"          # URL ou port (Optionnel)
+command = ["string"]         # Commande à exécuter (Optionnel)
+interval = "string"          # "30s" (Optionnel)
+timeout = "string"           # "10s" (Optionnel)
