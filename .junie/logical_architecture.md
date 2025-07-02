@@ -1,6 +1,6 @@
 # Logical Architecture of the Application
 
-This document presents the complete logical architecture of the FastAPI Vue Template application, describing how the different components interact with each other.
+This document presents the complete logical architecture of the VesselHarbor application, describing how the different components interact with each other.
 
 ## Overview
 

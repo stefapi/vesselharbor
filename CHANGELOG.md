@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2023-05-21
 
 ### Added
-- Initial release of the FastAPI Vue Template
+- Initial release of the VesselHarbor
 - FastAPI backend with SQLAlchemy ORM
 - Vue.js 3 frontend with Composition API
 - Authentication system with JWT tokens

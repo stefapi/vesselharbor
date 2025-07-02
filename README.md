@@ -1,4 +1,4 @@
-# FastAPI Vue Template
+# VesselHarbor
 
 <div align="center">
   <img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi" alt="FastAPI">
@@ -10,7 +10,7 @@
 </div>
 
 <p align="center">
-  <em>A modern full-stack template combining FastAPI and Vue.js for rapid application development</em>
+  <em>A modern full-stack application combining FastAPI and Vue.js for vessel management</em>
 </p>
 
 ## ✨ Features
@@ -38,8 +38,8 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/fastapivue-template.git
-cd fastapivue-template
+git clone https://github.com/yourusername/VesselHarbor.git
+cd VesselHarbor
 
 # Copy environment files
 cp .env.example .env

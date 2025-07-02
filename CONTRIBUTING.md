@@ -1,6 +1,6 @@
-# Contributing to FastAPI Vue Template
+# Contributing to VesselHarbor
 
-Thank you for your interest in contributing to the FastAPI Vue Template project! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to the VesselHarbor project! This document provides guidelines and instructions for contributing.
 
 ## Code of Conduct
 
@@ -49,7 +49,7 @@ Follow these steps to submit a pull request:
    # Backend tests
    cd app
    poetry run pytest
-   
+
    # Frontend tests
    cd frontend
    pnpm test:ci
@@ -136,4 +136,4 @@ For more detailed information, please refer to the documentation in the `.junie`
 - [Architecture](.junie/architecture.md)
 - [Project Guidelines](.junie/guidelines.md)
 
-Thank you for contributing to the FastAPI Vue Template project!
+Thank you for contributing to the VesselHarbor project!

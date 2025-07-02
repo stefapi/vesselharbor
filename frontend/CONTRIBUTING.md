@@ -1,6 +1,6 @@
 # Contributing to the Frontend
 
-Thank you for your interest in contributing to the frontend of our FastAPI Vue Template project! This document provides guidelines specifically for the Vue.js frontend.
+Thank you for your interest in contributing to the frontend of our VesselHarbor project! This document provides guidelines specifically for the Vue.js frontend.
 
 ## Development Setup
 

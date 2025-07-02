@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m' # No Color
+
+# Get the commit message file
+commit_msg_file=$1
+commit_msg=$(cat "$commit_msg_file")
+
+# Define the regex pattern for conventional commits
+# Format: <type>[optional scope]: <description>
+# Types: feat, fix, docs, style, refactor, test, chore, perf
+conventional_pattern='^(feat|fix|docs|style|refactor|test|chore|perf)(\([a-z0-9-]+\))?: .+'
+
+echo -e "${YELLOW}Checking commit message format...${NC}"
+echo -e "${YELLOW}Commit message:${NC} $commit_msg"
+
+if [[ ! $commit_msg =~ $conventional_pattern ]]; then
+    echo -e "${RED}Error: Commit message does not follow the Conventional Commits format.${NC}"
+    echo -e "${YELLOW}Format should be:${NC} <type>[optional scope]: <description>"
+    echo -e "${YELLOW}Example:${NC} feat(auth): add login functionality"
+    echo -e "${YELLOW}Valid types:${NC} feat, fix, docs, style, refactor, test, chore, perf"
+    exit 1
+fi
+
+# Check if the first letter of the description is lowercase
+description=$(echo "$commit_msg" | sed -E 's/^(feat|fix|docs|style|refactor|test|chore|perf)(\([a-z0-9-]+\))?: //')
+first_char=$(echo "$description" | cut -c1)
+
+if [[ ! $first_char =~ [a-z] ]]; then
+    echo -e "${RED}Error: Description should start with a lowercase letter.${NC}"
+    echo -e "${YELLOW}Current:${NC} $description"
+    echo -e "${YELLOW}Example:${NC} feat: add new feature (not 'Add new feature')"
+    exit 1
+fi
+
+# Check if the description is too short
+if [[ ${#description} -lt 10 ]]; then
+    echo -e "${RED}Error: Description is too short (minimum 10 characters).${NC}"
+    echo -e "${YELLOW}Current (${#description} chars):${NC} $description"
+    exit 1
+fi
+
+# Check if the description ends with a period
+if [[ $description =~ \.$ ]]; then
+    echo -e "${RED}Error: Description should not end with a period.${NC}"
+    echo -e "${YELLOW}Current:${NC} $description"
+    exit 1
+fi
+
+echo -e "${GREEN}Commit message format is valid!${NC}"
+exit 0

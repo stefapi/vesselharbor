@@ -1,0 +1,51 @@
+#!/bin/bash
+
+echo "Running pre-commit hooks..."
+
+# Check if we're in the root directory of the project
+if [ ! -f "Makefile" ] && [ ! -f "package.json" ]; then
+    echo "Error: This script must be run from the root of the project."
+    exit 1
+fi
+
+# Backend checks (if in a Python project)
+if [ -d "app" ]; then
+    echo "Running backend checks..."
+
+    # Check if poetry is installed
+    if command -v poetry &> /dev/null; then
+        echo "Running black formatter..."
+        poetry run black app --check || { echo "Black formatting check failed. Run 'make format' to fix."; exit 1; }
+
+        echo "Running isort..."
+        poetry run isort app --check-only || { echo "isort check failed. Run 'make format' to fix."; exit 1; }
+
+        echo "Running flake8..."
+        poetry run flake8 app || { echo "flake8 check failed. Please fix the issues."; exit 1; }
+    else
+        echo "Warning: Poetry not found. Skipping backend checks."
+    fi
+fi
+
+# Frontend checks (if in a JS/TS project)
+if [ -d "frontend" ]; then
+    echo "Running frontend checks..."
+
+    # Check if pnpm is installed
+    if command -v pnpm &> /dev/null; then
+        cd frontend
+
+        echo "Running ESLint..."
+        pnpm lint || { echo "ESLint check failed. Run 'pnpm lint --fix' to fix."; exit 1; }
+
+        echo "Running type check..."
+        pnpm type-check || { echo "TypeScript check failed. Please fix the type errors."; exit 1; }
+
+        cd ..
+    else
+        echo "Warning: pnpm not found. Skipping frontend checks."
+    fi
+fi
+
+echo "All pre-commit checks passed!"
+exit 0

@@ -1,6 +1,6 @@
 # Contributing to the Backend
 
-Thank you for your interest in contributing to the backend of our FastAPI Vue Template project! This document provides guidelines specifically for the FastAPI backend.
+Thank you for your interest in contributing to the backend of our VesselHarbor project! This document provides guidelines specifically for the FastAPI backend.
 
 ## Development Setup
 
@@ -56,15 +56,15 @@ async def read_item(
 ):
     """
     Get an item by ID.
-    
+
     Args:
         item_id: The ID of the item to retrieve
         db: Database session
         current_user: The authenticated user
-        
+
     Returns:
         The item if found
-        
+
     Raises:
         HTTPException: If item not found or user doesn't have permission
     """
@@ -104,10 +104,10 @@ def test_read_item(client, test_db, test_user, test_item):
     })
     token = login_response.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
-    
+
     # Act
     response = client.get(f"/items/{test_item.id}", headers=headers)
-    
+
     # Assert
     assert response.status_code == 200
     data = response.json()

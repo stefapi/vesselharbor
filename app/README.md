@@ -1,6 +1,6 @@
-# Backend - FastAPI Vue Template
+# Backend - VesselHarbor
 
-This directory contains the FastAPI backend for the FastAPI Vue Template project.
+This directory contains the FastAPI backend for the VesselHarbor project.
 
 ## 🚀 Features
 
@@ -24,8 +24,8 @@ This directory contains the FastAPI backend for the FastAPI Vue Template project
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/fastapivue-template.git
-   cd fastapivue-template
+   git clone https://github.com/yourusername/VesselHarbor.git
+   cd VesselHarbor
    ```
 
 2. Install dependencies:

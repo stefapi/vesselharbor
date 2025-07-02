@@ -11,7 +11,7 @@ Use this section to tell people about which versions of your project are current
 
 ## Reporting a Vulnerability
 
-We take the security of FastAPI Vue Template seriously. If you believe you've found a security vulnerability, please follow these steps:
+We take the security of VesselHarbor seriously. If you believe you've found a security vulnerability, please follow these steps:
 
 1. **Do not disclose the vulnerability publicly**
 2. **Email the details to [stephane{plus}security{at}apiou{dot}org]**
@@ -60,4 +60,4 @@ We will announce security updates through:
 - Release notes
 - (Optional) Security mailing list
 
-Thank you for helping keep FastAPI Vue Template and its users safe!
+Thank you for helping keep VesselHarbor and its users safe!

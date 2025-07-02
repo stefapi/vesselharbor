@@ -1,8 +1,8 @@
 {
   "project": {
-    "name": "FastAPI Vue Template",
+    "name": "VesselHarbor",
     "version": "1.0.0",
-    "description": "A template project using FastAPI and Vue.js"
+    "description": "A modern full-stack application combining FastAPI and Vue.js for vessel management"
   },
   "development": {
     "backend": {

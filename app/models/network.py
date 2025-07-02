@@ -30,7 +30,7 @@
 #
 
 # app/models/network.py
-from sqlalchemy import Column, Integer, Boolean, Enum, String
+from sqlalchemy import Column, Integer, Boolean, Enum, String, ForeignKey
 from sqlalchemy.dialects.postgresql import CIDR
 from sqlalchemy.orm import relationship
 from ..database.base import Base
