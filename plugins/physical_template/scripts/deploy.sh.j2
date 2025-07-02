@@ -1,0 +1,210 @@
+#!/bin/bash
+# Deployment script for physical host or VM installation
+# This script is generated from a template and should not be modified directly
+
+set -e
+
+# Configuration variables from template
+HOST="{{ host.connection.host }}"
+PORT="{{ host.connection.port | default(22) }}"
+USER="{{ host.connection.user }}"
+{% if host.connection.key_file is defined %}
+KEY_FILE="{{ host.connection.key_file }}"
+SSH_OPTS="-i $KEY_FILE -p $PORT"
+{% else %}
+SSH_OPTS="-p $PORT"
+{% endif %}
+
+APP_NAME="{{ service_name }}"
+INSTALL_DIR="{{ app.install_dir | default('/opt/app') }}"
+DATA_DIR="{{ app.data_dir | default('/var/lib/app') }}"
+LOG_DIR="{{ app.log_dir | default('/var/log/app') }}"
+APP_USER="{{ app.user | default('app') }}"
+APP_GROUP="{{ app.group | default('app') }}"
+
+DB_HOST="{{ database.host | default('localhost') }}"
+DB_PORT="{{ database.port | default(5432) }}"
+DB_NAME="{{ database.name | default('app') }}"
+DB_USER="{{ database.user | default('postgres') }}"
+DB_PASSWORD="{{ database.password | default('postgres') }}"
+
+HOST_PORT="{{ server.host_port | default(8080) }}"
+WORKERS="{{ server.workers | default(4) }}"
+TIMEOUT="{{ server.timeout | default(60) }}"
+
+# Function to run commands on the remote host
+run_remote() {
+    ssh $SSH_OPTS $USER@$HOST "$1"
+}
+
+# Function to copy files to the remote host
+copy_to_remote() {
+    scp $SSH_OPTS -r "$1" $USER@$HOST:"$2"
+}
+
+echo "Starting deployment of $APP_NAME to $HOST..."
+
+# Check if we can connect to the host
+echo "Checking connection to $HOST..."
+if ! run_remote "echo 'Connection successful'"; then
+    echo "Failed to connect to $HOST. Please check your connection settings."
+    exit 1
+fi
+
+# Check OS family and install required packages
+echo "Checking OS and installing required packages..."
+OS_FAMILY=$(run_remote "if [ -f /etc/debian_version ]; then echo 'debian'; elif [ -f /etc/redhat-release ]; then echo 'redhat'; elif [ -f /etc/SuSE-release ]; then echo 'suse'; else echo 'unknown'; fi")
+
+case $OS_FAMILY in
+    debian)
+        run_remote "sudo apt-get update && sudo apt-get install -y python3 python3-pip python3-venv postgresql-client nginx supervisor"
+        ;;
+    redhat)
+        run_remote "sudo yum -y update && sudo yum -y install python3 python3-pip postgresql nginx supervisor"
+        ;;
+    suse)
+        run_remote "sudo zypper refresh && sudo zypper install -y python3 python3-pip postgresql-client nginx supervisor"
+        ;;
+    *)
+        echo "Unsupported OS family. Please install required packages manually."
+        ;;
+esac
+
+# Create app user and group if they don't exist
+echo "Creating app user and group..."
+run_remote "getent group $APP_GROUP || sudo groupadd $APP_GROUP"
+run_remote "id -u $APP_USER &>/dev/null || sudo useradd -m -g $APP_GROUP -s /bin/bash $APP_USER"
+
+# Create required directories
+echo "Creating application directories..."
+run_remote "sudo mkdir -p $INSTALL_DIR $DATA_DIR $LOG_DIR"
+run_remote "sudo chown -R $APP_USER:$APP_GROUP $INSTALL_DIR $DATA_DIR $LOG_DIR"
+
+# Copy application files
+echo "Copying application files..."
+# Create a temporary directory for the application files
+TMP_DIR=$(mktemp -d)
+mkdir -p $TMP_DIR/app
+
+# Copy application files to the temporary directory
+# This would typically include your Python code, requirements.txt, etc.
+# For this template, we'll create a simple FastAPI application
+cat > $TMP_DIR/app/main.py << 'EOF'
+from fastapi import FastAPI
+import uvicorn
+import os
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", "8000")))
+EOF
+
+cat > $TMP_DIR/app/requirements.txt << 'EOF'
+fastapi>=0.68.0
+uvicorn>=0.15.0
+sqlalchemy>=1.4.23
+psycopg2-binary>=2.9.1
+EOF
+
+# Copy the application files to the remote host
+copy_to_remote "$TMP_DIR/app/*" "$INSTALL_DIR/"
+
+# Set up Python virtual environment
+echo "Setting up Python virtual environment..."
+run_remote "cd $INSTALL_DIR && python3 -m venv venv"
+run_remote "cd $INSTALL_DIR && ./venv/bin/pip install --upgrade pip"
+run_remote "cd $INSTALL_DIR && ./venv/bin/pip install -r requirements.txt"
+
+# Create application configuration
+echo "Creating application configuration..."
+run_remote "cat > $INSTALL_DIR/.env << EOF
+DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME
+SECRET_KEY={{ app.secret_key }}
+DEBUG={{ app.debug | default('false') }}
+LOG_LEVEL={{ app.log_level | default('info') }}
+PORT=$HOST_PORT
+EOF"
+
+# Set up Supervisor configuration
+echo "Setting up Supervisor configuration..."
+run_remote "sudo bash -c 'cat > /etc/supervisor/conf.d/$APP_NAME.conf << EOF
+[program:$APP_NAME]
+command=$INSTALL_DIR/venv/bin/uvicorn main:app --host 0.0.0.0 --port $HOST_PORT --workers $WORKERS
+directory=$INSTALL_DIR
+user=$APP_USER
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+stderr_logfile=$LOG_DIR/$APP_NAME.err.log
+stdout_logfile=$LOG_DIR/$APP_NAME.out.log
+environment=DATABASE_URL=\"postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME\",SECRET_KEY=\"{{ app.secret_key }}\",DEBUG=\"{{ app.debug | default('false') }}\",LOG_LEVEL=\"{{ app.log_level | default('info') }}\"
+EOF'"
+
+# Set up Nginx configuration (if needed)
+echo "Setting up Nginx configuration..."
+run_remote "sudo bash -c 'cat > /etc/nginx/sites-available/$APP_NAME << EOF
+server {
+    listen 80;
+    server_name {{ app.allowed_hosts[0] | default('localhost') }};
+
+    location / {
+        proxy_pass http://127.0.0.1:$HOST_PORT;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOF'"
+
+run_remote "sudo ln -sf /etc/nginx/sites-available/$APP_NAME /etc/nginx/sites-enabled/"
+
+# Set up database (if needed)
+if [ "$DB_HOST" = "localhost" ]; then
+    echo "Setting up local database..."
+    run_remote "sudo -u postgres psql -c \"CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';\" || true"
+    run_remote "sudo -u postgres psql -c \"CREATE DATABASE $DB_NAME OWNER $DB_USER;\" || true"
+fi
+
+# Configure storage volumes
+{% if storage.volumes is defined %}
+echo "Configuring storage volumes..."
+{% for vol in storage.volumes %}
+run_remote "sudo mkdir -p {{ vol.path }}"
+run_remote "sudo chown $APP_USER:$APP_GROUP {{ vol.path }}"
+{% if vol.type == 'nfs' and vol.options is defined and vol.options.server is defined and vol.options.export is defined %}
+run_remote "echo '{{ vol.options.server }}:{{ vol.options.export }} {{ vol.path }} nfs defaults 0 0' | sudo tee -a /etc/fstab"
+run_remote "sudo mount {{ vol.path }}"
+{% endif %}
+{% endfor %}
+{% endif %}
+
+# Configure network interfaces
+{% if network.networks is defined %}
+echo "Configuring network interfaces..."
+{% for net in network.networks %}
+{% if net.type == 'physical' %}
+run_remote "sudo ip addr add {{ net.cidr }} dev {{ net.interface | default('eth0') }}"
+{% endif %}
+{% endfor %}
+{% endif %}
+
+# Restart services
+echo "Restarting services..."
+run_remote "sudo systemctl restart supervisor"
+run_remote "sudo systemctl restart nginx"
+
+# Clean up
+rm -rf $TMP_DIR
+
+echo "Deployment of $APP_NAME to $HOST completed successfully!"

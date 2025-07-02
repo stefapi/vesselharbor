@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Developer <dev@example.com>
+Date: Mon, 1 Jul 2024 12:00:00 +0000
+Subject: [PATCH] Add plugin support
+
+This patch adds plugin support to the application.
+
+---
+ app/settings.py | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/app/settings.py b/app/settings.py
+index 1234567..abcdefg 100644
+--- a/app/settings.py
++++ b/app/settings.py
+@@ -150,6 +150,16 @@ INSTALLED_APPS = [
+     'django.contrib.messages',
+     'django.contrib.staticfiles',
+     'rest_framework',
++    'plugin_system',
+ ]
+
++# Plugin system configuration
++PLUGIN_DIRS = [
++    os.path.join(BASE_DIR, 'plugins'),
++]
++
++PLUGIN_SETTINGS = {
++    'auto_discover': True,
++    'enable_all': False,
++}
++
+ # Rest Framework settings
+--
+2.40.1

@@ -1,0 +1,78 @@
+# plugin.yml - Manifeste principal (métadonnées + points d'entrée)
+apiVersion: "1.0"  # Ex: "v1alpha1", "v1beta1", "v1"
+kind: "Plugin"     # Type de ressource (constant)
+
+metadata:
+  name: "Template Plugin"        # Identifiant technique unique
+  version: "1.0"                 # Version sémantique du plugin
+  description: "A sample plugin to demonstrate how to create one" # Résumé des fonctionnalités
+  tags: ["template"]             # Catégorisation: ["database", "cms"] (Optionnel)
+
+  annotations:                   # Métadonnées étendues (Optionnel)
+    key: "value"
+
+  maintainers:
+    - name: "Stéphane Apiou"
+      email: "stephane at apiou dot org"  # Optionnel
+      url: "www.apiou.org"                # Lien vers documentation
+
+spec:
+  # Configuration de déploiement
+  runtimes:
+    - name: "compose"                     # Runtime cible
+      version: "3.8+"                     # Version requise
+      composeTemplate: "compose/docker-compose.yml.j2"  # Chemin vers template principal
+      overrideTemplates:                  # Templates additionnels (Optionnel)
+        - "compose/overrides/prod.yml.j2"
+        - "compose/overrides/dev.yml.j2"
+
+  # Gestion des paramètres
+  configSchema: "config/schema.json"      # Chemin vers schema.json
+
+  configProfiles:                         # Valeurs par défaut profilées
+    dev: "config/defaults.yaml"           # Chemin vers defaults.yaml (Optionnel)
+    prod: "config/defaults.yaml"          # Chemin vers defaults.yaml (Optionnel)
+
+  # Construction d'images
+  images:
+    serviceName:                          # Clé = nom du service dans compose
+      context: "build/app"                # Chemin du contexte Docker
+      dockerfile: "Dockerfile"            # "Dockerfile" par défaut (Optionnel)
+      tags: ["latest"]                    # Liste des tags cibles
+      args:                               # Args de build statiques (Optionnel)
+        key: "value"
+      buildArgsFromParams: ["param1"]     # Mapping paramètre → arg (Optionnel)
+      patchesDir: "build/patches"         # Chemin des patches (Optionnel)
+
+  # Sécurité et secrets
+  secrets:
+    secretName:                           # Clé = identifiant secret
+      description: "A secret description"
+      generate: false                     # Génération automatique (Optionnel)
+      external: false                     # Doit être fourni (Optionnel)
+      minLength: 0                        # Contrainte de génération (Optionnel)
+
+  # Dépendances
+  dependencies:
+    services:                             # Services externes requis
+      - name: "mysql"                     # Identifiant technique
+        minVersion: "5.7"                 # (Optionnel)
+        maxVersion: "8.0"                 # (Optionnel)
+
+    plugins:                              # Plugins complémentaires
+      - name: "redis-cache"
+        version: "~2.0"
+        optional: true                    # (Optionnel)
+
+  # Automatisation
+  hooks:
+    preDeploy: "hooks/pre_deploy.sh"      # Script avant déploiement (Optionnel)
+    postDeploy: "hooks/post_deploy.sh"    # Script après déploiement (Optionnel)
+
+  # Santé de l'application
+  healthChecks:
+    httpStatus:                           # Ex: "http-status"
+      type: "http"                        # "http" | "tcp" | "cmd"
+      endpoint: "/health"                 # URL ou port (Optionnel)
+      interval: "30s"                     # "30s" (Optionnel)
+      timeout: "10s"                      # "10s" (Optionnel)

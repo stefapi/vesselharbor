@@ -1,0 +1,38 @@
+# Production environment overrides
+version: '3.8'
+
+services:
+  app:
+    environment:
+      - DEBUG=false
+      - LOG_LEVEL=warning
+    deploy:
+      replicas: {{ replicas | default(2) }}
+      resources:
+        limits:
+          cpus: '{{ cpu_limit | default("0.5") }}'
+          memory: {{ memory_limit | default("512M") }}
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  db:
+    environment:
+      - POSTGRES_MAX_CONNECTIONS={{ db_max_connections | default(100) }}
+    volumes:
+      - db-backup:/var/lib/postgresql/backup
+    deploy:
+      resources:
+        limits:
+          cpus: '{{ db_cpu_limit | default("1.0") }}'
+          memory: {{ db_memory_limit | default("1G") }}
+
+volumes:
+  db-backup:

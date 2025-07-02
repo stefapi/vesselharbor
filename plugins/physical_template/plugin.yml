@@ -1,0 +1,60 @@
+# plugin.yml - Main manifest (metadata + entry points)
+apiVersion: "1.0"  # Ex: "v1alpha1", "v1beta1", "v1"
+kind: "Plugin"     # Resource type (constant)
+
+metadata:
+  name: "Physical Host Template"        # Unique technical identifier
+  version: "1.0"                 # Semantic version of the plugin
+  description: "A template for deploying applications directly on physical hosts or VMs" # Summary of functionalities
+  tags: ["physical", "vm", "host"]             # Categorization: ["database", "cms"] (Optional)
+
+  annotations:                   # Extended metadata (Optional)
+    key: "value"
+
+  maintainers:
+    - name: "Stéphane Apiou"
+      email: "stephane at apiou dot org"  # Optional
+      url: "www.apiou.org"                # Link to documentation
+
+spec:
+  # Deployment configuration
+  runtimes:
+    - name: "physical"                     # Target runtime
+      version: "1.0+"                     # Required version
+      deploymentTemplate: "scripts/deploy.sh.j2"  # Path to main template
+
+  # Parameter management
+  configSchema: "config/schema.json"      # Path to schema.json
+
+  configProfiles:                         # Profiled default values
+    dev: "config/defaults.yaml"           # Path to defaults.yaml (Optional)
+    prod: "config/defaults.yaml"          # Path to defaults.yaml (Optional)
+
+  # Security and secrets
+  secrets:
+    secretName:                           # Key = secret identifier
+      description: "A secret description"
+      generate: false                     # Automatic generation (Optional)
+      external: false                     # Must be provided (Optional)
+      minLength: 0                        # Generation constraint (Optional)
+
+  # Dependencies
+  dependencies:
+    services:                             # Required external services
+      - name: "postgresql"                # Technical identifier
+        minVersion: "13"                 # (Optional)
+        maxVersion: "15"                 # (Optional)
+
+  # Automation
+  hooks:
+    preDeploy: "hooks/pre_deploy.sh"      # Script before deployment (Optional)
+    postDeploy: "hooks/post_deploy.sh"    # Script after deployment (Optional)
+    preUpgrade: "hooks/pre_upgrade.sh"    # Script before upgrade (Optional)
+
+  # Application health
+  healthChecks:
+    httpStatus:                           # Ex: "http-status"
+      type: "http"                        # "http" | "tcp" | "cmd"
+      endpoint: "/health"                 # URL or port (Optional)
+      interval: "30s"                     # "30s" (Optional)
+      timeout: "10s"                      # "10s" (Optional)

@@ -1,0 +1,96 @@
+# Default configuration values
+# These values can be overridden by user-provided configuration
+
+# Database configuration
+database:
+  host: localhost
+  port: 5432
+  name: app
+  user: postgres
+  password: postgres
+  max_connections: 100
+
+# Application settings
+app:
+  debug: false
+  log_level: info
+  secret_key: change_me_in_production
+  allowed_hosts:
+    - localhost
+    - 127.0.0.1
+
+# Server configuration
+server:
+  host_port: 8080
+  workers: 4
+  timeout: 60
+
+# Container cluster configuration
+container_cluster:
+  mode: docker
+  version: latest
+  ha_enabled: false
+  endpoint: unix:///var/run/docker.sock
+
+# Network configuration
+network:
+  networks:
+    - name: app-network
+      cidr: 172.16.0.0/24
+      type: overlay
+      tenant_scoped: false
+
+# Gateway configuration
+gateway:
+  kind: traefik
+  version: latest
+  cert_strategy: none
+  entrypoints:
+    web: ":80"
+    websecure: ":443"
+
+# Stack configuration
+stack:
+  name: app-stack
+  description: Application stack
+
+# Storage configuration
+storage:
+  pools:
+    - type: nfs
+      scope: global
+      parameters:
+        server: storage-server
+        path: /exports/data
+
+# Volume configuration
+volume:
+  volumes:
+    - name: app-data
+      size_gb: 10
+      mode: rwo
+      attached_to_type: service
+
+# DNS configuration
+dns:
+  providers:
+    - name: default-dns
+      api_endpoint: https://dns-api.example.com
+      creds:
+        api_key: change_me_in_production
+  domains:
+    - fqdn: example.com
+      provider_id: 1
+      dnssec_enabled: false
+  records:
+    - domain_id: 1
+      type: A
+      name: www
+      value: 192.168.1.1
+      ttl: 3600
+
+# Feature flags
+features:
+  enable_registration: true
+  enable_social_login: false
+  maintenance_mode: false

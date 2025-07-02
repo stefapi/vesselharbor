@@ -1,1 +1,109 @@
 # data mapping based on jinja2
+
+# Container Cluster Mapping
+container_cluster:
+  mode: "{{ container_cluster.mode | default('docker') }}"
+  version: "{{ container_cluster.version | default('latest') }}"
+  ha_enabled: "{{ container_cluster.ha_enabled | default(false) }}"
+  endpoint: "{{ container_cluster.endpoint | default('unix:///var/run/docker.sock') }}"
+
+# Network Mapping
+network:
+  networks:
+    {% if network.networks is defined %}
+    {% for net in network.networks %}
+    - name: "{{ net.name }}"
+      cidr: "{{ net.cidr }}"
+      type: "{{ net.type | default('overlay') }}"
+      {% if net.vlan is defined %}
+      vlan: {{ net.vlan }}
+      {% endif %}
+      tenant_scoped: "{{ net.tenant_scoped | default(false) }}"
+    {% endfor %}
+    {% endif %}
+
+# Gateway Mapping
+gateway:
+  kind: "{{ gateway.kind | default('traefik') }}"
+  version: "{{ gateway.version | default('latest') }}"
+  cert_strategy: "{{ gateway.cert_strategy | default('none') }}"
+  {% if gateway.entrypoints is defined %}
+  entrypoints:
+    {% for key, value in gateway.entrypoints.items() %}
+    {{ key }}: "{{ value }}"
+    {% endfor %}
+  {% endif %}
+
+# Stack Mapping
+stack:
+  name: "{{ stack.name | default(service_name) }}"
+  {% if stack.description is defined %}
+  description: "{{ stack.description }}"
+  {% endif %}
+
+# Storage Mapping
+storage:
+  pools:
+    {% if storage.pools is defined %}
+    {% for pool in storage.pools %}
+    - type: "{{ pool.type | default('nfs') }}"
+      scope: "{{ pool.scope | default('global') }}"
+      {% if pool.parameters is defined %}
+      parameters:
+        {% for key, value in pool.parameters.items() %}
+        {{ key }}: "{{ value }}"
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+    {% endif %}
+
+# Volume Mapping
+volume:
+  volumes:
+    {% if volume.volumes is defined %}
+    {% for vol in volume.volumes %}
+    - name: "{{ vol.name | default('vol-' ~ loop.index) }}"
+      size_gb: {{ vol.size_gb }}
+      mode: "{{ vol.mode | default('rwo') }}"
+      {% if vol.attached_to_type is defined %}
+      attached_to_type: "{{ vol.attached_to_type }}"
+      {% endif %}
+      {% if vol.attached_to_id is defined %}
+      attached_to_id: {{ vol.attached_to_id }}
+      {% endif %}
+    {% endfor %}
+    {% endif %}
+
+# DNS Mapping
+dns:
+  providers:
+    {% if dns.providers is defined %}
+    {% for provider in dns.providers %}
+    - name: "{{ provider.name }}"
+      api_endpoint: "{{ provider.api_endpoint }}"
+      creds:
+        {% for key, value in provider.creds.items() %}
+        {{ key }}: "{{ value }}"
+        {% endfor %}
+    {% endfor %}
+    {% endif %}
+
+  domains:
+    {% if dns.domains is defined %}
+    {% for domain in dns.domains %}
+    - fqdn: "{{ domain.fqdn }}"
+      provider_id: {{ domain.provider_id }}
+      dnssec_enabled: "{{ domain.dnssec_enabled | default(false) }}"
+    {% endfor %}
+    {% endif %}
+
+  records:
+    {% if dns.records is defined %}
+    {% for record in dns.records %}
+    - domain_id: {{ record.domain_id }}
+      type: "{{ record.type }}"
+      name: "{{ record.name }}"
+      value: "{{ record.value }}"
+      ttl: {{ record.ttl | default(3600) }}
+    {% endfor %}
+    {% endif %}

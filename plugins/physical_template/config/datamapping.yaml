@@ -1,0 +1,134 @@
+# data mapping based on jinja2
+
+# Host Mapping
+host:
+  type: "{{ host.type | default('physical') }}"
+  connection:
+    host: "{{ host.connection.host }}"
+    port: "{{ host.connection.port | default(22) }}"
+    user: "{{ host.connection.user }}"
+    {% if host.connection.key_file is defined %}
+    key_file: "{{ host.connection.key_file }}"
+    {% endif %}
+    {% if host.connection.password is defined %}
+    password: "{{ host.connection.password }}"
+    {% endif %}
+  {% if host.os is defined %}
+  os:
+    family: "{{ host.os.family | default('debian') }}"
+    version: "{{ host.os.version | default('latest') }}"
+  {% endif %}
+  {% if host.resources is defined %}
+  resources:
+    {% if host.resources.cpu_threads is defined %}
+    cpu_threads: {{ host.resources.cpu_threads }}
+    {% endif %}
+    {% if host.resources.ram_mb is defined %}
+    ram_mb: {{ host.resources.ram_mb }}
+    {% endif %}
+    {% if host.resources.disk_gb is defined %}
+    disk_gb: {{ host.resources.disk_gb }}
+    {% endif %}
+  {% endif %}
+
+# Application Mapping
+app:
+  debug: "{{ app.debug | default(false) }}"
+  log_level: "{{ app.log_level | default('info') }}"
+  secret_key: "{{ app.secret_key }}"
+  install_dir: "{{ app.install_dir | default('/opt/app') }}"
+  data_dir: "{{ app.data_dir | default('/var/lib/app') }}"
+  log_dir: "{{ app.log_dir | default('/var/log/app') }}"
+  user: "{{ app.user | default('app') }}"
+  group: "{{ app.group | default('app') }}"
+  allowed_hosts:
+    {% if app.allowed_hosts is defined %}
+    {% for host in app.allowed_hosts %}
+    - "{{ host }}"
+    {% endfor %}
+    {% else %}
+    - "localhost"
+    - "127.0.0.1"
+    {% endif %}
+
+# Database Mapping
+database:
+  host: "{{ database.host | default('localhost') }}"
+  port: "{{ database.port | default(5432) }}"
+  name: "{{ database.name | default('app') }}"
+  user: "{{ database.user | default('postgres') }}"
+  password: "{{ database.password | default('postgres') }}"
+  max_connections: "{{ database.max_connections | default(100) }}"
+
+# Server Mapping
+server:
+  host_port: "{{ server.host_port | default(8080) }}"
+  workers: "{{ server.workers | default(4) }}"
+  timeout: "{{ server.timeout | default(60) }}"
+
+# Network Mapping
+network:
+  networks:
+    {% if network.networks is defined %}
+    {% for net in network.networks %}
+    - name: "{{ net.name }}"
+      cidr: "{{ net.cidr }}"
+      type: "{{ net.type | default('physical') }}"
+      {% if net.vlan is defined %}
+      vlan: {{ net.vlan }}
+      {% endif %}
+      interface: "{{ net.interface | default('eth0') }}"
+    {% endfor %}
+    {% endif %}
+
+# Storage Mapping
+storage:
+  volumes:
+    {% if storage.volumes is defined %}
+    {% for vol in storage.volumes %}
+    - name: "{{ vol.name }}"
+      path: "{{ vol.path }}"
+      size_gb: {{ vol.size_gb }}
+      type: "{{ vol.type | default('local') }}"
+      {% if vol.options is defined %}
+      options:
+        {% for key, value in vol.options.items() %}
+        {{ key }}: "{{ value }}"
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+    {% endif %}
+
+# DNS Mapping
+dns:
+  providers:
+    {% if dns.providers is defined %}
+    {% for provider in dns.providers %}
+    - name: "{{ provider.name }}"
+      api_endpoint: "{{ provider.api_endpoint }}"
+      creds:
+        {% for key, value in provider.creds.items() %}
+        {{ key }}: "{{ value }}"
+        {% endfor %}
+    {% endfor %}
+    {% endif %}
+
+  domains:
+    {% if dns.domains is defined %}
+    {% for domain in dns.domains %}
+    - fqdn: "{{ domain.fqdn }}"
+      provider_id: {{ domain.provider_id }}
+      dnssec_enabled: "{{ domain.dnssec_enabled | default(false) }}"
+    {% endfor %}
+    {% endif %}
+
+  records:
+    {% if dns.records is defined %}
+    {% for record in dns.records %}
+    - domain_id: {{ record.domain_id }}
+      type: "{{ record.type }}"
+      name: "{{ record.name }}"
+      value: "{{ record.value }}"
+      ttl: {{ record.ttl | default(3600) }}
+    {% endfor %}
+    {% endif %}

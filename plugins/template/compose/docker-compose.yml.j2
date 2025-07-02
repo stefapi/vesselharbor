@@ -1,0 +1,171 @@
+# Docker Compose template with Jinja2 placeholders
+version: '3.8'
+
+services:
+  app:
+    image: {{ image_name }}:{{ image_tag | default('latest') }}
+    container_name: {{ service_name }}-app
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://{{ db_user }}:{{ db_password }}@db:5432/{{ db_name }}
+      - SECRET_KEY={{ secret_key }}
+      - DEBUG={{ debug | default('false') }}
+    ports:
+      - "{{ host_port | default('8080') }}:80"
+    depends_on:
+      - db
+    networks:
+      - app-network
+      {% if network.networks is defined %}
+      {% for net in network.networks %}
+      - {{ net.name }}
+      {% endfor %}
+      {% endif %}
+    volumes:
+      - app-data:/data
+      {% if volume.volumes is defined %}
+      {% for vol in volume.volumes %}
+      {% if vol.attached_to_type == 'service' %}
+      - {{ vol.name }}:/mnt/volumes/{{ vol.name }}
+      {% endif %}
+      {% endfor %}
+      {% endif %}
+    {% if custom_config %}
+    configs:
+      - source: app_config
+        target: /app/config.json
+    {% endif %}
+    {% if container_cluster is defined %}
+    deploy:
+      mode: replicated
+      replicas: 1
+      {% if container_cluster.ha_enabled %}
+      placement:
+        constraints:
+          - node.role == worker
+      {% endif %}
+    {% endif %}
+
+  db:
+    image: postgres:{{ postgres_version | default('13') }}
+    container_name: {{ service_name }}-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER={{ db_user }}
+      - POSTGRES_PASSWORD={{ db_password }}
+      - POSTGRES_DB={{ db_name }}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  {% if gateway is defined %}
+  gateway:
+    image: {{ gateway.kind }}:{{ gateway.version | default('latest') }}
+    container_name: {{ service_name }}-gateway
+    restart: unless-stopped
+    networks:
+      - app-network
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - gateway-data:/data
+      {% if gateway.kind == 'traefik' %}
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      {% endif %}
+    environment:
+      {% if gateway.kind == 'traefik' %}
+      - TRAEFIK_API=true
+      - TRAEFIK_API_DASHBOARD=true
+      - TRAEFIK_PROVIDERS_DOCKER=true
+      - TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT=false
+      - TRAEFIK_ENTRYPOINTS_WEB_ADDRESS=:80
+      - TRAEFIK_ENTRYPOINTS_WEBSECURE_ADDRESS=:443
+      {% if gateway.cert_strategy == 'letsencrypt' %}
+      - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL={{ gateway.email | default('admin@example.com') }}
+      - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_STORAGE=/data/acme.json
+      - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_HTTPCHALLENGE=true
+      - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_HTTPCHALLENGE_ENTRYPOINT=web
+      {% endif %}
+      {% elif gateway.kind == 'nginx' %}
+      - NGINX_HOST={{ gateway.host | default('localhost') }}
+      {% elif gateway.kind == 'haproxy' %}
+      - HAPROXY_MODE={{ gateway.mode | default('http') }}
+      {% endif %}
+    {% if gateway.entrypoints is defined %}
+    labels:
+      {% for key, value in gateway.entrypoints.items() %}
+      - "{{ key }}={{ value }}"
+      {% endfor %}
+    {% endif %}
+  {% endif %}
+
+  {% if dns is defined and dns.providers is defined and dns.providers|length > 0 %}
+  dns:
+    image: coredns/coredns:latest
+    container_name: {{ service_name }}-dns
+    restart: unless-stopped
+    networks:
+      - app-network
+    ports:
+      - "53:53/udp"
+      - "53:53/tcp"
+    volumes:
+      - dns-data:/data
+      - ./config/coredns:/etc/coredns
+    command: -conf /etc/coredns/Corefile
+  {% endif %}
+
+networks:
+  app-network:
+    driver: bridge
+
+  {% if network.networks is defined %}
+  {% for net in network.networks %}
+  {{ net.name }}:
+    driver: {{ net.type }}
+    {% if net.type == 'overlay' %}
+    attachable: true
+    {% endif %}
+    ipam:
+      config:
+        - subnet: {{ net.cidr }}
+          {% if net.vlan is defined %}
+          vlan: {{ net.vlan }}
+          {% endif %}
+  {% endfor %}
+  {% endif %}
+
+volumes:
+  app-data:
+  db-data:
+  {% if gateway is defined %}
+  gateway-data:
+  {% endif %}
+  {% if dns is defined %}
+  dns-data:
+  {% endif %}
+
+  {% if volume.volumes is defined %}
+  {% for vol in volume.volumes %}
+  {{ vol.name }}:
+    {% if storage is defined and storage.pools is defined and storage.pools|length > 0 %}
+    driver: {{ storage.pools[0].type }}
+    driver_opts:
+      size: "{{ vol.size_gb }}G"
+      type: "{{ vol.mode }}"
+      {% if storage.pools[0].parameters is defined %}
+      {% for key, value in storage.pools[0].parameters.items() %}
+      {{ key }}: "{{ value }}"
+      {% endfor %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+  {% endif %}
+
+{% if custom_config %}
+configs:
+  app_config:
+    file: ./config/app-config.json
+{% endif %}

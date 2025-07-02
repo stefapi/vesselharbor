@@ -1,9 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Plugin Configuration",
-  "description": "Configuration schema for the template plugin",
+  "title": "Physical Host Plugin Configuration",
+  "description": "Configuration schema for the physical host template plugin",
   "type": "object",
-  "required": ["database", "app", "server"],
+  "required": ["database", "app", "server", "host"],
   "properties": {
     "database": {
       "type": "object",
@@ -73,6 +73,31 @@
             "type": "string"
           },
           "default": ["localhost", "127.0.0.1"]
+        },
+        "install_dir": {
+          "type": "string",
+          "description": "Installation directory on the host",
+          "default": "/opt/app"
+        },
+        "data_dir": {
+          "type": "string",
+          "description": "Data directory on the host",
+          "default": "/var/lib/app"
+        },
+        "log_dir": {
+          "type": "string",
+          "description": "Log directory on the host",
+          "default": "/var/log/app"
+        },
+        "user": {
+          "type": "string",
+          "description": "User to run the application as",
+          "default": "app"
+        },
+        "group": {
+          "type": "string",
+          "description": "Group to run the application as",
+          "default": "app"
         }
       }
     },
@@ -101,30 +126,84 @@
         }
       }
     },
-    "container_cluster": {
+    "host": {
       "type": "object",
-      "description": "Container cluster configuration",
+      "description": "Host configuration",
+      "required": ["type", "connection"],
       "properties": {
-        "mode": {
+        "type": {
           "type": "string",
-          "description": "Container cluster mode",
-          "enum": ["docker", "swarm", "k8s"],
-          "default": "docker"
+          "description": "Host type",
+          "enum": ["physical", "vm"],
+          "default": "physical"
         },
-        "version": {
-          "type": "string",
-          "description": "Container cluster version",
-          "default": "latest"
+        "connection": {
+          "type": "object",
+          "description": "Connection details",
+          "required": ["host", "user"],
+          "properties": {
+            "host": {
+              "type": "string",
+              "description": "Host address"
+            },
+            "port": {
+              "type": "integer",
+              "description": "SSH port",
+              "default": 22,
+              "minimum": 1,
+              "maximum": 65535
+            },
+            "user": {
+              "type": "string",
+              "description": "SSH username"
+            },
+            "key_file": {
+              "type": "string",
+              "description": "Path to SSH private key file"
+            },
+            "password": {
+              "type": "string",
+              "description": "SSH password (use key_file instead when possible)"
+            }
+          }
         },
-        "ha_enabled": {
-          "type": "boolean",
-          "description": "Enable high availability",
-          "default": false
+        "os": {
+          "type": "object",
+          "description": "Operating system details",
+          "properties": {
+            "family": {
+              "type": "string",
+              "description": "OS family",
+              "enum": ["debian", "redhat", "suse", "arch", "other"],
+              "default": "debian"
+            },
+            "version": {
+              "type": "string",
+              "description": "OS version",
+              "default": "latest"
+            }
+          }
         },
-        "endpoint": {
-          "type": "string",
-          "description": "Container cluster endpoint",
-          "default": "unix:///var/run/docker.sock"
+        "resources": {
+          "type": "object",
+          "description": "Host resources",
+          "properties": {
+            "cpu_threads": {
+              "type": "integer",
+              "description": "Number of CPU threads",
+              "minimum": 1
+            },
+            "ram_mb": {
+              "type": "integer",
+              "description": "RAM in MB",
+              "minimum": 512
+            },
+            "disk_gb": {
+              "type": "integer",
+              "description": "Disk space in GB",
+              "minimum": 10
+            }
+          }
         }
       }
     },
@@ -156,13 +235,13 @@
               "type": {
                 "type": "string",
                 "description": "Network type",
-                "enum": ["physical", "overlay"],
-                "default": "overlay"
+                "enum": ["physical", "virtual"],
+                "default": "physical"
               },
-              "tenant_scoped": {
-                "type": "boolean",
-                "description": "Is network scoped to tenant",
-                "default": false
+              "interface": {
+                "type": "string",
+                "description": "Network interface name",
+                "default": "eth0"
               }
             },
             "required": ["name", "cidr", "type"]
@@ -170,80 +249,9 @@
         }
       }
     },
-    "gateway": {
-      "type": "object",
-      "description": "Gateway configuration",
-      "properties": {
-        "kind": {
-          "type": "string",
-          "description": "Gateway kind",
-          "enum": ["traefik", "haproxy", "nginx"],
-          "default": "traefik"
-        },
-        "cert_strategy": {
-          "type": "string",
-          "description": "Certificate strategy",
-          "enum": ["letsencrypt", "custom", "none"],
-          "default": "none"
-        },
-        "entrypoints": {
-          "type": "object",
-          "description": "Gateway entrypoints",
-          "additionalProperties": true
-        }
-      }
-    },
-    "stack": {
-      "type": "object",
-      "description": "Stack configuration",
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "Stack name"
-        },
-        "description": {
-          "type": "string",
-          "description": "Stack description"
-        }
-      },
-      "required": ["name"]
-    },
     "storage": {
       "type": "object",
       "description": "Storage configuration",
-      "properties": {
-        "pools": {
-          "type": "array",
-          "description": "List of storage pools",
-          "items": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "type": "string",
-                "description": "Storage pool type",
-                "enum": ["nfs", "ceph", "longhorn", "ebs"],
-                "default": "nfs"
-              },
-              "parameters": {
-                "type": "object",
-                "description": "Storage pool parameters",
-                "additionalProperties": true
-              },
-              "scope": {
-                "type": "string",
-                "description": "Storage pool scope",
-                "enum": ["global", "tenant", "project"],
-                "default": "global"
-              }
-            },
-            "required": ["type", "scope"]
-          }
-        }
-      }
-    },
-    "volume": {
-      "type": "object",
-      "description": "Volume configuration",
       "properties": {
         "volumes": {
           "type": "array",
@@ -251,28 +259,32 @@
           "items": {
             "type": "object",
             "properties": {
+              "name": {
+                "type": "string",
+                "description": "Volume name"
+              },
+              "path": {
+                "type": "string",
+                "description": "Mount path on the host"
+              },
               "size_gb": {
                 "type": "integer",
                 "description": "Volume size in GB",
                 "minimum": 1
               },
-              "mode": {
+              "type": {
                 "type": "string",
-                "description": "Volume mode",
-                "enum": ["rwo", "rwx"],
-                "default": "rwo"
+                "description": "Volume type",
+                "enum": ["local", "nfs", "iscsi", "ceph"],
+                "default": "local"
               },
-              "attached_to_type": {
-                "type": "string",
-                "description": "Type of entity volume is attached to",
-                "enum": ["vm", "service", "application"]
-              },
-              "attached_to_id": {
-                "type": "integer",
-                "description": "ID of entity volume is attached to"
+              "options": {
+                "type": "object",
+                "description": "Volume options",
+                "additionalProperties": true
               }
             },
-            "required": ["size_gb", "mode"]
+            "required": ["name", "path", "size_gb"]
           }
         }
       }
