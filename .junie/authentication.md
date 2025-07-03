@@ -1,4 +1,8 @@
-## Authentication Flow
+## Current Authentication Implementation
+
+> **Note**: This document describes both the current authentication implementation and the planned future enhancements. The sections below marked with "Current Implementation" reflect what is currently implemented in the codebase, while other sections describe the planned architecture.
+
+### Current Authentication Flow
 
 ```mermaid
 flowchart LR
@@ -12,10 +16,127 @@ flowchart LR
 ```
 
 1. The user submits credentials via the login form
-2. The backend validates the credentials and issues a JWT token
-3. The frontend stores the token in localStorage/cookie
-4. The token is included in the Authorization header for subsequent requests
+2. The backend validates the credentials and issues JWT tokens:
+   - Access token (short-lived, 1 minute)
+   - Refresh token (long-lived, 7 days)
+3. The frontend stores the tokens in HTTP-only cookies
+4. The tokens are included in subsequent requests via cookies or Authorization header
 5. Protected routes check for valid token before rendering
+
+### Current Authentication Features
+
+The current implementation includes:
+
+1. **JWT-based Authentication**:
+   - Access tokens for API authorization
+   - Refresh tokens for obtaining new access tokens
+   - Token validation on protected endpoints
+
+2. **Password Management**:
+   - Secure password hashing with bcrypt
+   - Password reset via email
+   - Password change functionality
+
+3. **Session Management**:
+   - HTTP-only, secure cookies for token storage
+   - Token refresh mechanism
+   - Logout functionality
+
+4. **Custom OAuth2 Implementation**:
+   - Extended OAuth2PasswordBearerOrKey class that supports:
+     - Bearer token in Authorization header
+     - Access token in cookies
+     - API key in headers or cookies
+     - Key parameter in query string
+
+5. **Audit Logging**:
+   - Login attempts
+   - Password changes
+   - Password resets
+
+### Frontend Authentication Implementation
+
+The frontend implements authentication using a combination of Vue Router, Pinia, and Axios:
+
+```mermaid
+flowchart TD
+    LoginForm["Login Form"] --> AuthStore["Auth Store"]
+    AuthStore --> AuthService["Auth Service"]
+    AuthService --> API["API Client"]
+    API --> Backend["Backend Auth Endpoints"]
+    AuthStore --> Router["Vue Router Guards"]
+    Router --> ProtectedRoutes["Protected Routes"]
+    API --> TokenRefresh["Token Refresh Interceptor"]
+    TokenRefresh --> AuthStore
+```
+
+1. **Auth Store (Pinia)**:
+   - Manages authentication state (`isAuthenticated`, `user`)
+   - Provides login, logout, and session renewal methods
+   - Stores user profile and permissions
+   - Persists selected state to localStorage
+   - Provides helper methods for permission checking
+
+2. **Route Protection**:
+   - Navigation guards in Vue Router check authentication status
+   - Redirects unauthenticated users to login page
+   - Checks for required roles/permissions for specific routes
+   - Initializes auth store if needed before route navigation
+
+3. **Token Management**:
+   - Tokens stored in HTTP-only cookies by the backend
+   - Automatic token refresh via Axios interceptors
+   - Queues requests during token refresh
+   - Handles authentication failures
+
+4. **Permission-Based UI**:
+   - UI elements conditionally rendered based on permissions
+   - Role-specific navigation options
+   - Environment-specific admin features
+
+Example auth store usage:
+
+```typescript
+// In a component or composable
+import { useAuthStore } from '@/store/auth'
+
+const authStore = useAuthStore()
+
+// Login
+await authStore.login({
+  username: 'user@example.com',
+  password: 'password123'
+})
+
+// Check authentication
+if (authStore.isAuthenticated) {
+  // User is logged in
+}
+
+// Check permissions
+if (authStore.user?.is_superadmin) {
+  // Show superadmin features
+}
+
+// Check environment admin status
+if (authStore.isEnvironmentAdmin(environmentId)) {
+  // Show environment admin features
+}
+
+// Logout
+authStore.logout()
+```
+
+### Authentication Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/login` | POST | Authenticates user and issues tokens |
+| `/logout` | POST | Clears authentication cookies |
+| `/refresh-token` | POST | Issues new access token using refresh token |
+| `/me` | GET | Returns current user profile |
+| `/users/reset_password_request` | POST | Sends password reset email |
+| `/users/reset_password` | POST | Resets password using token |
 
 ## Role-Based Access Control (RBAC)
 

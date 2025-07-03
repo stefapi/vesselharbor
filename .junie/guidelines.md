@@ -30,10 +30,20 @@ The project uses a modern tech stack:
 ├── app/                  # FastAPI backend
 │   ├── alembic/          # Database migrations
 │   ├── api/              # API endpoints
+│   │   ├── auth.py       # Authentication endpoints
+│   │   ├── users.py      # User management endpoints
+│   │   └── ...           # Other resource endpoints
 │   ├── core/             # Core application components
-│   ├── db/               # Database models and session
-│   ├── models/           # Pydantic models
-│   ├── services/         # Business logic
+│   ├── database/         # Database configuration and session
+│   ├── helper/           # Helper utilities
+│   │   ├── audit.py      # Audit logging
+│   │   ├── email.py      # Email functionality
+│   │   ├── permissions.py # Permission checking
+│   │   ├── response.py   # Standardized response formatting
+│   │   └── security.py   # Security utilities
+│   ├── models/           # SQLAlchemy models
+│   ├── repositories/     # Data access layer
+│   ├── schema/           # Pydantic schemas for validation
 │   └── tests/            # Backend tests
 ├── frontend/             # Vue 3 frontend
 │   ├── public/           # Static assets
@@ -257,6 +267,93 @@ pnpm build
   make format
   ```
 
+### Backend Development Patterns
+
+#### Repository Pattern
+
+The application uses the repository pattern to separate data access logic from business logic:
+
+- **Models**: SQLAlchemy models in the `models/` directory define the database schema
+- **Repositories**: Classes in the `repositories/` directory handle data access operations
+- **API Routes**: Endpoints in the `api/` directory use repositories to interact with the database
+
+Example repository pattern usage:
+
+```python
+# In api/users.py
+@router.get("/{user_id}", response_model=dict)
+def get_user(user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    # Use the repository to get the user
+    user = user_repo.get_user(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    # Check permissions
+    if current_user.id != user_id and not permissions.has_permission(db, current_user, None, "user:read"):
+        raise HTTPException(status_code=403, detail="Permission insufficient")
+    # Return standardized response
+    return response.success_response(UserOut.model_validate(user), "User retrieved successfully")
+
+# In repositories/user_repo.py
+def get_user(db: Session, user_id: int) -> Optional[User]:
+    return db.query(User).filter(User.id == user_id).first()
+```
+
+#### Standardized Response Format
+
+All API endpoints use a standardized response format through the `response` helper:
+
+```python
+# Success response
+return response.success_response(data, message)
+
+# Error response (via HTTPException)
+raise HTTPException(status_code=status_code, detail=error_message)
+```
+
+The standard response format is:
+
+```json
+{
+  "status": "success",
+  "message": "Operation successful message",
+  "data": { ... }
+}
+```
+
+#### Permission System
+
+The application uses a fine-grained permission system:
+
+- Permissions are checked using the `permissions.has_permission()` function
+- Permissions are defined as strings in the format `"resource:action"`
+- Permissions are enforced at the API endpoint level
+- Policies and rules define what users can do with which resources
+
+Example permission check:
+
+```python
+if not permissions.has_permission(db, current_user, organization_id, "user:create"):
+    raise HTTPException(status_code=403, detail="Permission insufficient")
+```
+
+#### Audit Logging
+
+All significant actions are logged using the audit system:
+
+```python
+audit.log_action(db, user.id, "Action Type", "Detailed description of the action")
+```
+
+#### Error Handling
+
+Errors are handled consistently using FastAPI's HTTPException:
+
+```python
+raise HTTPException(status_code=404, detail="Resource not found")
+```
+
+Custom exception handlers in main.py ensure consistent error responses.
+
 ### Frontend (Vue/TypeScript)
 
 - Follow the project's ESLint configuration
@@ -279,6 +376,251 @@ pnpm build
   cd frontend
   pnpm format
   ```
+
+### Frontend Development Patterns
+
+#### Component Structure
+
+Components should follow these patterns:
+
+- Use `<script setup>` syntax for the Composition API
+- Define props and emits with TypeScript types
+- Use TypeScript interfaces for complex data structures
+- Keep components focused on a single responsibility
+- Extract reusable logic to composables
+
+Example component:
+
+```vue
+<template>
+  <div class="u-p-4">
+    <h1 class="u-text-2xl u-font-bold">{{ title }}</h1>
+    <p v-if="description">{{ description }}</p>
+    <slot></slot>
+    <el-button @click="$emit('action', id)">{{ buttonText }}</el-button>
+  </div>
+</template>
+
+<script setup lang="ts">
+interface Props {
+  id: number
+  title: string
+  description?: string
+  buttonText: string
+}
+
+// Define props with defaults where appropriate
+const props = withDefaults(defineProps<Props>(), {
+  buttonText: 'Submit',
+  description: ''
+})
+
+// Define emits
+defineEmits<{
+  (e: 'action', id: number): void
+}>()
+</script>
+```
+
+#### State Management
+
+- Use Pinia stores for global state management
+- Keep store modules focused on specific domains
+- Use TypeScript for type-safe state
+- Define clear interfaces for state
+- Use getters for derived state
+- Use actions for asynchronous operations
+
+Example store:
+
+```typescript
+// src/store/counter.ts
+import { defineStore } from 'pinia'
+
+interface CounterState {
+  count: number
+  lastUpdated: Date | null
+}
+
+export const useCounterStore = defineStore('counter', {
+  state: (): CounterState => ({
+    count: 0,
+    lastUpdated: null
+  }),
+
+  getters: {
+    doubleCount: (state) => state.count * 2
+  },
+
+  actions: {
+    increment() {
+      this.count++
+      this.lastUpdated = new Date()
+    },
+    async fetchCount() {
+      const response = await apiGet('/count')
+      this.count = response.data.count
+      this.lastUpdated = new Date()
+    }
+  },
+
+  // Optional: persist state to localStorage
+  persist: true
+})
+```
+
+#### API Service Layer
+
+- Create service modules for different API endpoints
+- Use the base API client for all requests
+- Handle errors consistently
+- Use TypeScript for request and response types
+- Consider offline scenarios
+
+Example service:
+
+```typescript
+// src/services/userService.ts
+import { apiGet, apiPost, apiPut, apiDelete } from '@/services/api'
+import type { User, UserCreateInput, UserUpdateInput } from '@/types/user'
+
+export async function getUsers() {
+  return apiGet<User[]>('/users')
+}
+
+export async function getUser(id: number) {
+  return apiGet<User>(`/users/${id}`)
+}
+
+export async function createUser(data: UserCreateInput) {
+  return apiPost<User>('/users', data)
+}
+
+export async function updateUser(id: number, data: UserUpdateInput) {
+  return apiPut<User>(`/users/${id}`, data)
+}
+
+export async function deleteUser(id: number) {
+  return apiDelete<void>(`/users/${id}`)
+}
+```
+
+#### Offline Support
+
+When working with offline features:
+
+- Use the offline cache for GET requests that should work offline
+- Queue mutations (POST, PUT, DELETE) for later execution
+- Handle synchronization conflicts appropriately
+- Provide clear feedback to users about offline status
+- Test both online and offline scenarios
+
+Example offline-aware component:
+
+```vue
+<template>
+  <div>
+    <el-alert v-if="syncStore.hasPendingActions" type="info">
+      {{ syncStore.pendingCount }} actions pending synchronization
+    </el-alert>
+
+    <user-list :users="users" />
+
+    <el-button @click="syncStore.syncNow" :loading="syncStore.isSyncing">
+      Sync Now
+    </el-button>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useOfflineSyncStore } from '@/store/offlineSync'
+import { getUsers } from '@/services/userService'
+import type { User } from '@/types/user'
+
+const users = ref<User[]>([])
+const syncStore = useOfflineSyncStore()
+
+onMounted(async () => {
+  try {
+    const response = await getUsers()
+    users.value = response.data
+  } catch (error) {
+    // Handle error (will use cached data if offline)
+  }
+})
+</script>
+```
+
+#### Form Handling
+
+- Use Element Plus form components
+- Implement client-side validation
+- Handle form submission asynchronously
+- Provide clear feedback on validation errors
+- Consider offline form submission
+
+Example form component:
+
+```vue
+<template>
+  <el-form :model="form" :rules="rules" ref="formRef">
+    <el-form-item prop="email" label="Email">
+      <el-input v-model="form.email" type="email" />
+    </el-form-item>
+
+    <el-form-item prop="password" label="Password">
+      <el-input v-model="form.password" type="password" />
+    </el-form-item>
+
+    <el-button type="primary" @click="submitForm" :loading="isSubmitting">
+      Submit
+    </el-button>
+  </el-form>
+</template>
+
+<script setup lang="ts">
+import { reactive, ref } from 'vue'
+import type { FormInstance, FormRules } from 'element-plus'
+
+const formRef = ref<FormInstance>()
+const isSubmitting = ref(false)
+
+const form = reactive({
+  email: '',
+  password: ''
+})
+
+const rules: FormRules = {
+  email: [
+    { required: true, message: 'Email is required', trigger: 'blur' },
+    { type: 'email', message: 'Please enter a valid email', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: 'Password is required', trigger: 'blur' },
+    { min: 8, message: 'Password must be at least 8 characters', trigger: 'blur' }
+  ]
+}
+
+const submitForm = async () => {
+  if (!formRef.value) return
+
+  try {
+    await formRef.value.validate()
+    isSubmitting.value = true
+
+    // Submit form data
+    await apiPost('/login', form)
+
+    // Handle success
+  } catch (error) {
+    // Handle validation or API errors
+  } finally {
+    isSubmitting.value = false
+  }
+}
+</script>
+```
 
 ## Git Workflow
 

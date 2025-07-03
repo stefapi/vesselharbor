@@ -10,43 +10,39 @@
 </div>
 
 <p align="center">
-  <em>A self-hosted platform for managing containerized applications and virtual machines with a focus on simplicity</em>
+  <em>Self‑hosted application harbor & orchestrator — one‑click install, rock‑solid security, zero‑headache maintenance</em>
 </p>
+
+---
 
 VesselHarbor is a self-hosted platform for managing and orchestrating containerized applications and virtual machines, similar to platforms like Heroku or Vercel. It provides a comprehensive solution for infrastructure management.
 
-### 🖥️ Infrastructure Management
+## 🖥️ Infrastructure Management
 
-- **Container Orchestration**: Support for Docker, Docker Compose, and Docker Swarm deployments
-- **Virtual Machine Management**: Deploy and manage VMs alongside containers
-- **Network Infrastructure**: Advanced network structure management and interconnections
-- **Gateway Management**: Configurable gateways with cascading capabilities
-- **Resource Monitoring**: Real-time monitoring of system resources, container, and VM performance
-- **Application Deployment**: Components deployed as application stacks on managed clusters
+* **Container & VM orchestration** — Docker, Docker Compose, Swarm and KVM‑based virtual machines side‑by‑side
+* **Cluster aware** — manage multiple nodes from a single dashboard; automatic service discovery
+* **Network fabric** — encrypted overlay networks and service mesh out‑of‑the‑box
+* **Gateway & ingress** — Layer‑4/7 reverse proxy with automatic TLS, wildcard & Wildcard+SAN certificates
+* **Resource insight** — live CPU, RAM, disk & network monitoring for every workload
 
-### 🔌 Integration & Connectivity
+## 🔌 Connectivity & Extensibility
 
-- **SSO Integration**: Connect with Single Sign-On providers for centralized authentication
-- **Custom Network Configuration**: Easily configure networking between containers, VMs, and external access
-- **API Connectivity**: Comprehensive API for integration with external systems
-- **Multi-user Access**: Role-based access control for team collaboration
+* **SSO everywhere** — OAuth2 / OpenID Connect, LDAP and SAML providers supported
+* **Fine‑grained RBAC** — role & project based access for teams and external collaborators
+* **REST & WebSocket API** — automate everything; first‑class Terraform provider coming soon
+* **Add‑on engine** — databases (PostgreSQL, MySQL, MongoDB, Redis), object storage (MinIO, S3), message queues (NATS, RabbitMQ) and more can be installed as add‑ons and shared between apps
 
-### 📦 Application Management
+## 📦 Application Experience
 
-- **Application Catalog**: One-click installation of popular applications from a curated catalog
-- **Automated Updates**: Keep your applications up-to-date with automated update checks and deployment
-- **Backup & Restore**: Scheduled backups and easy restoration of your applications and data
-- **Volume Management**: Simplified management of persistent data volumes
-- **Health Checks**: Automated monitoring of application health with notification alerts
+* **Curated App Store** —  pre‑packaged images adapted for VesselHarbor with health‑checks, backups and sane defaults
+* **One‑click updates** — rolling updates with automatic rollback on failure
+* **Continuous backups** — incremental, encrypted and delta‑compressed backups to any S3 compatible storage
+* **Self‑healing** — automatic restarts, replica rescheduling and service dependency checks
+* **Metrics & alerts** — Prometheus‑compatible metrics endpoint and pluggable alert receivers (Email, Discord, Slack, Matrix)
 
-### 🧩 Extensible Components
+## 🚢 What's in a Name?
 
-VesselHarbor components can dynamically add functionality to your infrastructure:
-
-- **Database Services**: PostgreSQL, MySQL, MongoDB, Redis, and more
-- **Storage Solutions**: MinIO and various storage backends
-- **Reverse Proxies**: Multiple reverse proxy options for routing and load balancing
-- **Custom Services**: Extend with your own service components
+> *Vessel*: a container, **Harbor**: a safe port. VesselHarbor offers a safe haven for your containers and virtual machines, guarding them against storms of complexity.
 
 
 
@@ -63,9 +59,6 @@ VesselHarbor components can dynamically add functionality to your infrastructure
 - **Hot Reload**: Development environment with hot reload for both frontend and backend
 - **PWA Support**: Progressive Web App ready with vite-plugin-pwa
 
-## 🚢 What is VesselHarbor?
-
-The name "VesselHarbor" carries a dual meaning: "Vessel" refers to containerization (Docker containers), while "Harbor" represents a safe haven for self-hosting applications without worrying about complex technical details. Just as a harbor provides shelter and organization for ships, VesselHarbor offers a secure and simplified environment for managing your containerized applications.
 
 ## 🚀 Quick Start
 
@@ -96,13 +89,12 @@ Visit:
 
 ## 📖 Documentation
 
-Comprehensive documentation is available in the `.junie` directory:
+Full documentation lives in the `.junie` directory of the repository:
 
-- [API Endpoints](.junie/api-endpoints.md)
-- [Architecture](.junie/architecture.md)
-- [Authentication](.junie/authentication.md)
-- [Project Guidelines](.junie/guidelines.md)
-- [Changelog](.junie/changelog.md)
+* [API Reference](.junie/api-endpoints.md)
+* [System Architecture](.junie/architecture.md)
+* [Security Model](.junie/security.md)
+* [User Guide](.junie/user-guide.md)
 
 ## 💻 Development
 
@@ -188,17 +180,12 @@ For production environments, add a reverse proxy (Traefik, Nginx, Caddy) to hand
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please check our [Contributing Guidelines](.junie/contributing.md) before submitting pull requests.
+Found a bug, have an idea or want to add a new app to the catalogue? Check the [Contributing Guidelines](.junie/contributing.md) and join the discussion in the GitHub issues.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+VesselHarbor is released under the **MIT License**. See [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgements
 
-- [FastAPI](https://fastapi.tiangolo.com/)
-- [Vue.js](https://vuejs.org/)
-- [Pinia](https://pinia.vuejs.org/)
-- [UnoCSS](https://github.com/unocss/unocss)
-- [SQLAlchemy](https://www.sqlalchemy.org/)
-- [Docker](https://www.docker.com/)
+VesselHarbor stands on the shoulders of giants — thank you to the communities behind FastAPI, Vue, Docker and all the amazing self‑hosting projects that inspired this work.

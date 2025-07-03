@@ -30,6 +30,12 @@ The `.junie` directory contains the following files:
 
 11. **troubleshooting.md** - Troubleshooting guide providing solutions to common problems encountered during development with this project.
 
+12. **testing.md** - Comprehensive documentation of testing approaches, frameworks, and patterns for both backend and frontend.
+
+13. **plugins.md** - Detailed documentation of the plugin system, including plugin architecture, available plugins, and examples of plugin usage.
+
+14. **makefile.md** - Documentation of all Makefile commands available in the project, organized by category with examples and usage tips.
+
 ## Purpose
 
 The purpose of the `.junie` directory is to centralize all project documentation and configuration in one easily accessible location. This allows new developers to quickly understand the project and existing developers to maintain consistent and up-to-date documentation.
