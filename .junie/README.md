@@ -1,55 +1,49 @@
-# Le Répertoire .junie
+# VesselHarbor Documentation
 
-## À quoi correspond le répertoire .junie ?
+## About the .junie Directory
 
-Le répertoire `.junie` est un dossier spécial dans ce projet FastAPI + Vue.js qui sert de **centre de documentation et de configuration** pour l'ensemble du projet. Il contient des fichiers essentiels qui aident les développeurs à comprendre, maintenir et contribuer au projet.
+The `.junie` directory is a special folder in this FastAPI + Vue.js project that serves as a **documentation and configuration center** for the entire project. It contains essential files that help developers understand, maintain, and contribute to the project.
 
-## Contenu du répertoire
+## Directory Contents
 
-Le répertoire `.junie` contient les fichiers suivants :
+The `.junie` directory contains the following files:
 
-1. **api-endpoints.md** - Documentation détaillée de tous les points d'accès (endpoints) de l'API, incluant les méthodes, paramètres, corps de requête et réponses.
+1. **api-endpoints.md** - Detailed documentation of all API endpoints, including methods, parameters, request bodies, and responses.
 
-2. **architecture.md** - Description de l'architecture globale du projet, expliquant comment le backend FastAPI et le frontend Vue.js sont structurés et comment ils interagissent.
+2. **architecture.md** - Comprehensive description of the project's architecture, explaining how the FastAPI backend and Vue.js frontend are structured and how they interact, including visual diagrams.
 
-3. **authentication.md** - Documentation détaillée sur le système d'authentification du projet, incluant les flux d'authentification, la gestion des tokens et les permissions.
+3. **authentication.md** - Detailed documentation on the project's authentication system, including authentication flows, token management, and role-based permissions.
 
-4. **changelog.md** - Journal des modifications apportées au projet, suivant le format [Keep a Changelog](https://keepachangelog.com/), documentant toutes les modifications importantes.
+4. **changelog.md** - Record of changes made to the project, following the [Keep a Changelog](https://keepachangelog.com/) format, documenting all significant modifications.
 
-5. **config.json** - Fichier de configuration central pour le projet, contenant des paramètres pour le développement, les tests et le déploiement.
+5. **config.json** - Central configuration file for the project, containing parameters for development, testing, and deployment.
 
-6. **contributing.md** - Directives pour contribuer au projet, incluant le processus de soumission des pull requests, les normes de codage et le flux de travail Git.
+6. **contributing.md** - Guidelines for contributing to the project, including the pull request submission process, coding standards, and Git workflow.
 
-7. **database.mmd** - Diagramme de la structure de la base de données au format Mermaid, illustrant les tables, relations et champs principaux.
+7. **database.mmd** - Mermaid diagram of the database structure, illustrating tables, relationships, and key fields.
 
-8. **guidelines.md** - Directives de développement du projet, incluant des instructions pour la configuration, les tests et les pratiques de codage.
+8. **guidelines.md** - Project development guidelines, including instructions for setup, testing, and coding practices.
 
-9. **git_workflow.md** - Guide du workflow Git recommandé pour le projet, incluant la stratégie de branches, les conventions de messages de commit et le processus de pull request.
+9. **git_workflow.md** - Guide to the recommended Git workflow for the project, including branching strategy, commit message conventions, and pull request process.
 
-10. **logical_architecture.md** - Documentation détaillée de l'architecture logique du projet, incluant les composants, les flux de données et les interactions entre les différentes parties du système.
+10. **project_structure.md** - Overview of the project structure, explaining the organization of directories and key files to facilitate code navigation.
 
-11. **project_structure.md** - Vue d'ensemble de la structure du projet, expliquant l'organisation des répertoires et des fichiers clés pour faciliter la navigation dans le code.
+11. **troubleshooting.md** - Troubleshooting guide providing solutions to common problems encountered during development with this project.
 
-12. **vscode_settings.json** - Fichier de configuration recommandée pour Visual Studio Code, facilitant la configuration rapide de l'environnement de développement avec les bons paramètres pour ce projet.
+## Purpose
 
-13. **git-hooks/** - Répertoire contenant des scripts de hooks Git prêts à l'emploi pour automatiser les vérifications de qualité du code, la validation des messages de commit et l'exécution des tests avant de pousser les modifications.
+The purpose of the `.junie` directory is to centralize all project documentation and configuration in one easily accessible location. This allows new developers to quickly understand the project and existing developers to maintain consistent and up-to-date documentation.
 
-14. **troubleshooting.md** - Guide de dépannage fournissant des solutions aux problèmes courants rencontrés lors du développement avec ce projet.
+## Usage
 
-## Objectif
+Developers should consult the files in the `.junie` directory to:
 
-L'objectif du répertoire `.junie` est de centraliser toute la documentation et la configuration du projet en un seul endroit facilement accessible. Cela permet aux nouveaux développeurs de rapidement comprendre le projet et aux développeurs existants de maintenir une documentation cohérente et à jour.
-
-## Utilisation
-
-Les développeurs devraient consulter les fichiers dans le répertoire `.junie` pour :
-
-- Comprendre l'architecture globale du projet
-- Trouver des informations sur les points d'accès de l'API
-- Suivre les directives de contribution et de développement
-- Consulter l'historique des modifications
-- Accéder aux configurations centralisées du projet
+- Understand the overall architecture of the project
+- Find information about API endpoints
+- Follow contribution and development guidelines
+- Review the change history
+- Access centralized project configurations
 
 ## Maintenance
 
-Les fichiers dans le répertoire `.junie` doivent être maintenus à jour lorsque des modifications significatives sont apportées au projet. Cela garantit que la documentation reste précise et utile pour tous les membres de l'équipe.
+The files in the `.junie` directory should be kept up-to-date when significant changes are made to the project. This ensures that the documentation remains accurate and useful for all team members.
