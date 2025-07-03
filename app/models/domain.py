@@ -38,9 +38,9 @@ class Domain(Base):
     __tablename__ = "domains"
 
     id = Column(Integer, primary_key=True, index=True)
-    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False)
+    element_id = Column(Integer, ForeignKey("elements.id"), nullable=False)
     fqdn = Column(String(255), nullable=False, index=True)
-    provider_id = Column(Integer, ForeignKey("dns_providers.id"), nullable=False)
+    # provider_id = Column(Integer, ForeignKey("dns_providers.id"), nullable=False)
 
     # DNSSEC related fields
     dnssec_enabled = Column(Boolean, default=False, nullable=False)
@@ -51,10 +51,10 @@ class Domain(Base):
     dnssec_digest_type = Column(Integer, nullable=True)  # Digest type for DS record
     dnssec_digest = Column(String(255), nullable=True)  # DS record digest
 
-    tenant = relationship("Tenant", back_populates="domains")
-    provider = relationship("DNSProvider")
+    element = relationship("Element", backref="domain")
+    # provider = relationship("DNSProvider")
     dns_records = relationship("DNSRecord", back_populates="domain", cascade="all, delete-orphan")
     dnssec_keys = relationship("DNSSECKey", back_populates="domain", cascade="all, delete-orphan")
 
     def __repr__(self):
-        return f"<Domain(id={self.id}, fqdn='{self.fqdn}', tenant_id={self.tenant_id}, provider_id={self.provider_id})>"
+        return f"<Domain(id={self.id}, fqdn='{self.fqdn}', element_id={self.element_id})>"

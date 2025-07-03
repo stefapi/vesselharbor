@@ -31,10 +31,22 @@
 
 # app/models/network.py
 from sqlalchemy import Column, Integer, Boolean, Enum, String, ForeignKey
-from sqlalchemy.dialects.postgresql import CIDR
 from sqlalchemy.orm import relationship
+from sqlalchemy.types import TypeDecorator, String
 from ..database.base import Base
+from ..database.session import DATABASE_URL
 import enum
+
+# Custom CIDR type that works with both PostgreSQL and SQLite
+class CIDRType(TypeDecorator):
+    impl = String
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == 'postgresql':
+            from sqlalchemy.dialects.postgresql import CIDR
+            return dialect.type_descriptor(CIDR())
+        else:
+            return dialect.type_descriptor(String())
 
 class NetworkType(str, enum.Enum):
     PHYSICAL = "physical"
@@ -44,15 +56,22 @@ class Network(Base):
     __tablename__ = "networks"
 
     id = Column(Integer, primary_key=True, index=True)
-    cidr = Column(CIDR, nullable=False)
+    cidr = Column(CIDRType, nullable=False)
     vlan = Column(Integer, nullable=True)
     type = Column(Enum(NetworkType), nullable=False)
-    tenant_scoped = Column(Boolean, default=False)
-    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=True)
+    environment_scoped = Column(Boolean, default=False)
+    element_id = Column(Integer, ForeignKey("elements.id"), nullable=False)
 
     # Relationships
-    attachments = relationship("NetworkAttachment", back_populates="network")
-    tenant = relationship("Tenant", back_populates="networks")
+    element = relationship("Element", backref="network")
+
+    # Network attachments relationships
+    physical_host_attachments = relationship("NetworkPhysicalHost", back_populates="network")
+    vm_attachments = relationship("NetworkVM", back_populates="network")
+    container_node_attachments = relationship("NetworkContainerNode", back_populates="network")
+    application_attachments = relationship("NetworkApplication", back_populates="network")
+    gateway_attachments = relationship("NetworkGateway", back_populates="network")
+
 
     def __repr__(self):
-        return f"<Network(id={self.id}, cidr='{self.cidr}', type='{self.type}')>"
+        return f"<Network(id={self.id}, cidr='{self.cidr}', type='{self.type}', element_id={self.element_id})>"

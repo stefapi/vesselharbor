@@ -26,9 +26,6 @@ host:
     {% if host.resources.ram_mb is defined %}
     ram_mb: {{ host.resources.ram_mb }}
     {% endif %}
-    {% if host.resources.disk_gb is defined %}
-    disk_gb: {{ host.resources.disk_gb }}
-    {% endif %}
   {% endif %}
 
 # Application Mapping

@@ -31,7 +31,7 @@
 
 # app/models/container_node.py
 from sqlalchemy import Column, Integer, ForeignKey, Enum
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, foreign
 from ..database.base import Base
 import enum
 
@@ -47,11 +47,14 @@ class ContainerNode(Base):
     vm_id = Column(Integer, ForeignKey("vms.id"), nullable=True)
     host_id = Column(Integer, ForeignKey("physical_hosts.id"), nullable=True)
     role = Column(Enum(NodeRole), nullable=False)
+    element_id = Column(Integer, ForeignKey("elements.id"), nullable=False)
 
     # Relationships
     cluster = relationship("ContainerCluster", back_populates="nodes")
     vm = relationship("VM", back_populates="container_nodes")
     host = relationship("PhysicalHost", back_populates="container_nodes")
+    network_attachments = relationship("NetworkContainerNode", back_populates="container_node")
+    element = relationship("Element", backref="container_node")
 
     def __repr__(self):
-        return f"<ContainerNode(id={self.id}, cluster_id={self.cluster_id}, role='{self.role}')>"
+        return f"<ContainerNode(id={self.id}, cluster_id={self.cluster_id}, role='{self.role}', element_id={self.element_id})>"

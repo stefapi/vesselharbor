@@ -44,8 +44,7 @@ The template is configured using a JSON schema defined in `config/schema.json`. 
   },
   "resources": {
     "cpu_threads": 4,
-    "ram_mb": 8192,
-    "disk_gb": 100
+    "ram_mb": 8192
   }
 }
 ```

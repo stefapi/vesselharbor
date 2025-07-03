@@ -29,35 +29,16 @@
 #  SOFTWARE.
 #
 
-# app/repositories/tenant_repo.py
-from sqlalchemy.orm import Session
-from ..models.tenant import Tenant
+# app/models/types.py
+from sqlalchemy.types import TypeDecorator, String
 
-def create_tenant(db: Session, name: str, description: str = None) -> Tenant:
-    tenant = Tenant(name=name, description=description)
-    db.add(tenant)
-    db.commit()
-    db.refresh(tenant)
-    return tenant
+# Custom INET type that works with both PostgreSQL and SQLite
+class INETType(TypeDecorator):
+    impl = String
 
-def get_tenant(db: Session, tenant_id: int) -> Tenant:
-    return db.query(Tenant).filter(Tenant.id == tenant_id).first()
-
-def get_tenant_by_name(db: Session, name: str) -> Tenant:
-    return db.query(Tenant).filter(Tenant.name == name).first()
-
-def list_tenants(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(Tenant).offset(skip).limit(limit).all()
-
-def update_tenant(db: Session, tenant: Tenant, name: str = None, description: str = None) -> Tenant:
-    if name is not None:
-        tenant.name = name
-    if description is not None:
-        tenant.description = description
-    db.commit()
-    db.refresh(tenant)
-    return tenant
-
-def delete_tenant(db: Session, tenant: Tenant):
-    db.delete(tenant)
-    db.commit()
+    def load_dialect_impl(self, dialect):
+        if dialect.name == 'postgresql':
+            from sqlalchemy.dialects.postgresql import INET
+            return dialect.type_descriptor(INET())
+        else:
+            return dialect.type_descriptor(String())

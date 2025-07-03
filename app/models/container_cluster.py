@@ -49,21 +49,20 @@ class ContainerCluster(Base):
     ha_enabled = Column(Boolean, default=False)
     endpoint = Column(String(255), nullable=False)
     stack_id = Column(Integer, ForeignKey("stacks.id"), nullable=True)
+    element_id = Column(Integer, ForeignKey("elements.id"), nullable=False)
 
     # Relationships
     stack = relationship("Stack", back_populates="container_clusters")
     nodes = relationship("ContainerNode", back_populates="cluster")
+    element = relationship("Element", backref="container_cluster")
+
+    # Relationship to volume attachments
+    volume_attachments = relationship("VolumeContainerCluster", back_populates="container_cluster")
 
     # Property to get volumes
     @property
     def volumes(self):
-        from ..repositories import volume_repo
-        from ..models.volume import AttachedToType
-        from ..database.session import get_db
-        db = next(get_db())
-        return volume_repo.list_volumes_by_attachment(
-            db, AttachedToType.SERVICE, self.id
-        )
+        return [attachment.volume for attachment in self.volume_attachments]
 
     def __repr__(self):
-        return f"<ContainerCluster(id={self.id}, mode='{self.mode}', version='{self.version}')>"
+        return f"<ContainerCluster(id={self.id}, mode='{self.mode}', version='{self.version}', element_id={self.element_id})>"

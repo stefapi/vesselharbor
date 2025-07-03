@@ -29,37 +29,23 @@
 #  SOFTWARE.
 #
 
-# app/repositories/dns_provider_repo.py
-from sqlalchemy.orm import Session
-from ..models.dns_provider import DNSProvider
+# app/models/network_container_node.py
+from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy.orm import relationship
+from ..database.base import Base
+from .types import INETType
 
-def create_dns_provider(db: Session, name: str, api_endpoint: str, creds: dict) -> DNSProvider:
-    dns_provider = DNSProvider(name=name, api_endpoint=api_endpoint, creds=creds)
-    db.add(dns_provider)
-    db.commit()
-    db.refresh(dns_provider)
-    return dns_provider
+class NetworkContainerNode(Base):
+    __tablename__ = "network_container_nodes"
 
-def get_dns_provider(db: Session, dns_provider_id: int) -> DNSProvider:
-    return db.query(DNSProvider).filter(DNSProvider.id == dns_provider_id).first()
+    id = Column(Integer, primary_key=True, index=True)
+    network_id = Column(Integer, ForeignKey("networks.id"), nullable=False)
+    container_node_id = Column(Integer, ForeignKey("container_nodes.id"), nullable=False)
+    ip_address = Column(INETType, nullable=False)
 
-def get_dns_provider_by_name(db: Session, name: str) -> DNSProvider:
-    return db.query(DNSProvider).filter(DNSProvider.name == name).first()
+    # Relationships
+    network = relationship("Network", back_populates="container_node_attachments")
+    container_node = relationship("ContainerNode", back_populates="network_attachments")
 
-def list_dns_providers(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(DNSProvider).offset(skip).limit(limit).all()
-
-def update_dns_provider(db: Session, dns_provider: DNSProvider, name: str = None, api_endpoint: str = None, creds: dict = None) -> DNSProvider:
-    if name is not None:
-        dns_provider.name = name
-    if api_endpoint is not None:
-        dns_provider.api_endpoint = api_endpoint
-    if creds is not None:
-        dns_provider.creds = creds
-    db.commit()
-    db.refresh(dns_provider)
-    return dns_provider
-
-def delete_dns_provider(db: Session, dns_provider: DNSProvider):
-    db.delete(dns_provider)
-    db.commit()
+    def __repr__(self):
+        return f"<NetworkContainerNode(id={self.id}, network_id={self.network_id}, container_node_id={self.container_node_id})>"

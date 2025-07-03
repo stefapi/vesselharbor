@@ -29,22 +29,20 @@
 #  SOFTWARE.
 #
 
-# app/repositories/network_attachment_repo.py
+# app/repositories/network_container_node_repo.py
 from sqlalchemy.orm import Session
-from ..models.network_attachment import NetworkAttachment, AttachedToType
+from ..models.network_container_node import NetworkContainerNode
 from typing import Optional, List
 
-def create_network_attachment(
+def create_network_container_node(
     db: Session,
     network_id: int,
-    attached_to_type: AttachedToType,
-    attached_to_id: int,
+    container_node_id: int,
     ip_address: str
-) -> NetworkAttachment:
-    attachment = NetworkAttachment(
+) -> NetworkContainerNode:
+    attachment = NetworkContainerNode(
         network_id=network_id,
-        attached_to_type=attached_to_type,
-        attached_to_id=attached_to_id,
+        container_node_id=container_node_id,
         ip_address=ip_address
     )
     db.add(attachment)
@@ -52,39 +50,29 @@ def create_network_attachment(
     db.refresh(attachment)
     return attachment
 
-def get_network_attachment(db: Session, attachment_id: int) -> Optional[NetworkAttachment]:
-    return db.query(NetworkAttachment).filter(NetworkAttachment.id == attachment_id).first()
+def get_network_container_node(db: Session, attachment_id: int) -> Optional[NetworkContainerNode]:
+    return db.query(NetworkContainerNode).filter(NetworkContainerNode.id == attachment_id).first()
 
-def list_network_attachments(db: Session, skip: int = 0, limit: int = 100) -> List[NetworkAttachment]:
-    return db.query(NetworkAttachment).offset(skip).limit(limit).all()
+def list_network_container_nodes(db: Session, skip: int = 0, limit: int = 100) -> List[NetworkContainerNode]:
+    return db.query(NetworkContainerNode).offset(skip).limit(limit).all()
 
-def list_network_attachments_by_network(db: Session, network_id: int) -> List[NetworkAttachment]:
-    return db.query(NetworkAttachment).filter(NetworkAttachment.network_id == network_id).all()
+def list_network_container_nodes_by_network(db: Session, network_id: int) -> List[NetworkContainerNode]:
+    return db.query(NetworkContainerNode).filter(NetworkContainerNode.network_id == network_id).all()
 
-def list_network_attachments_by_attached_entity(
+def list_network_container_nodes_by_container_node(db: Session, container_node_id: int) -> List[NetworkContainerNode]:
+    return db.query(NetworkContainerNode).filter(NetworkContainerNode.container_node_id == container_node_id).all()
+
+def update_network_container_node(
     db: Session,
-    attached_to_type: AttachedToType,
-    attached_to_id: int
-) -> List[NetworkAttachment]:
-    return db.query(NetworkAttachment).filter(
-        NetworkAttachment.attached_to_type == attached_to_type,
-        NetworkAttachment.attached_to_id == attached_to_id
-    ).all()
-
-def update_network_attachment(
-    db: Session,
-    attachment: NetworkAttachment,
+    attachment: NetworkContainerNode,
     network_id: Optional[int] = None,
-    attached_to_type: Optional[AttachedToType] = None,
-    attached_to_id: Optional[int] = None,
+    container_node_id: Optional[int] = None,
     ip_address: Optional[str] = None
-) -> NetworkAttachment:
+) -> NetworkContainerNode:
     if network_id is not None:
         attachment.network_id = network_id
-    if attached_to_type is not None:
-        attachment.attached_to_type = attached_to_type
-    if attached_to_id is not None:
-        attachment.attached_to_id = attached_to_id
+    if container_node_id is not None:
+        attachment.container_node_id = container_node_id
     if ip_address is not None:
         attachment.ip_address = ip_address
 
@@ -92,6 +80,6 @@ def update_network_attachment(
     db.refresh(attachment)
     return attachment
 
-def delete_network_attachment(db: Session, attachment: NetworkAttachment) -> None:
+def delete_network_container_node(db: Session, attachment: NetworkContainerNode) -> None:
     db.delete(attachment)
     db.commit()

@@ -37,14 +37,14 @@ from typing import Optional, List, Dict, Any
 def create_gateway(
     db: Session,
     kind: GatewayKind,
-    deployment_service_id: Optional[int] = None,
+    deployment_application_id: Optional[int] = None,
     stack_id: Optional[int] = None,
     cert_strategy: CertStrategy = CertStrategy.NONE,
     entrypoints: Optional[Dict[str, Any]] = None
 ) -> Gateway:
     gateway = Gateway(
         kind=kind,
-        deployment_service_id=deployment_service_id,
+        deployment_application_id=deployment_application_id,
         stack_id=stack_id,
         cert_strategy=cert_strategy,
         entrypoints=entrypoints
@@ -63,8 +63,8 @@ def list_gateways(db: Session, skip: int = 0, limit: int = 100) -> List[Gateway]
 def list_gateways_by_kind(db: Session, kind: GatewayKind) -> List[Gateway]:
     return db.query(Gateway).filter(Gateway.kind == kind).all()
 
-def list_gateways_by_service(db: Session, service_id: int) -> List[Gateway]:
-    return db.query(Gateway).filter(Gateway.deployment_service_id == service_id).all()
+def list_gateways_by_application(db: Session, application_id: int) -> List[Gateway]:
+    return db.query(Gateway).filter(Gateway.deployment_application_id == application_id).all()
 
 def list_gateways_by_stack(db: Session, stack_id: int) -> List[Gateway]:
     return db.query(Gateway).filter(Gateway.stack_id == stack_id).all()
@@ -73,15 +73,15 @@ def update_gateway(
     db: Session,
     gateway: Gateway,
     kind: Optional[GatewayKind] = None,
-    deployment_service_id: Optional[int] = None,
+    deployment_application_id: Optional[int] = None,
     stack_id: Optional[int] = None,
     cert_strategy: Optional[CertStrategy] = None,
     entrypoints: Optional[Dict[str, Any]] = None
 ) -> Gateway:
     if kind is not None:
         gateway.kind = kind
-    if deployment_service_id is not None:
-        gateway.deployment_service_id = deployment_service_id
+    if deployment_application_id is not None:
+        gateway.deployment_service_id = deployment_application_id
     if stack_id is not None:
         gateway.stack_id = stack_id
     if cert_strategy is not None:

@@ -41,10 +41,11 @@ class VolumeMode(str, enum.Enum):
     RWX = "rwx"  # ReadWriteMany
 
 
-class AttachedToType(str, enum.Enum):
-    VM = "vm"
-    SERVICE = "service"
-    APPLICATION = "application"
+# This enum is no longer used as we now use liaison tables
+# class AttachedToType(str, enum.Enum):
+#     VM = "vm"
+#     SERVICE = "service"
+#     APPLICATION = "application"
 
 
 class Volume(Base):
@@ -54,41 +55,30 @@ class Volume(Base):
     pool_id = Column(Integer, ForeignKey("storage_pools.id"), nullable=False)
     size_gb = Column(Integer, nullable=False)
     mode = Column(Enum(VolumeMode), nullable=False)
-    attached_to_type = Column(Enum(AttachedToType), nullable=True)
-    attached_to_id = Column(Integer, nullable=True)
+    element_id = Column(Integer, ForeignKey("elements.id"), nullable=False)
 
-    # Relationship to StoragePool
+    # Relationship to StoragePool and Element
     storage_pool = relationship("StoragePool", back_populates="volumes")
+    element = relationship("Element", backref="volume")
 
-    # Properties to access the attached entity
-    @property
-    def vm(self):
-        if self.attached_to_type == AttachedToType.VM and self.attached_to_id:
-            from ..repositories import vm_repo
-            from ..database.session import get_db
-            db = next(get_db())
-            return vm_repo.get_vm(db, self.attached_to_id)
-        return None
+    # Relationships to attachment tables
+    vm_attachments = relationship("VolumeVM", back_populates="volume")
+    container_cluster_attachments = relationship("VolumeContainerCluster", back_populates="volume")
+    application_attachments = relationship("VolumeApplication", back_populates="volume")
 
+    # Properties to access the attached entities
     @property
-    def service(self):
-        if self.attached_to_type == AttachedToType.SERVICE and self.attached_to_id:
-            # This would need to be implemented based on how services are represented
-            # For now, we'll assume it's a container cluster
-            from ..repositories import container_cluster_repo
-            from ..database.session import get_db
-            db = next(get_db())
-            return container_cluster_repo.get_container_cluster(db, self.attached_to_id)
-        return None
+    def vms(self):
+        return [attachment.vm for attachment in self.vm_attachments]
+
 
     @property
-    def application(self):
-        if self.attached_to_type == AttachedToType.APPLICATION and self.attached_to_id:
-            from ..repositories import application_repo
-            from ..database.session import get_db
-            db = next(get_db())
-            return application_repo.get_application(db, self.attached_to_id)
-        return None
+    def container_clusters(self):
+        return [attachment.container_cluster for attachment in self.container_cluster_attachments]
+
+    @property
+    def applications(self):
+        return [attachment.application for attachment in self.application_attachments]
 
     def __repr__(self):
-        return f"<Volume(id={self.id}, pool_id={self.pool_id}, size_gb={self.size_gb}, mode='{self.mode}')>"
+        return f"<Volume(id={self.id}, pool_id={self.pool_id}, size_gb={self.size_gb}, mode='{self.mode}', element_id={self.element_id})>"

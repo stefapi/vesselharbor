@@ -1,10 +1,77 @@
 classDiagram
-direction BT
+direction LR
+class applications {
+   varchar(80) name
+   varchar(1024) description
+   varchar(255) plugin_name
+   varchar(20) plugin_version
+   varchar(9) application_type
+   varchar(9) deployment_status
+   json config
+   boolean is_active
+   integer element_id
+   integer stack_id
+   integer vm_id
+   integer physical_host_id
+   integer id
+}
 class audit_logs {
    integer user_id
    varchar action
    varchar details
    datetime timestamp
+   integer id
+}
+class container_clusters {
+   varchar(6) mode
+   varchar(20) version
+   boolean ha_enabled
+   varchar(255) endpoint
+   integer stack_id
+   integer element_id
+   integer id
+}
+class container_nodes {
+   integer cluster_id
+   integer vm_id
+   integer host_id
+   varchar(6) role
+   integer element_id
+   integer id
+}
+class dns_records {
+   integer domain_id
+   varchar(10) type
+   varchar(255) name
+   varchar(255) value
+   integer ttl
+   integer id
+}
+class dnssec_keys {
+   integer domain_id
+   varchar(3) key_type
+   varchar(15) algorithm
+   integer key_tag
+   integer flags
+   text public_key
+   text private_key
+   datetime created_at
+   datetime activated_at
+   datetime revoked_at
+   datetime expiry_date
+   boolean is_active
+   integer id
+}
+class domains {
+   integer element_id
+   varchar(255) fqdn
+   boolean dnssec_enabled
+   varchar(50) dnssec_status
+   datetime dnssec_last_signed
+   integer dnssec_key_tag
+   integer dnssec_algorithm
+   integer dnssec_digest_type
+   varchar(255) dnssec_digest
    integer id
 }
 class element_tags {
@@ -32,6 +99,14 @@ class functions {
    varchar(1024) description
    integer id
 }
+class gateways {
+   varchar(7) kind
+   integer deployment_application_id
+   integer stack_id
+   varchar(11) cert_strategy
+   json entrypoints
+   integer id
+}
 class group_tags {
    integer group_id
    integer tag_id
@@ -42,9 +117,59 @@ class groups {
    integer organization_id
    integer id
 }
+class network_applications {
+   integer network_id
+   integer application_id
+   varchar ip_address
+   integer id
+}
+class network_container_nodes {
+   integer network_id
+   integer container_node_id
+   varchar ip_address
+   integer id
+}
+class network_gateways {
+   integer network_id
+   integer gateway_id
+   varchar ip_address
+   varchar(10) direction
+   integer id
+}
+class network_physical_hosts {
+   integer network_id
+   integer physical_host_id
+   varchar ip_address
+   integer id
+}
+class network_vms {
+   integer network_id
+   integer vm_id
+   varchar ip_address
+   integer id
+}
+class networks {
+   varchar cidr
+   integer vlan
+   varchar(8) type
+   boolean environment_scoped
+   integer element_id
+   integer id
+}
 class organizations {
    varchar(80) name
    varchar(1024) description
+   integer id
+}
+class physical_hosts {
+   varchar(255) fqdn
+   varchar(45) ip_mgmt
+   integer cpu_threads
+   integer ram_mb
+   varchar(7) hypervisor_type
+   boolean is_schedulable
+   varchar(9) allocation_mode
+   integer dedicated_environment_id
    integer id
 }
 class policies {
@@ -73,6 +198,26 @@ class rules {
    varchar(80) access_schedule
    integer id
 }
+class sqlite_master {
+   text type
+   text name
+   text tbl_name
+   int rootpage
+   text sql
+}
+class stacks {
+   varchar(80) name
+   varchar(1024) description
+   integer element_id
+   integer id
+}
+class storage_pools {
+   varchar(8) type
+   json parameters
+   varchar(11) scope
+   integer element_id
+   integer id
+}
 class tags {
    varchar(80) value
    integer id
@@ -98,17 +243,77 @@ class users {
    boolean is_superadmin
    integer id
 }
+class vms {
+   integer host_id
+   varchar(80) name
+   integer vcpu
+   integer ram_mb
+   integer disk_gb
+   varchar(255) os_image
+   integer stack_id
+   integer element_id
+   integer id
+}
+class volume_applications {
+   integer volume_id
+   integer application_id
+   integer id
+}
+class volume_container_clusters {
+   integer volume_id
+   integer container_cluster_id
+   integer id
+}
+class volume_vms {
+   integer volume_id
+   integer vm_id
+   integer id
+}
+class volumes {
+   integer pool_id
+   integer size_gb
+   varchar(3) mode
+   integer element_id
+   integer id
+}
 
+applications  -->  elements : element_id|id
+applications  -->  physical_hosts : physical_host_id|id
+applications  -->  stacks : stack_id|id
+applications  -->  vms : vm_id|id
 audit_logs  -->  users : user_id|id
+container_clusters  -->  elements : element_id|id
+container_clusters  -->  stacks : stack_id|id
+container_nodes  -->  container_clusters : cluster_id|id
+container_nodes  -->  elements : element_id|id
+container_nodes  -->  physical_hosts : host_id|id
+container_nodes  -->  vms : vm_id|id
+dns_records  -->  domains : domain_id|id
+dnssec_keys  -->  domains : domain_id|id
+domains  -->  elements : element_id|id
 element_tags  -->  elements : element_id|id
 element_tags  -->  tags : tag_id|id
 elements  -->  environments : environment_id|id
 environment_tags  -->  environments : environment_id|id
 environment_tags  -->  tags : tag_id|id
 environments  -->  organizations : organization_id|id
+gateways  -->  applications : deployment_application_id|id
+gateways  -->  stacks : stack_id|id
 group_tags  -->  groups : group_id|id
 group_tags  -->  tags : tag_id|id
 groups  -->  organizations : organization_id|id
+network_applications  -->  applications : application_id|id
+network_applications  -->  networks : network_id|id
+network_container_nodes  -->  container_nodes : container_node_id|id
+network_container_nodes  -->  networks : network_id|id
+network_gateways  -->  gateways : gateway_id|id
+network_gateways  -->  networks : network_id|id
+network_physical_hosts  -->  networks : network_id|id
+network_physical_hosts  -->  physical_hosts : physical_host_id|id
+network_vms  -->  networks : network_id|id
+network_vms  -->  vms : vm_id|id
+networks  -->  elements : element_id|id
+physical_hosts  -->  environments : dedicated_environment_id|id
 policies  -->  organizations : organization_id|id
 policy_groups  -->  groups : group_id|id
 policy_groups  -->  policies : policy_id|id
@@ -120,9 +325,22 @@ rules  -->  elements : element_id|id
 rules  -->  environments : environment_id|id
 rules  -->  functions : function_id|id
 rules  -->  policies : policy_id|id
+stacks  -->  elements : element_id|id
+storage_pools  -->  elements : element_id|id
 user_groups  -->  groups : group_id|id
 user_groups  -->  users : user_id|id
 user_organizations  -->  organizations : organization_id|id
 user_organizations  -->  users : user_id|id
 user_tags  -->  tags : tag_id|id
 user_tags  -->  users : user_id|id
+vms  -->  elements : element_id|id
+vms  -->  physical_hosts : host_id|id
+vms  -->  stacks : stack_id|id
+volume_applications  -->  applications : application_id|id
+volume_applications  -->  volumes : volume_id|id
+volume_container_clusters  -->  container_clusters : container_cluster_id|id
+volume_container_clusters  -->  volumes : volume_id|id
+volume_vms  -->  vms : vm_id|id
+volume_vms  -->  volumes : volume_id|id
+volumes  -->  elements : element_id|id
+volumes  -->  storage_pools : pool_id|id

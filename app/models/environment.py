@@ -17,6 +17,7 @@ class Environment(Base):
     elements = relationship("Element", back_populates="environment")
     rules = relationship("Rule", back_populates="environment")
     tags = relationship("Tag", secondary=environment_tags, back_populates="environments")
+    physical_hosts = relationship("PhysicalHost", back_populates="dedicated_environment")
 
     @property
     def users(self):

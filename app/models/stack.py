@@ -30,7 +30,7 @@
 #
 
 # app/models/stack.py
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from ..database.base import Base
 
@@ -40,12 +40,14 @@ class Stack(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(80), nullable=False)
     description = Column(String(1024), nullable=True)
+    element_id = Column(Integer, ForeignKey("elements.id"), nullable=False)
 
     # Relationships
+    element = relationship("Element", backref="stack")
     vms = relationship("VM", back_populates="stack")
     container_clusters = relationship("ContainerCluster", back_populates="stack")
     gateways = relationship("Gateway", back_populates="stack")
     applications = relationship("Application", back_populates="stack")
 
     def __repr__(self):
-        return f"<Stack(id={self.id}, name='{self.name}')>"
+        return f"<Stack(id={self.id}, name='{self.name}', element_id={self.element_id})>"

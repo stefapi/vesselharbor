@@ -36,13 +36,13 @@ import datetime
 
 def create_domain(
     db: Session,
-    tenant_id: int,
+    environment_id: int,
     fqdn: str,
     provider_id: int,
     dnssec_enabled: bool = False
 ) -> Domain:
     domain = Domain(
-        tenant_id=tenant_id,
+        environment_id=environment_id,
         fqdn=fqdn,
         provider_id=provider_id,
         dnssec_enabled=dnssec_enabled,
@@ -62,8 +62,8 @@ def get_domain_by_fqdn(db: Session, fqdn: str) -> Domain:
 def list_domains(db: Session, skip: int = 0, limit: int = 100):
     return db.query(Domain).offset(skip).limit(limit).all()
 
-def list_domains_by_tenant(db: Session, tenant_id: int):
-    return db.query(Domain).filter(Domain.tenant_id == tenant_id).all()
+def list_domains_by_environment(db: Session, environment_id: int):
+    return db.query(Domain).filter(Domain.environment_id == environment_id).all()
 
 def list_domains_by_provider(db: Session, provider_id: int):
     return db.query(Domain).filter(Domain.provider_id == provider_id).all()
@@ -71,13 +71,13 @@ def list_domains_by_provider(db: Session, provider_id: int):
 def update_domain(
     db: Session,
     domain: Domain,
-    tenant_id: int = None,
+    environment_id: int = None,
     fqdn: str = None,
     provider_id: int = None,
     dnssec_enabled: bool = None
 ) -> Domain:
-    if tenant_id is not None:
-        domain.tenant_id = tenant_id
+    if environment_id is not None:
+        domain.environment_id = environment_id
     if fqdn is not None:
         domain.fqdn = fqdn
     if provider_id is not None:

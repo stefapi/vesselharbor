@@ -39,15 +39,15 @@ def create_network(
     cidr: str,
     type: NetworkType,
     vlan: Optional[int] = None,
-    tenant_scoped: bool = False,
-    tenant_id: Optional[int] = None
+    environment_scoped: bool = False,
+    element_id: int = None
 ) -> Network:
     network = Network(
         cidr=cidr,
         vlan=vlan,
         type=type,
-        tenant_scoped=tenant_scoped,
-        tenant_id=tenant_id if tenant_scoped and tenant_id else None
+        environment_scoped=environment_scoped,
+        element_id=element_id
     )
     db.add(network)
     db.commit()
@@ -66,11 +66,11 @@ def list_networks(db: Session, skip: int = 0, limit: int = 100) -> List[Network]
 def list_networks_by_type(db: Session, network_type: NetworkType) -> List[Network]:
     return db.query(Network).filter(Network.type == network_type).all()
 
-def list_networks_by_tenant(db: Session, tenant_id: int) -> List[Network]:
-    return db.query(Network).filter(Network.tenant_id == tenant_id).all()
+def list_networks_by_element(db: Session, element_id: int) -> List[Network]:
+    return db.query(Network).filter(Network.element_id == element_id).all()
 
-def list_tenant_scoped_networks(db: Session) -> List[Network]:
-    return db.query(Network).filter(Network.tenant_scoped == True).all()
+def list_environment_scoped_networks(db: Session) -> List[Network]:
+    return db.query(Network).filter(Network.environment_scoped == True).all()
 
 def update_network(
     db: Session,
@@ -78,8 +78,8 @@ def update_network(
     cidr: Optional[str] = None,
     vlan: Optional[int] = None,
     type: Optional[NetworkType] = None,
-    tenant_scoped: Optional[bool] = None,
-    tenant_id: Optional[int] = None
+    environment_scoped: Optional[bool] = None,
+    element_id: Optional[int] = None
 ) -> Network:
     if cidr is not None:
         network.cidr = cidr
@@ -87,13 +87,10 @@ def update_network(
         network.vlan = vlan
     if type is not None:
         network.type = type
-    if tenant_scoped is not None:
-        network.tenant_scoped = tenant_scoped
-        # If tenant_scoped is set to False, clear the tenant_id
-        if not tenant_scoped:
-            network.tenant_id = None
-    if tenant_id is not None and network.tenant_scoped:
-        network.tenant_id = tenant_id
+    if environment_scoped is not None:
+        network.environment_scoped = environment_scoped
+    if element_id is not None:
+        network.element_id = element_id
 
     db.commit()
     db.refresh(network)

@@ -29,68 +29,57 @@
 #  SOFTWARE.
 #
 
-# app/repositories/volume_repo.py
+# app/repositories/network_vm_repo.py
 from sqlalchemy.orm import Session
-from ..models.volume import Volume, VolumeMode
+from ..models.network_vm import NetworkVM
+from typing import Optional, List
 
-
-def create_volume(
+def create_network_vm(
     db: Session,
-    pool_id: int,
-    size_gb: int,
-    mode: VolumeMode
-) -> Volume:
-    volume = Volume(
-        pool_id=pool_id,
-        size_gb=size_gb,
-        mode=mode
+    network_id: int,
+    vm_id: int,
+    ip_address: str
+) -> NetworkVM:
+    attachment = NetworkVM(
+        network_id=network_id,
+        vm_id=vm_id,
+        ip_address=ip_address
     )
-    db.add(volume)
+    db.add(attachment)
     db.commit()
-    db.refresh(volume)
-    return volume
+    db.refresh(attachment)
+    return attachment
 
+def get_network_vm(db: Session, attachment_id: int) -> Optional[NetworkVM]:
+    return db.query(NetworkVM).filter(NetworkVM.id == attachment_id).first()
 
-def get_volume(db: Session, volume_id: int) -> Volume:
-    return db.query(Volume).filter(Volume.id == volume_id).first()
+def list_network_vms(db: Session, skip: int = 0, limit: int = 100) -> List[NetworkVM]:
+    return db.query(NetworkVM).offset(skip).limit(limit).all()
 
+def list_network_vms_by_network(db: Session, network_id: int) -> List[NetworkVM]:
+    return db.query(NetworkVM).filter(NetworkVM.network_id == network_id).all()
 
-def update_volume(
+def list_network_vms_by_vm(db: Session, vm_id: int) -> List[NetworkVM]:
+    return db.query(NetworkVM).filter(NetworkVM.vm_id == vm_id).all()
+
+def update_network_vm(
     db: Session,
-    volume: Volume,
-    pool_id: int = None,
-    size_gb: int = None,
-    mode: VolumeMode = None
-) -> Volume:
-    if pool_id is not None:
-        volume.pool_id = pool_id
-    if size_gb is not None:
-        volume.size_gb = size_gb
-    if mode is not None:
-        volume.mode = mode
+    attachment: NetworkVM,
+    network_id: Optional[int] = None,
+    vm_id: Optional[int] = None,
+    ip_address: Optional[str] = None
+) -> NetworkVM:
+    if network_id is not None:
+        attachment.network_id = network_id
+    if vm_id is not None:
+        attachment.vm_id = vm_id
+    if ip_address is not None:
+        attachment.ip_address = ip_address
+
     db.commit()
-    db.refresh(volume)
-    return volume
+    db.refresh(attachment)
+    return attachment
 
-
-def delete_volume(db: Session, volume: Volume):
-    db.delete(volume)
+def delete_network_vm(db: Session, attachment: NetworkVM) -> None:
+    db.delete(attachment)
     db.commit()
-
-
-def list_volumes(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(Volume).offset(skip).limit(limit).all()
-
-
-def list_volumes_by_pool(db: Session, pool_id: int):
-    return db.query(Volume).filter(Volume.pool_id == pool_id).all()
-
-
-def list_volumes_by_mode(db: Session, mode: VolumeMode):
-    return db.query(Volume).filter(Volume.mode == mode).all()
-
-
-# These functions are replaced by the specific repository functions for each attachment type:
-# - volume_vm_repo.py
-# - volume_container_cluster_repo.py
-# - volume_application_repo.py

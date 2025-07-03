@@ -32,7 +32,7 @@
 # app/models/physical_host.py
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Enum
 from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, foreign
 from ..database.base import Base
 import enum
 
@@ -53,30 +53,20 @@ class PhysicalHost(Base):
     ip_mgmt = Column(String(45), nullable=False)
     cpu_threads = Column(Integer, nullable=False)
     ram_mb = Column(Integer, nullable=False)
-    disk_gb = Column(Integer, nullable=False)
-    labels = Column(ARRAY(String), nullable=True)
     hypervisor_type = Column(Enum(HypervisorType), default=HypervisorType.NONE)
     is_schedulable = Column(Boolean, default=True)
     allocation_mode = Column(Enum(AllocationMode), default=AllocationMode.SHARED)
-    dedicated_tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=True)
+    dedicated_environment_id = Column(Integer, ForeignKey("environments.id"), nullable=True)
 
     # Relationships
-    dedicated_tenant = relationship("Tenant", back_populates="physical_hosts")
+    dedicated_environment = relationship("Environment", back_populates="physical_hosts")
     vms = relationship("VM", back_populates="host")
     container_nodes = relationship("ContainerNode", back_populates="host")
     applications = relationship("Application", back_populates="physical_host")
 
-    # Property to get network attachments
-    @property
-    def network_attachments(self):
-        from ..repositories import network_attachment_repo
-        from ..models.network_attachment import AttachedToType
-        from sqlalchemy.orm import Session
-        from ..database.session import get_db
-        db = next(get_db())
-        return network_attachment_repo.list_network_attachments_by_attached_entity(
-            db, AttachedToType.HOST, self.id
-        )
+    # Relationship to network attachments
+    network_attachments = relationship("NetworkPhysicalHost", back_populates="physical_host")
+
 
     def __repr__(self):
         return f"<PhysicalHost(id={self.id}, fqdn='{self.fqdn}', hypervisor='{self.hypervisor_type}')>"

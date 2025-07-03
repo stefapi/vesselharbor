@@ -52,7 +52,7 @@
 
 # app/models/application.py
 from sqlalchemy import Column, Integer, String, ForeignKey, Enum, JSON, Boolean
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, foreign
 from ..database.base import Base
 import enum
 from typing import Optional, Dict, Any
@@ -83,6 +83,7 @@ class Application(Base):
     deployment_status = Column(Enum(DeploymentStatus), default=DeploymentStatus.PENDING)
     config = Column(JSON, nullable=True)  # Configuration parameters for the application
     is_active = Column(Boolean, default=True)
+    element_id = Column(Integer, ForeignKey("elements.id"), nullable=False)
 
     # Target deployment relationships - only one of these should be set based on application_type
     stack_id = Column(Integer, ForeignKey("stacks.id"), nullable=True)  # For CONTAINER type
@@ -93,28 +94,18 @@ class Application(Base):
     stack = relationship("Stack", back_populates="applications")
     vm = relationship("VM", back_populates="applications")
     physical_host = relationship("PhysicalHost", back_populates="applications")
+    element = relationship("Element", backref="application")
+
+    # Relationship to volume attachments
+    volume_attachments = relationship("VolumeApplication", back_populates="application")
 
     # Property to get volumes
     @property
     def volumes(self):
-        from ..repositories import volume_repo
-        from ..models.volume import AttachedToType
-        from ..database.session import get_db
-        db = next(get_db())
-        return volume_repo.list_volumes_by_attachment(
-            db, AttachedToType.SERVICE, self.id
-        )
+        return [attachment.volume for attachment in self.volume_attachments]
 
-    # Property to get network attachments
-    @property
-    def network_attachments(self):
-        from ..repositories import network_attachment_repo
-        from ..models.network_attachment import AttachedToType
-        from ..database.session import get_db
-        db = next(get_db())
-        return network_attachment_repo.list_network_attachments_by_attached_entity(
-            db, AttachedToType.SERVICE, self.id
-        )
+    # Relationship to network attachments
+    network_attachments = relationship("NetworkApplication", back_populates="application")
 
     def __repr__(self):
-        return f"<Application(id={self.id}, name='{self.name}', type='{self.application_type}', status='{self.deployment_status}')>"
+        return f"<Application(id={self.id}, name='{self.name}', type='{self.application_type}', status='{self.deployment_status}', element_id={self.element_id})>"

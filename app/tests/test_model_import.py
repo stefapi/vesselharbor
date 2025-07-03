@@ -29,23 +29,28 @@
 #  SOFTWARE.
 #
 
-# app/models/tenant.py
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship
-from ..database.base import Base
+#
+#  ____   ____                          .__    ___ ___             ___.
+#  \   \ /   /____   ______ ______ ____ |  |  /   |   \_____ ______\_ |__   ___________
+#   \   Y   // __ \ /  ___//  ___// __ \|  | /    ~    \__  \\_  __ \ __ \ /  _ \_  __ \
+#    \     /\  ___/ \___ \ \___ \\  ___/|  |_\    Y    // __ \|  | \/ \_\ (  <_> )  | \/
+#     \___/  \___  >____  >____  >\___  >____/\___|_  /(____  /__|  |___  /\____/|__|
+#                \/     \/     \/     \/            \/      \/          \/
+#
+#
+#  MIT License
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#
+#
+#
 
-class Tenant(Base):
-    __tablename__ = "tenants"
+from app.models import PhysicalHost
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(80), nullable=False)
-    description = Column(String(1024), nullable=True)
-
-    # Relationships
-    physical_hosts = relationship("PhysicalHost", back_populates="dedicated_tenant")
-    networks = relationship("Network", back_populates="tenant")
-    storage_pools = relationship("StoragePool", back_populates="tenant")
-    domains = relationship("Domain", back_populates="tenant")
-
-    def __repr__(self):
-        return f"<Tenant(id={self.id}, name='{self.name}')>"
+# This script simply imports the models to verify that there are no import errors
+print("Successfully imported PhysicalHost model")

@@ -40,24 +40,22 @@ def create_physical_host(
     ip_mgmt: str,
     cpu_threads: int,
     ram_mb: int,
-    disk_gb: int,
     labels: List[str] = None,
     hypervisor_type: HypervisorType = HypervisorType.NONE,
     is_schedulable: bool = True,
     allocation_mode: AllocationMode = AllocationMode.SHARED,
-    dedicated_tenant_id: Optional[int] = None
+    dedicated_environment_id: Optional[int] = None
 ) -> PhysicalHost:
     physical_host = PhysicalHost(
         fqdn=fqdn,
         ip_mgmt=ip_mgmt,
         cpu_threads=cpu_threads,
         ram_mb=ram_mb,
-        disk_gb=disk_gb,
         labels=labels,
         hypervisor_type=hypervisor_type,
         is_schedulable=is_schedulable,
         allocation_mode=allocation_mode,
-        dedicated_tenant_id=dedicated_tenant_id
+        dedicated_environment_id=dedicated_environment_id
     )
     db.add(physical_host)
     db.commit()
@@ -73,8 +71,8 @@ def get_physical_host_by_fqdn(db: Session, fqdn: str) -> PhysicalHost:
 def list_physical_hosts(db: Session, skip: int = 0, limit: int = 100):
     return db.query(PhysicalHost).offset(skip).limit(limit).all()
 
-def list_physical_hosts_by_tenant(db: Session, tenant_id: int, skip: int = 0, limit: int = 100):
-    return db.query(PhysicalHost).filter(PhysicalHost.dedicated_tenant_id == tenant_id).offset(skip).limit(limit).all()
+def list_physical_hosts_by_environment(db: Session, environment_id: int, skip: int = 0, limit: int = 100):
+    return db.query(PhysicalHost).filter(PhysicalHost.dedicated_environment_id == environment_id).offset(skip).limit(limit).all()
 
 def list_physical_hosts_by_hypervisor(db: Session, hypervisor_type: HypervisorType, skip: int = 0, limit: int = 100):
     return db.query(PhysicalHost).filter(PhysicalHost.hypervisor_type == hypervisor_type).offset(skip).limit(limit).all()
@@ -89,12 +87,11 @@ def update_physical_host(
     ip_mgmt: str = None,
     cpu_threads: int = None,
     ram_mb: int = None,
-    disk_gb: int = None,
     labels: List[str] = None,
     hypervisor_type: HypervisorType = None,
     is_schedulable: bool = None,
     allocation_mode: AllocationMode = None,
-    dedicated_tenant_id: Optional[int] = None
+    dedicated_environment_id: Optional[int] = None
 ) -> PhysicalHost:
     if fqdn is not None:
         physical_host.fqdn = fqdn
@@ -104,8 +101,6 @@ def update_physical_host(
         physical_host.cpu_threads = cpu_threads
     if ram_mb is not None:
         physical_host.ram_mb = ram_mb
-    if disk_gb is not None:
-        physical_host.disk_gb = disk_gb
     if labels is not None:
         physical_host.labels = labels
     if hypervisor_type is not None:
@@ -114,8 +109,8 @@ def update_physical_host(
         physical_host.is_schedulable = is_schedulable
     if allocation_mode is not None:
         physical_host.allocation_mode = allocation_mode
-    if dedicated_tenant_id is not None:
-        physical_host.dedicated_tenant_id = dedicated_tenant_id
+    if dedicated_environment_id is not None:
+        physical_host.dedicated_environment_id = dedicated_environment_id
     db.commit()
     db.refresh(physical_host)
     return physical_host

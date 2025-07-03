@@ -29,68 +29,23 @@
 #  SOFTWARE.
 #
 
-# app/repositories/volume_repo.py
-from sqlalchemy.orm import Session
-from ..models.volume import Volume, VolumeMode
+# app/models/network_vm.py
+from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy.orm import relationship
+from ..database.base import Base
+from .types import INETType
 
+class NetworkVM(Base):
+    __tablename__ = "network_vms"
 
-def create_volume(
-    db: Session,
-    pool_id: int,
-    size_gb: int,
-    mode: VolumeMode
-) -> Volume:
-    volume = Volume(
-        pool_id=pool_id,
-        size_gb=size_gb,
-        mode=mode
-    )
-    db.add(volume)
-    db.commit()
-    db.refresh(volume)
-    return volume
+    id = Column(Integer, primary_key=True, index=True)
+    network_id = Column(Integer, ForeignKey("networks.id"), nullable=False)
+    vm_id = Column(Integer, ForeignKey("vms.id"), nullable=False)
+    ip_address = Column(INETType, nullable=False)
 
+    # Relationships
+    network = relationship("Network", back_populates="vm_attachments")
+    vm = relationship("VM", back_populates="network_attachments")
 
-def get_volume(db: Session, volume_id: int) -> Volume:
-    return db.query(Volume).filter(Volume.id == volume_id).first()
-
-
-def update_volume(
-    db: Session,
-    volume: Volume,
-    pool_id: int = None,
-    size_gb: int = None,
-    mode: VolumeMode = None
-) -> Volume:
-    if pool_id is not None:
-        volume.pool_id = pool_id
-    if size_gb is not None:
-        volume.size_gb = size_gb
-    if mode is not None:
-        volume.mode = mode
-    db.commit()
-    db.refresh(volume)
-    return volume
-
-
-def delete_volume(db: Session, volume: Volume):
-    db.delete(volume)
-    db.commit()
-
-
-def list_volumes(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(Volume).offset(skip).limit(limit).all()
-
-
-def list_volumes_by_pool(db: Session, pool_id: int):
-    return db.query(Volume).filter(Volume.pool_id == pool_id).all()
-
-
-def list_volumes_by_mode(db: Session, mode: VolumeMode):
-    return db.query(Volume).filter(Volume.mode == mode).all()
-
-
-# These functions are replaced by the specific repository functions for each attachment type:
-# - volume_vm_repo.py
-# - volume_container_cluster_repo.py
-# - volume_application_repo.py
+    def __repr__(self):
+        return f"<NetworkVM(id={self.id}, network_id={self.network_id}, vm_id={self.vm_id})>"

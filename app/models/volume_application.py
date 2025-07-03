@@ -29,61 +29,42 @@
 #  SOFTWARE.
 #
 
-# app/models/storage_pool.py
-from sqlalchemy import Column, Integer, Enum, ForeignKey, JSON
+#
+#  ____   ____                          .__    ___ ___             ___.
+#  \   \ /   /____   ______ ______ ____ |  |  /   |   \_____ ______\_ |__   ___________
+#   \   Y   // __ \ /  ___//  ___// __ \|  | /    ~    \__  \\_  __ \ __ \ /  _ \_  __ \
+#    \     /\  ___/ \___ \ \___ \\  ___/|  |_\    Y    // __ \|  | \/ \_\ (  <_> )  | \/
+#     \___/  \___  >____  >____  >\___  >____/\___|_  /(____  /__|  |___  /\____/|__|
+#                \/     \/     \/     \/            \/      \/          \/
+#
+#
+#  MIT License
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#
+#
+#
+
+# app/models/volume_application.py
+from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
-from sqlalchemy.types import TypeDecorator, JSON
 from ..database.base import Base
-from ..database.session import DATABASE_URL
-import enum
 
-# Custom JSONB type that works with both PostgreSQL and SQLite
-class JSONBType(TypeDecorator):
-    impl = JSON
-
-    def load_dialect_impl(self, dialect):
-        if dialect.name == 'postgresql':
-            from sqlalchemy.dialects.postgresql import JSONB
-            return dialect.type_descriptor(JSONB())
-        else:
-            return dialect.type_descriptor(JSON())
-
-
-class StoragePoolType(str, enum.Enum):
-    NFS = "nfs"
-    CEPH = "ceph"
-    LONGHORN = "longhorn"
-    EBS = "ebs"
-
-
-class StoragePoolScope(str, enum.Enum):
-    GLOBAL = "global"
-    ENVIRONMENT = "environment"
-    PROJECT = "project"
-
-
-class StoragePool(Base):
-    __tablename__ = "storage_pools"
+class VolumeApplication(Base):
+    __tablename__ = "volume_applications"
 
     id = Column(Integer, primary_key=True, index=True)
-    type = Column(Enum(StoragePoolType), nullable=False)
-    parameters = Column(JSONBType, nullable=True)
-    scope = Column(Enum(StoragePoolScope), nullable=False)
-    element_id = Column(Integer, ForeignKey("elements.id"), nullable=True)
+    volume_id = Column(Integer, ForeignKey("volumes.id"), nullable=False)
+    application_id = Column(Integer, ForeignKey("applications.id"), nullable=False)
 
     # Relationships
-    element = relationship("Element", backref="storage_pool")
-    volumes = relationship("Volume", back_populates="storage_pool")
-
-    @property
-    def host(self):
-        """Get the host if this storage pool is host-local"""
-        if self.parameters and 'host_id' in self.parameters:
-            from ..repositories import physical_host_repo
-            from ..database.session import get_db
-            db = next(get_db())
-            return physical_host_repo.get_physical_host(db, self.parameters['host_id'])
-        return None
+    volume = relationship("Volume", back_populates="application_attachments")
+    application = relationship("Application", back_populates="volume_attachments")
 
     def __repr__(self):
-        return f"<StoragePool(id={self.id}, type='{self.type}', scope='{self.scope}')>"
+        return f"<VolumeApplication(id={self.id}, volume_id={self.volume_id}, application_id={self.application_id})>"

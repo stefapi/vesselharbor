@@ -33,8 +33,8 @@
 from sqlalchemy.orm import Session
 from ..models.stack import Stack
 
-def create_stack(db: Session, name: str, description: str = None) -> Stack:
-    stack = Stack(name=name, description=description)
+def create_stack(db: Session, name: str, environment_id: int, description: str = None) -> Stack:
+    stack = Stack(name=name, environment_id=environment_id, description=description)
     db.add(stack)
     db.commit()
     db.refresh(stack)
@@ -49,11 +49,16 @@ def get_stack_by_name(db: Session, name: str) -> Stack:
 def list_stacks(db: Session, skip: int = 0, limit: int = 100):
     return db.query(Stack).offset(skip).limit(limit).all()
 
-def update_stack(db: Session, stack: Stack, name: str = None, description: str = None) -> Stack:
+def list_stacks_by_environment(db: Session, environment_id: int, skip: int = 0, limit: int = 100):
+    return db.query(Stack).filter(Stack.environment_id == environment_id).offset(skip).limit(limit).all()
+
+def update_stack(db: Session, stack: Stack, name: str = None, description: str = None, environment_id: int = None) -> Stack:
     if name is not None:
         stack.name = name
     if description is not None:
         stack.description = description
+    if environment_id is not None:
+        stack.environment_id = environment_id
     db.commit()
     db.refresh(stack)
     return stack

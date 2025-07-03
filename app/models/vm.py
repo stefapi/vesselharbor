@@ -31,7 +31,7 @@
 
 # app/models/vm.py
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, foreign
 from ..database.base import Base
 
 class VM(Base):
@@ -45,34 +45,25 @@ class VM(Base):
     disk_gb = Column(Integer, nullable=False)
     os_image = Column(String(255), nullable=False)
     stack_id = Column(Integer, ForeignKey("stacks.id"), nullable=True)
+    element_id = Column(Integer, ForeignKey("elements.id"), nullable=False)
 
     # Relationships
     host = relationship("PhysicalHost", back_populates="vms")
     stack = relationship("Stack", back_populates="vms")
     container_nodes = relationship("ContainerNode", back_populates="vm")
     applications = relationship("Application", back_populates="vm")
+    element = relationship("Element", backref="vm")
 
-    # Property to get network attachments
-    @property
-    def network_attachments(self):
-        from ..repositories import network_attachment_repo
-        from ..models.network_attachment import AttachedToType
-        from ..database.session import get_db
-        db = next(get_db())
-        return network_attachment_repo.list_network_attachments_by_attached_entity(
-            db, AttachedToType.VM, self.id
-        )
+    # Relationship to network attachments
+    network_attachments = relationship("NetworkVM", back_populates="vm")
+
+    # Relationship to volume attachments
+    volume_attachments = relationship("VolumeVM", back_populates="vm")
 
     # Property to get volumes
     @property
     def volumes(self):
-        from ..repositories import volume_repo
-        from ..models.volume import AttachedToType
-        from ..database.session import get_db
-        db = next(get_db())
-        return volume_repo.list_volumes_by_attachment(
-            db, AttachedToType.VM, self.id
-        )
+        return [attachment.volume for attachment in self.volume_attachments]
 
     def __repr__(self):
-        return f"<VM(id={self.id}, name='{self.name}', host_id={self.host_id})>"
+        return f"<VM(id={self.id}, name='{self.name}', host_id={self.host_id}, element_id={self.element_id})>"

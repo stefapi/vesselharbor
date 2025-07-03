@@ -197,11 +197,6 @@
               "type": "integer",
               "description": "RAM in MB",
               "minimum": 512
-            },
-            "disk_gb": {
-              "type": "integer",
-              "description": "Disk space in GB",
-              "minimum": 10
             }
           }
         }

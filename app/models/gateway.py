@@ -31,9 +31,9 @@
 
 # app/models/gateway.py
 from sqlalchemy import Column, Integer, ForeignKey, Enum
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, foreign
 from ..database.base import Base
+from .storage_pool import JSONBType
 import enum
 
 class GatewayKind(str, enum.Enum):
@@ -51,15 +51,42 @@ class Gateway(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     kind = Column(Enum(GatewayKind), nullable=False)
-    deployment_service_id = Column(Integer, ForeignKey("services.id", name="fk_gateway_service"), nullable=True)
+    deployment_application_id = Column(Integer, ForeignKey("applications.id", name="fk_gateway_service"), nullable=True)
     stack_id = Column(Integer, ForeignKey("stacks.id"), nullable=True)
     cert_strategy = Column(Enum(CertStrategy), nullable=False, default=CertStrategy.NONE)
-    entrypoints = Column(JSONB, nullable=True)
+    entrypoints = Column(JSONBType, nullable=True)
 
     # Relationships
     # Note: The Service model is not defined yet, so this relationship will be established later
     # service = relationship("Service", back_populates="gateways")
     stack = relationship("Stack", back_populates="gateways")
+
+    # Relationship to network attachments
+    network_attachments = relationship("NetworkGateway", back_populates="gateway")
+
+    @property
+    def upstream_networks(self):
+        """
+        Get all upstream networks for this gateway.
+        A gateway connects upstream networks to downstream networks.
+        """
+        from ..repositories import network_gateway_repo
+        from sqlalchemy.orm import Session
+        from ..database.session import get_db
+        db = next(get_db())
+        return network_gateway_repo.get_upstream_networks_by_gateway(db, self.id)
+
+    @property
+    def downstream_networks(self):
+        """
+        Get all downstream networks for this gateway.
+        A gateway connects upstream networks to downstream networks.
+        """
+        from ..repositories import network_gateway_repo
+        from sqlalchemy.orm import Session
+        from ..database.session import get_db
+        db = next(get_db())
+        return network_gateway_repo.get_downstream_networks_by_gateway(db, self.id)
 
     def __repr__(self):
         return f"<Gateway(id={self.id}, kind='{self.kind}', cert_strategy='{self.cert_strategy}')>"

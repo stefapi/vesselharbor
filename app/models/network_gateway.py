@@ -29,19 +29,29 @@
 #  SOFTWARE.
 #
 
-from sqlalchemy import Column, Integer, String, JSON
+# app/models/network_gateway.py
+from sqlalchemy import Column, Integer, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from ..database.base import Base
+from .types import INETType
+import enum
 
-class DNSProvider(Base):
-    __tablename__ = "dns_providers"
+class NetworkDirection(str, enum.Enum):
+    UPSTREAM = "upstream"
+    DOWNSTREAM = "downstream"
+
+class NetworkGateway(Base):
+    __tablename__ = "network_gateways"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(80), nullable=False)
-    api_endpoint = Column(String(255), nullable=False)
-    creds = Column(JSON, nullable=False)
+    network_id = Column(Integer, ForeignKey("networks.id"), nullable=False)
+    gateway_id = Column(Integer, ForeignKey("gateways.id"), nullable=False)
+    ip_address = Column(INETType, nullable=False)
+    direction = Column(Enum(NetworkDirection), nullable=False, default=NetworkDirection.UPSTREAM)
 
-    domains = relationship("Domain", back_populates="provider")
+    # Relationships
+    network = relationship("Network", back_populates="gateway_attachments")
+    gateway = relationship("Gateway", back_populates="network_attachments")
 
     def __repr__(self):
-        return f"<DNSProvider(id={self.id}, name='{self.name}', api_endpoint='{self.api_endpoint}')>"
+        return f"<NetworkGateway(id={self.id}, network_id={self.network_id}, gateway_id={self.gateway_id}, direction='{self.direction}')>"
