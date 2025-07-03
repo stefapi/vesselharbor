@@ -10,6 +10,7 @@ from .rule import RuleOut
 from .user import UserOut
 from .group import GroupOut
 from .tag import TagOut
+from .physical_host import PhysicalHostOut
 
 from .organization import OrganizationBase
 
@@ -33,6 +34,7 @@ class EnvironmentOut(EnvironmentBase):
     users: List[UserOut] = Field(default_factory=list)
     groups_with_access: List[GroupOut] = Field(default_factory=list)
     tags: List[TagOut] = Field(default_factory=list)
+    physical_hosts: List[PhysicalHostOut] = Field(default_factory=list)
 
     model_config = {
         "from_attributes": True

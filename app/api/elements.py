@@ -7,9 +7,10 @@ from ..models.element import Element
 from ..models.environment import Environment
 from ..models.user import User
 from ..database.session import SessionLocal
-from ..repositories import element_repo, tag_repo
+from ..repositories import element_repo, tag_repo, physical_host_repo
 from ..api.users import get_current_user
 from ..helper import permissions, audit, response
+from ..schema.physical_host import PhysicalHostOut
 
 router = APIRouter(prefix="/elements", tags=["elements"])
 
@@ -50,9 +51,32 @@ def create_element(
     if not permissions.has_permission(db, current_user, env.organization_id, "element:create"):
         raise HTTPException(status_code=403, detail="Permission insuffisante pour créer un élément")
 
-    element = element_repo.create_element(db, environment_id, element_in.name, element_in.description)
+    try:
+        # Create the element with a sub-component
+        element = element_repo.create_element_with_subcomponent(
+            db,
+            environment_id,
+            element_in.name,
+            element_in.description,
+            element_in.subcomponent_type,
+            element_in.subcomponent_data
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+    # Get physical hosts associated with the element's environment
+    physical_hosts = physical_host_repo.list_physical_hosts_by_environment(db, environment_id)
+
+    # Create a serializable element with environment_physical_hosts
+    from ..schema.element import ElementOut
+    serializable_element = ElementOut.model_validate(element)
+    serializable_element.environment_physical_hosts = [PhysicalHostOut.model_validate(host) for host in physical_hosts]
+
     audit.log_action(db, current_user.id, "Création élément", f"Élément '{element.name}' dans env {environment_id}")
-    return response.success_response(element, "Élément créé avec succès")
+    return response.success_response(serializable_element, "Élément créé avec succès")
 
 
 @router.get(
@@ -80,7 +104,15 @@ def get_element(
     if not permissions.has_permission(db, current_user, org_id, "element:read"):
         raise HTTPException(status_code=403, detail="Permission insuffisante pour visualiser cet élément")
 
-    return response.success_response(element, "Élément récupéré")
+    # Get physical hosts associated with the element's environment
+    physical_hosts = physical_host_repo.list_physical_hosts_by_environment(db, element.environment_id)
+
+    # Create a serializable element with environment_physical_hosts
+    from ..schema.element import ElementOut
+    serializable_element = ElementOut.model_validate(element)
+    serializable_element.environment_physical_hosts = [PhysicalHostOut.model_validate(host) for host in physical_hosts]
+
+    return response.success_response(serializable_element, "Élément récupéré")
 
 
 @router.put(
@@ -124,12 +156,30 @@ def update_element(
 
     updated = element_repo.update_element(db, element, name=element_in.name, description=element_in.description, environment_id=element_in.environment_id)
 
+    # Get physical hosts associated with the element's environment
+    environment_id = updated.environment_id
+    physical_hosts = physical_host_repo.list_physical_hosts_by_environment(db, environment_id)
+
+    # Create a serializable element with environment_physical_hosts
+    from ..schema.element import ElementOut
+    serializable_element = ElementOut.model_validate(updated)
+    serializable_element.environment_physical_hosts = [PhysicalHostOut.model_validate(host) for host in physical_hosts]
+
+    # Check if the element has at least one sub-component
+    if not element_repo.has_subcomponent(updated):
+        # Rollback the transaction if the element doesn't have any sub-components
+        db.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail="Un élément doit avoir au moins un sous-composant (network, vm, storage_pool, etc.)"
+        )
+
     # Create appropriate audit log message
     if element_in.environment_id is not None and original_env_id != element_in.environment_id:
         audit.log_action(db, current_user.id, "Mise à jour élément", f"Mise à jour de l'élément '{updated.name}' (ID {updated.id}) - Changement d'environnement: {original_env_id} → {updated.environment_id}")
     else:
         audit.log_action(db, current_user.id, "Mise à jour élément", f"Mise à jour de l'élément '{updated.name}' (ID {updated.id})")
-    return response.success_response(updated, "Élément mis à jour")
+    return response.success_response(serializable_element, "Élément mis à jour")
 
 
 @router.delete(
@@ -156,6 +206,15 @@ def delete_element(
     org_id = element.environment.organization_id
     if not permissions.has_permission(db, current_user, org_id, "element:delete"):
         raise HTTPException(status_code=403, detail="Permission insuffisante pour supprimer cet élément")
+
+    # Check if the element has at least one sub-component
+    if not element_repo.has_subcomponent(element):
+        # This is just a sanity check, as elements without sub-components shouldn't exist
+        # according to our new constraint
+        raise HTTPException(
+            status_code=400,
+            detail="Impossible de supprimer un élément sans sous-composant (cet élément ne devrait pas exister)"
+        )
 
     element_repo.delete_element(db, element)
     audit.log_action(db, current_user.id, "Suppression élément", f"Suppression de l'élément '{element.name}' (ID {element.id})")

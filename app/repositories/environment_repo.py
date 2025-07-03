@@ -11,8 +11,17 @@ def get_environment(db: Session, env_id: int) -> Environment:
 def get_environment_by_name(db: Session, name: str) -> Environment:
     return db.query(Environment).filter(Environment.name == name).first()
 
-def create_environment(db: Session, name: str) -> Environment:
-    environment = Environment(name=name)
+def create_environment(db: Session, name: str, organization_id: int = None, description: str = None) -> Environment:
+    # If organization_id is not provided, create a test organization for backward compatibility with tests
+    if organization_id is None:
+        from ..models.organization import Organization
+        test_org = Organization(name=f"test_org_for_{name}", description=f"Test organization for {name}")
+        db.add(test_org)
+        db.commit()
+        db.refresh(test_org)
+        organization_id = test_org.id
+
+    environment = Environment(name=name, organization_id=organization_id, description=description)
     db.add(environment)
     db.commit()
     db.refresh(environment)

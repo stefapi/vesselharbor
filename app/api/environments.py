@@ -5,12 +5,32 @@ from sqlalchemy.orm import Session
 from typing import Optional
 
 from ..models import Element
+from ..models.network import Network
+from ..models.vm import VM
+from ..models.storage_pool import StoragePool
+from ..models.volume import Volume
+from ..models.domain import Domain
+from ..models.container_node import ContainerNode
+from ..models.container_cluster import ContainerCluster
+from ..models.stack import Stack
+from ..models.application import Application
 from ..schema.environment import EnvironmentCreate, EnvironmentOut
+from ..schema.physical_host import PhysicalHostOut
+from ..schema.element import ElementOut
+from ..schema.network import NetworkOut
+from ..schema.vm import VMOut
+from ..schema.storage_pool import StoragePoolOut
+from ..schema.volume import VolumeOut
+from ..schema.domain import DomainOut
+from ..schema.container_node import ContainerNodeOut
+from ..schema.container_cluster import ContainerClusterOut
+from ..schema.stack import StackOut
+from ..schema.application import ApplicationOut
 from ..models.environment import Environment
 from ..models.organization import Organization
 from ..models.user import User
 from ..database.session import SessionLocal
-from ..repositories import environment_repo, group_repo, function_repo, tag_repo
+from ..repositories import environment_repo, group_repo, function_repo, tag_repo, physical_host_repo
 from ..api.users import get_current_user
 from ..helper import permissions, audit, response
 from ..helper.animalname import generate_codename
@@ -128,6 +148,37 @@ def get_environment(
         raise HTTPException(status_code=403, detail="Permission insuffisante")
     return response.success_response(environment, "Environnement récupéré")
 
+@router.get(
+    "/{environment_id}/physical-hosts",
+    response_model=dict,
+    summary="Liste des hôtes physiques d'un environnement",
+    description="Renvoie la liste des hôtes physiques associés à un environnement si l'utilisateur y a accès.",
+    responses={
+        200: {"description": "Liste des hôtes physiques récupérée avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Environnement non trouvé"}
+    }
+)
+def get_environment_physical_hosts(
+    environment_id: int,
+    skip: int = 0,
+    limit: int = 100,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    environment = environment_repo.get_environment(db, environment_id)
+    if not environment:
+        raise HTTPException(status_code=404, detail="Environnement non trouvé")
+    if not permissions.has_permission(db, current_user, environment.organization_id, "env:read"):
+        raise HTTPException(status_code=403, detail="Permission insuffisante")
+
+    physical_hosts = physical_host_repo.list_physical_hosts_by_environment(db, environment_id, skip, limit)
+    return response.success_response(
+        [PhysicalHostOut.model_validate(host) for host in physical_hosts],
+        "Liste des hôtes physiques récupérée"
+    )
+
 @router.post(
     "",
     response_model=dict,
@@ -152,7 +203,8 @@ def create_environment(
     environment = environment_repo.create_environment(
         db,
         name=env.name,
-        organization_id=env.organization_id
+        organization_id=env.organization_id,
+        description=env.description
     )
 
     # Création du groupe Admins pour cet environnement (optionnel si politique d'accès déjà prévue)
@@ -234,10 +286,13 @@ def update_environment(
         raise HTTPException(status_code=403, detail="Permission insuffisante")
 
     environment.name = env.name
+    environment.description = env.description
+    # We don't update organization_id as it would require additional permission checks and might break relationships
+
     db.commit()
     db.refresh(environment)
 
-    audit.log_action(db, current_user.id, "Mise à jour environnement", f"Nom mis à jour en {env.name}")
+    audit.log_action(db, current_user.id, "Mise à jour environnement", f"Environnement '{environment.name}' mis à jour")
     return response.success_response(environment, "Environnement mis à jour")
 
 @router.delete(
@@ -329,12 +384,13 @@ def get_environment_users(
     "/{environment_id}/elements",
     response_model=dict,
     summary="Lister les éléments d'un environnement",
-    description="Liste les éléments d'un environnement avec pagination et filtrage par nom.",
+    description="Liste les éléments d'un environnement avec pagination et filtrage par nom et type.",
     responses={
         200: {"description": "Liste des éléments récupérée avec succès"},
         401: {"description": "Non authentifié"},
         403: {"description": "Permission insuffisante"},
         404: {"description": "Environnement non trouvé"},
+        400: {"description": "Type d'élément invalide"},
     }
 )
 def list_elements(
@@ -343,7 +399,8 @@ def list_elements(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
-    name: Optional[str] = None
+    name: Optional[str] = None,
+    element_type: Optional[str] = Query(None, description="Type d'élément à filtrer (network, vm, storage_pool, volume, domain, container_node, container_cluster, stack, application)")
 ):
     env = db.query(Environment).filter_by(id=environment_id).first()
     if not env:
@@ -353,10 +410,41 @@ def list_elements(
         raise HTTPException(status_code=403, detail="Permission insuffisante pour lister les éléments")
 
     query = db.query(Element).filter(Element.environment_id == environment_id)
+
+    # Filtrer par type d'élément si spécifié
+    if element_type:
+        if element_type == "network":
+            query = query.join(Network, Element.id == Network.element_id)
+        elif element_type == "vm":
+            query = query.join(VM, Element.id == VM.element_id)
+        elif element_type == "storage_pool":
+            query = query.join(StoragePool, Element.id == StoragePool.element_id)
+        elif element_type == "volume":
+            query = query.join(Volume, Element.id == Volume.element_id)
+        elif element_type == "domain":
+            query = query.join(Domain, Element.id == Domain.element_id)
+        elif element_type == "container_node":
+            query = query.join(ContainerNode, Element.id == ContainerNode.element_id)
+        elif element_type == "container_cluster":
+            query = query.join(ContainerCluster, Element.id == ContainerCluster.element_id)
+        elif element_type == "stack":
+            query = query.join(Stack, Element.id == Stack.element_id)
+        elif element_type == "application":
+            query = query.join(Application, Element.id == Application.element_id)
+        else:
+            raise HTTPException(status_code=400, detail=f"Type d'élément invalide: {element_type}")
+
+    # Filtrer par nom si spécifié
     if name:
         query = query.filter(Element.name.ilike(f"%{name}%"))
+
+    # Appliquer la pagination
     elements = query.offset(skip).limit(limit).all()
-    return response.success_response(elements, "Liste des éléments récupérée")
+
+    # Convertir les éléments en ElementOut pour la sérialisation
+    serializable_elements = [ElementOut.model_validate(element) for element in elements]
+
+    return response.success_response(serializable_elements, "Liste des éléments récupérée")
 
 @router.get(
     "/{environment_id}/tags",
@@ -467,3 +555,399 @@ def remove_tag_from_environment(
 
     audit.log_action(db, current_user.id, "Retrait tag d'environnement", f"Tag '{tag.value}' retiré de l'environnement '{environment.name}'")
     return response.success_response(environment, "Tag retiré de l'environnement avec succès")
+
+@router.get(
+    "/{environment_id}/networks",
+    response_model=dict,
+    summary="Lister les réseaux d'un environnement",
+    description="Liste les éléments de type réseau dans un environnement avec pagination et filtrage par nom.",
+    responses={
+        200: {"description": "Liste des réseaux récupérée avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Environnement non trouvé"},
+    }
+)
+def list_networks(
+    environment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    name: Optional[str] = None
+):
+    # Vérifier que l'environnement existe
+    env = db.query(Environment).filter_by(id=environment_id).first()
+    if not env:
+        raise HTTPException(status_code=404, detail="Environnement non trouvé")
+
+    # Vérifier les permissions
+    if not permissions.has_permission(db, current_user, env.organization_id, "element:read"):
+        raise HTTPException(status_code=403, detail="Permission insuffisante pour lister les réseaux")
+
+    # Construire la requête pour récupérer les éléments de type réseau
+    query = db.query(Element).join(Network, Element.id == Network.element_id).filter(Element.environment_id == environment_id)
+
+    # Filtrer par nom si spécifié
+    if name:
+        query = query.filter(Element.name.ilike(f"%{name}%"))
+
+    # Appliquer la pagination
+    elements = query.offset(skip).limit(limit).all()
+
+    # Convertir les éléments en ElementOut pour la sérialisation
+    serializable_elements = [ElementOut.model_validate(element) for element in elements]
+
+    return response.success_response(serializable_elements, "Liste des réseaux récupérée")
+
+@router.get(
+    "/{environment_id}/vms",
+    response_model=dict,
+    summary="Lister les machines virtuelles d'un environnement",
+    description="Liste les éléments de type machine virtuelle dans un environnement avec pagination et filtrage par nom.",
+    responses={
+        200: {"description": "Liste des machines virtuelles récupérée avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Environnement non trouvé"},
+    }
+)
+def list_vms(
+    environment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    name: Optional[str] = None
+):
+    # Vérifier que l'environnement existe
+    env = db.query(Environment).filter_by(id=environment_id).first()
+    if not env:
+        raise HTTPException(status_code=404, detail="Environnement non trouvé")
+
+    # Vérifier les permissions
+    if not permissions.has_permission(db, current_user, env.organization_id, "element:read"):
+        raise HTTPException(status_code=403, detail="Permission insuffisante pour lister les machines virtuelles")
+
+    # Construire la requête pour récupérer les éléments de type VM
+    query = db.query(Element).join(VM, Element.id == VM.element_id).filter(Element.environment_id == environment_id)
+
+    # Filtrer par nom si spécifié
+    if name:
+        query = query.filter(Element.name.ilike(f"%{name}%"))
+
+    # Appliquer la pagination
+    elements = query.offset(skip).limit(limit).all()
+
+    # Convertir les éléments en ElementOut pour la sérialisation
+    serializable_elements = [ElementOut.model_validate(element) for element in elements]
+
+    return response.success_response(serializable_elements, "Liste des machines virtuelles récupérée")
+
+@router.get(
+    "/{environment_id}/storage-pools",
+    response_model=dict,
+    summary="Lister les pools de stockage d'un environnement",
+    description="Liste les éléments de type pool de stockage dans un environnement avec pagination et filtrage par nom.",
+    responses={
+        200: {"description": "Liste des pools de stockage récupérée avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Environnement non trouvé"},
+    }
+)
+def list_storage_pools(
+    environment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    name: Optional[str] = None
+):
+    # Vérifier que l'environnement existe
+    env = db.query(Environment).filter_by(id=environment_id).first()
+    if not env:
+        raise HTTPException(status_code=404, detail="Environnement non trouvé")
+
+    # Vérifier les permissions
+    if not permissions.has_permission(db, current_user, env.organization_id, "element:read"):
+        raise HTTPException(status_code=403, detail="Permission insuffisante pour lister les pools de stockage")
+
+    # Construire la requête pour récupérer les éléments de type StoragePool
+    query = db.query(Element).join(StoragePool, Element.id == StoragePool.element_id).filter(Element.environment_id == environment_id)
+
+    # Filtrer par nom si spécifié
+    if name:
+        query = query.filter(Element.name.ilike(f"%{name}%"))
+
+    # Appliquer la pagination
+    elements = query.offset(skip).limit(limit).all()
+
+    # Convertir les éléments en ElementOut pour la sérialisation
+    serializable_elements = [ElementOut.model_validate(element) for element in elements]
+
+    return response.success_response(serializable_elements, "Liste des pools de stockage récupérée")
+
+@router.get(
+    "/{environment_id}/volumes",
+    response_model=dict,
+    summary="Lister les volumes d'un environnement",
+    description="Liste les éléments de type volume dans un environnement avec pagination et filtrage par nom.",
+    responses={
+        200: {"description": "Liste des volumes récupérée avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Environnement non trouvé"},
+    }
+)
+def list_volumes(
+    environment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    name: Optional[str] = None
+):
+    # Vérifier que l'environnement existe
+    env = db.query(Environment).filter_by(id=environment_id).first()
+    if not env:
+        raise HTTPException(status_code=404, detail="Environnement non trouvé")
+
+    # Vérifier les permissions
+    if not permissions.has_permission(db, current_user, env.organization_id, "element:read"):
+        raise HTTPException(status_code=403, detail="Permission insuffisante pour lister les volumes")
+
+    # Construire la requête pour récupérer les éléments de type Volume
+    query = db.query(Element).join(Volume, Element.id == Volume.element_id).filter(Element.environment_id == environment_id)
+
+    # Filtrer par nom si spécifié
+    if name:
+        query = query.filter(Element.name.ilike(f"%{name}%"))
+
+    # Appliquer la pagination
+    elements = query.offset(skip).limit(limit).all()
+
+    # Convertir les éléments en ElementOut pour la sérialisation
+    serializable_elements = [ElementOut.model_validate(element) for element in elements]
+
+    return response.success_response(serializable_elements, "Liste des volumes récupérée")
+
+@router.get(
+    "/{environment_id}/domains",
+    response_model=dict,
+    summary="Lister les domaines d'un environnement",
+    description="Liste les éléments de type domaine dans un environnement avec pagination et filtrage par nom.",
+    responses={
+        200: {"description": "Liste des domaines récupérée avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Environnement non trouvé"},
+    }
+)
+def list_domains(
+    environment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    name: Optional[str] = None
+):
+    # Vérifier que l'environnement existe
+    env = db.query(Environment).filter_by(id=environment_id).first()
+    if not env:
+        raise HTTPException(status_code=404, detail="Environnement non trouvé")
+
+    # Vérifier les permissions
+    if not permissions.has_permission(db, current_user, env.organization_id, "element:read"):
+        raise HTTPException(status_code=403, detail="Permission insuffisante pour lister les domaines")
+
+    # Construire la requête pour récupérer les éléments de type Domain
+    query = db.query(Element).join(Domain, Element.id == Domain.element_id).filter(Element.environment_id == environment_id)
+
+    # Filtrer par nom si spécifié
+    if name:
+        query = query.filter(Element.name.ilike(f"%{name}%"))
+
+    # Appliquer la pagination
+    elements = query.offset(skip).limit(limit).all()
+
+    # Convertir les éléments en ElementOut pour la sérialisation
+    serializable_elements = [ElementOut.model_validate(element) for element in elements]
+
+    return response.success_response(serializable_elements, "Liste des domaines récupérée")
+
+@router.get(
+    "/{environment_id}/container-nodes",
+    response_model=dict,
+    summary="Lister les noeuds de conteneur d'un environnement",
+    description="Liste les éléments de type noeud de conteneur dans un environnement avec pagination et filtrage par nom.",
+    responses={
+        200: {"description": "Liste des noeuds de conteneur récupérée avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Environnement non trouvé"},
+    }
+)
+def list_container_nodes(
+    environment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    name: Optional[str] = None
+):
+    # Vérifier que l'environnement existe
+    env = db.query(Environment).filter_by(id=environment_id).first()
+    if not env:
+        raise HTTPException(status_code=404, detail="Environnement non trouvé")
+
+    # Vérifier les permissions
+    if not permissions.has_permission(db, current_user, env.organization_id, "element:read"):
+        raise HTTPException(status_code=403, detail="Permission insuffisante pour lister les noeuds de conteneur")
+
+    # Construire la requête pour récupérer les éléments de type ContainerNode
+    query = db.query(Element).join(ContainerNode, Element.id == ContainerNode.element_id).filter(Element.environment_id == environment_id)
+
+    # Filtrer par nom si spécifié
+    if name:
+        query = query.filter(Element.name.ilike(f"%{name}%"))
+
+    # Appliquer la pagination
+    elements = query.offset(skip).limit(limit).all()
+
+    # Convertir les éléments en ElementOut pour la sérialisation
+    serializable_elements = [ElementOut.model_validate(element) for element in elements]
+
+    return response.success_response(serializable_elements, "Liste des noeuds de conteneur récupérée")
+
+@router.get(
+    "/{environment_id}/container-clusters",
+    response_model=dict,
+    summary="Lister les clusters de conteneur d'un environnement",
+    description="Liste les éléments de type cluster de conteneur dans un environnement avec pagination et filtrage par nom.",
+    responses={
+        200: {"description": "Liste des clusters de conteneur récupérée avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Environnement non trouvé"},
+    }
+)
+def list_container_clusters(
+    environment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    name: Optional[str] = None
+):
+    # Vérifier que l'environnement existe
+    env = db.query(Environment).filter_by(id=environment_id).first()
+    if not env:
+        raise HTTPException(status_code=404, detail="Environnement non trouvé")
+
+    # Vérifier les permissions
+    if not permissions.has_permission(db, current_user, env.organization_id, "element:read"):
+        raise HTTPException(status_code=403, detail="Permission insuffisante pour lister les clusters de conteneur")
+
+    # Construire la requête pour récupérer les éléments de type ContainerCluster
+    query = db.query(Element).join(ContainerCluster, Element.id == ContainerCluster.element_id).filter(Element.environment_id == environment_id)
+
+    # Filtrer par nom si spécifié
+    if name:
+        query = query.filter(Element.name.ilike(f"%{name}%"))
+
+    # Appliquer la pagination
+    elements = query.offset(skip).limit(limit).all()
+
+    # Convertir les éléments en ElementOut pour la sérialisation
+    serializable_elements = [ElementOut.model_validate(element) for element in elements]
+
+    return response.success_response(serializable_elements, "Liste des clusters de conteneur récupérée")
+
+@router.get(
+    "/{environment_id}/stacks",
+    response_model=dict,
+    summary="Lister les stacks d'un environnement",
+    description="Liste les éléments de type stack dans un environnement avec pagination et filtrage par nom.",
+    responses={
+        200: {"description": "Liste des stacks récupérée avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Environnement non trouvé"},
+    }
+)
+def list_stacks(
+    environment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    name: Optional[str] = None
+):
+    # Vérifier que l'environnement existe
+    env = db.query(Environment).filter_by(id=environment_id).first()
+    if not env:
+        raise HTTPException(status_code=404, detail="Environnement non trouvé")
+
+    # Vérifier les permissions
+    if not permissions.has_permission(db, current_user, env.organization_id, "element:read"):
+        raise HTTPException(status_code=403, detail="Permission insuffisante pour lister les stacks")
+
+    # Construire la requête pour récupérer les éléments de type Stack
+    query = db.query(Element).join(Stack, Element.id == Stack.element_id).filter(Element.environment_id == environment_id)
+
+    # Filtrer par nom si spécifié
+    if name:
+        query = query.filter(Element.name.ilike(f"%{name}%"))
+
+    # Appliquer la pagination
+    elements = query.offset(skip).limit(limit).all()
+
+    # Convertir les éléments en ElementOut pour la sérialisation
+    serializable_elements = [ElementOut.model_validate(element) for element in elements]
+
+    return response.success_response(serializable_elements, "Liste des stacks récupérée")
+
+@router.get(
+    "/{environment_id}/applications",
+    response_model=dict,
+    summary="Lister les applications d'un environnement",
+    description="Liste les éléments de type application dans un environnement avec pagination et filtrage par nom.",
+    responses={
+        200: {"description": "Liste des applications récupérée avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Environnement non trouvé"},
+    }
+)
+def list_applications(
+    environment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    name: Optional[str] = None
+):
+    # Vérifier que l'environnement existe
+    env = db.query(Environment).filter_by(id=environment_id).first()
+    if not env:
+        raise HTTPException(status_code=404, detail="Environnement non trouvé")
+
+    # Vérifier les permissions
+    if not permissions.has_permission(db, current_user, env.organization_id, "element:read"):
+        raise HTTPException(status_code=403, detail="Permission insuffisante pour lister les applications")
+
+    # Construire la requête pour récupérer les éléments de type Application
+    query = db.query(Element).join(Application, Element.id == Application.element_id).filter(Element.environment_id == environment_id)
+
+    # Filtrer par nom si spécifié
+    if name:
+        query = query.filter(Element.name.ilike(f"%{name}%"))
+
+    # Appliquer la pagination
+    elements = query.offset(skip).limit(limit).all()
+
+    # Convertir les éléments en ElementOut pour la sérialisation
+    serializable_elements = [ElementOut.model_validate(element) for element in elements]
+
+    return response.success_response(serializable_elements, "Liste des applications récupérée")
