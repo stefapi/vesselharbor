@@ -1,6 +1,6 @@
 # Project Architecture
 
-This document outlines the architecture of the FastAPI Vue Template project.
+This document outlines the architecture of the VesselHarbor project.
 
 ## Overview
 
