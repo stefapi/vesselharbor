@@ -64,6 +64,7 @@ def get_organization(org_id: int, current_user: User = Depends(get_current_user)
     200: {"description": "Organisation créée avec succès"},
     400: {"description": "Une organisation avec ce nom existe déjà"},
     401: {"description": "Non authentifié"},
+    403: {"description": "Vous êtes déjà administrateur d'une organization"},
     500: {"description": "Erreur serveur - fonction admin non trouvée"}
 })
 def create_organization(org_in: OrganizationCreate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -73,6 +74,17 @@ def create_organization(org_in: OrganizationCreate, current_user: User = Depends
     existing_org = db.query(Organization).filter(Organization.name == org_in.name).first()
     if existing_org:
         raise HTTPException(status_code=400, detail="Une organisation avec ce nom existe déjà")
+
+    # Check if user is already admin of another organization (unless superadmin)
+    if not current_user.is_superadmin:
+        # Query all admin groups to see if current user is already an admin somewhere
+        admin_groups = db.query(Group).filter(Group.name == "admin").all()
+        for admin_group in admin_groups:
+            if current_user in admin_group.users:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Vous êtes déjà administrateur d'une autre organisation. Un utilisateur ne peut être administrateur que d'une seule organisation."
+                )
 
     # Create the organization
     org = Organization(name=org_in.name, description=org_in.description)

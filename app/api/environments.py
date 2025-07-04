@@ -484,7 +484,13 @@ def list_environment_tags(
     "/{environment_id}/tags/{tag_id}",
     response_model=dict,
     summary="Ajouter un tag à un environnement",
-    description="Associe un tag existant à un environnement."
+    description="Associe un tag existant à un environnement.",
+    responses={
+        200: {"description": "Tag ajouté à l'environnement avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Environnement ou tag non trouvé"}
+    }
 )
 def add_tag_to_environment(
     environment_id: int,
@@ -522,7 +528,13 @@ def add_tag_to_environment(
     "/{environment_id}/tags/{tag_id}",
     response_model=dict,
     summary="Retirer un tag d'un environnement",
-    description="Retire l'association entre un tag et un environnement."
+    description="Retire l'association entre un tag et un environnement.",
+    responses={
+        200: {"description": "Tag retiré de l'environnement avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Environnement ou tag non trouvé"}
+    }
 )
 def remove_tag_from_environment(
     environment_id: int,

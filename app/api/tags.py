@@ -24,7 +24,12 @@ def get_db():
     "",
     response_model=dict,
     summary="Lister tous les tags",
-    description="Renvoie la liste de tous les tags si l'utilisateur a les droits sur leur organisation."
+    description="Renvoie la liste de tous les tags si l'utilisateur a les droits sur leur organisation.",
+    responses={
+        200: {"description": "Liste des tags récupérée avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+    }
 )
 def list_tags(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     all_tags = tag_repo.list_tags(db)
@@ -58,12 +63,52 @@ def list_tags(current_user: User = Depends(get_current_user), db: Session = Depe
 
     return response.success_response(accessible_tags, "Liste des tags accessible récupérée")
 
+@router.get(
+    "/{tag_id}",
+    response_model=dict,
+    summary="Récupérer un tag",
+    description="Renvoie les informations d'un tag spécifique si l'utilisateur a les droits requis.",
+    responses={
+        200: {"description": "Tag récupéré avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Tag non trouvé"},
+    }
+)
+def get_tag(tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    tag = tag_repo.get_tag(db, tag_id)
+    if not tag:
+        raise HTTPException(status_code=404, detail="Tag non trouvé")
+
+    # Check permissions through various relationships
+    org_id = None
+    if tag.policies:
+        org_id = tag.policies[0].organization_id
+    elif tag.groups:
+        org_id = tag.groups[0].organization_id
+    elif tag.users and tag.users[0].organizations:
+        org_id = tag.users[0].organizations[0].id
+    elif tag.elements and tag.elements[0].environment:
+        org_id = tag.elements[0].environment.organization_id
+    elif tag.environments:
+        org_id = tag.environments[0].organization_id
+
+    if not org_id or not permissions.has_permission(db, current_user, org_id, "tag:read"):
+        raise HTTPException(status_code=403, detail="Permission insuffisante pour lire ce tag")
+
+    return response.success_response(TagOut.model_validate(tag), "Tag récupéré avec succès")
+
 @router.post(
     "",
     response_model=dict,
     summary="Créer un tag",
     description="Crée un nouveau tag. L'utilisateur doit avoir les droits sur une organisation spécifique.",
-    responses={400: {"description": "Tag existant"}}
+    responses={
+        200: {"description": "Tag créé avec succès"},
+        400: {"description": "Tag existant"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+    }
 )
 def create_tag(
     tag_in: TagCreate,
@@ -85,7 +130,13 @@ def create_tag(
     "/{tag_id}",
     response_model=dict,
     summary="Supprimer un tag",
-    description="Supprime un tag s'il est autorisé."
+    description="Supprime un tag s'il est autorisé.",
+    responses={
+        200: {"description": "Tag supprimé avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Tag non trouvé"},
+    }
 )
 def delete_tag(tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     tag = tag_repo.get_tag(db, tag_id)
@@ -116,7 +167,13 @@ def delete_tag(tag_id: int, current_user: User = Depends(get_current_user), db: 
     "/{tag_id}/groups",
     response_model=dict,
     summary="Groupes liés à un tag",
-    description="Renvoie les groupes associés à un tag."
+    description="Renvoie les groupes associés à un tag.",
+    responses={
+        200: {"description": "Groupes récupérés avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Tag non trouvé"},
+    }
 )
 def get_tag_groups(tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     tag = tag_repo.get_tag(db, tag_id)
@@ -131,7 +188,13 @@ def get_tag_groups(tag_id: int, current_user: User = Depends(get_current_user), 
     "/{tag_id}/users",
     response_model=dict,
     summary="Utilisateurs liés à un tag",
-    description="Renvoie les utilisateurs associés à un tag."
+    description="Renvoie les utilisateurs associés à un tag.",
+    responses={
+        200: {"description": "Utilisateurs récupérés avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Tag non trouvé"},
+    }
 )
 def get_tag_users(tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     tag = tag_repo.get_tag(db, tag_id)
@@ -146,7 +209,13 @@ def get_tag_users(tag_id: int, current_user: User = Depends(get_current_user), d
     "/{tag_id}/policies",
     response_model=dict,
     summary="Policies liées à un tag",
-    description="Renvoie les policies associées à un tag."
+    description="Renvoie les policies associées à un tag.",
+    responses={
+        200: {"description": "Policies récupérées avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Tag non trouvé"},
+    }
 )
 def get_tag_policies(tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     tag = tag_repo.get_tag(db, tag_id)
@@ -161,7 +230,13 @@ def get_tag_policies(tag_id: int, current_user: User = Depends(get_current_user)
     "/{tag_id}/elements",
     response_model=dict,
     summary="Éléments liés à un tag",
-    description="Renvoie les éléments associés à un tag."
+    description="Renvoie les éléments associés à un tag.",
+    responses={
+        200: {"description": "Éléments récupérés avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Tag non trouvé"},
+    }
 )
 def get_tag_elements(tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     tag = tag_repo.get_tag(db, tag_id)
@@ -183,7 +258,13 @@ def get_tag_elements(tag_id: int, current_user: User = Depends(get_current_user)
     "/{tag_id}/environments",
     response_model=dict,
     summary="Environnements liés à un tag",
-    description="Renvoie les environnements associés à un tag."
+    description="Renvoie les environnements associés à un tag.",
+    responses={
+        200: {"description": "Environnements récupérés avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Tag non trouvé"},
+    }
 )
 def get_tag_environments(tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     tag = tag_repo.get_tag(db, tag_id)

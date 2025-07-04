@@ -10,6 +10,7 @@ from ..database.session import SessionLocal
 from ..repositories import element_repo, tag_repo, physical_host_repo
 from ..api.users import get_current_user
 from ..helper import permissions, audit, response
+from ..helper.animalname import generate_codename
 from ..schema.physical_host import PhysicalHostOut
 
 router = APIRouter(prefix="/elements", tags=["elements"])
@@ -47,7 +48,16 @@ def create_element(
     env = db.query(Environment).filter_by(id=environment_id).first()
     if not env:
         raise HTTPException(status_code=404, detail="Environnement non trouvé")
-    # TODO ajouter un generate_codename ici
+
+    # Generate a codename if no name is provided or if name is empty
+    if not element_in.name or element_in.name.strip() == "":
+        element_in.name = generate_codename()
+
+    # Check if an element with the same name already exists
+    existing_elem = db.query(Element).filter(Element.name == element_in.name).first()
+    if existing_elem:
+        raise HTTPException(status_code=400, detail="Un Element avec ce nom existe déjà")
+
     if not permissions.has_permission(db, current_user, env.organization_id, "element:create"):
         raise HTTPException(status_code=403, detail="Permission insuffisante pour créer un élément")
 
@@ -258,7 +268,13 @@ def list_element_tags(
     "/{element_id}/tags/{tag_id}",
     response_model=dict,
     summary="Ajouter un tag à un élément",
-    description="Associe un tag existant à un élément."
+    description="Associe un tag existant à un élément.",
+    responses={
+        200: {"description": "Tag ajouté à l'élément avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Élément ou tag non trouvé"},
+    }
 )
 def add_tag_to_element(
     element_id: int,
@@ -297,7 +313,13 @@ def add_tag_to_element(
     "/{element_id}/tags/{tag_id}",
     response_model=dict,
     summary="Retirer un tag d'un élément",
-    description="Retire l'association entre un tag et un élément."
+    description="Retire l'association entre un tag et un élément.",
+    responses={
+        200: {"description": "Tag retiré de l'élément avec succès"},
+        401: {"description": "Non authentifié"},
+        403: {"description": "Permission insuffisante"},
+        404: {"description": "Élément ou tag non trouvé"},
+    }
 )
 def remove_tag_from_element(
     element_id: int,

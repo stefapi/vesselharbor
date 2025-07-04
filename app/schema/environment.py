@@ -12,7 +12,8 @@ from .group import GroupOut
 from .tag import TagOut
 from .physical_host import PhysicalHostOut
 
-from .organization import OrganizationBase
+if TYPE_CHECKING:
+    from .organization import OrganizationBase, OrganizationOut
 
 class EnvironmentCreate(BaseModel):
     name: str

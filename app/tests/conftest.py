@@ -3,7 +3,7 @@
 import os
 import pytest
 from fastapi.testclient import TestClient
-from main import app
+from app.main import app
 
 # Supprime la base de données de test avant et après les tests (si SQLite est utilisée)
 @pytest.fixture(scope="session", autouse=True)
