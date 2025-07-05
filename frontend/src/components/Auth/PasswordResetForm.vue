@@ -42,7 +42,7 @@
 
 
 <script setup lang="ts">
-import { reactive} from 'vue'
+import { reactive, ref, computed } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { required, minLength, sameAs, helpers } from '@vuelidate/validators'
 
@@ -90,6 +90,10 @@ const validationRules = {
 }
 
 const v$ = useVuelidate(validationRules, state)
+
+// Computed properties for error handling
+const NewPasswordError = computed(() => (v$.value.newPassword.$error && v$.value.newPassword?.$errors[0]?.$message) || '');
+const ConfirmPasswordError = computed(() => (v$.value.confirmPassword.$error && v$.value.confirmPassword?.$errors[0]?.$message) || '');
 
 const handlesubmit = async () => {
   const isValid = await v$.value.$validate()

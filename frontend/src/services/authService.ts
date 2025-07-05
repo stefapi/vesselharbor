@@ -1,5 +1,6 @@
 // src/services/userService.ts
 import api from '@/services/api.ts';
+import type { AxiosError } from 'axios';
 
 /**
  * Authentifie un utilisateur.
@@ -52,7 +53,7 @@ export async function reset_password(token: string, new_password: string) {
 export async function refresh() {
   try {
     return await api.post('/refresh-token');
-  } catch (error: any) {
+  } catch (error: AxiosError) {
     // Si l'erreur est 400, on l'ignore silencieusement
     if (error.response?.status === 400) {
       return null;

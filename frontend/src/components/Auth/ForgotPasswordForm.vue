@@ -3,7 +3,6 @@
   <form @submit.prevent="handleSubmit" class="u-space-y-4">
     <el-form-item
       :error="v$.email.$error ? v$.email.$errors[0]?.$message : ''"
-        class="u-w-full u-space-y-2"
       label="Email"
     >
       <el-input
@@ -11,14 +10,13 @@
         type="email"
         placeholder="Votre email"
         @blur="v$.email.$touch()"
-        class="u-w-full u-space-y-2"
       />
     </el-form-item>
 
     <el-button
       type="primary"
       native-type="submit"
-        class="u-w-full u-space-y-2"
+      class="u-w-full"
     >
       Envoyer le lien de réinitialisation
     </el-button>

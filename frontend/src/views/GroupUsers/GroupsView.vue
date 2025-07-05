@@ -1,231 +1,223 @@
 <!-- src/views/GroupsUsers/GroupsView.vue -->
 <template>
-  <div>
-    <h1>Gestion des Groupes</h1>
+  <div class="u-p-6">
+    <h1 class="u-text-3xl u-font-bold u-mb-6">Gestion des Groupes</h1>
+
     <!-- Filtre de recherche -->
-    <div>
+    <div class="u-mb-4">
       <input
         type="text"
         v-model="filterName"
         placeholder="Rechercher par nom"
         @input="applyFilter"
+        class="u-px-3 u-py-2 u-border u-border-gray-300 u-rounded u-w-64 u-focus:outline-none u-focus:ring-2 u-focus:ring-blue-500"
       />
     </div>
 
     <!-- Bouton pour afficher/masquer le formulaire de création -->
-    <button @click="toggleForm">
+    <button
+      @click="toggleForm"
+      class="u-px-4 u-py-2 u-bg-blue-500 u-text-white u-rounded u-hover:bg-blue-600 u-mb-4"
+    >
       {{ showForm ? 'Annuler' : 'Créer un groupe' }}
     </button>
 
     <!-- Formulaire de création -->
-    <div v-if="showForm && !editingGroup">
+    <div v-if="showForm && !editingGroup" class="u-mb-6">
       <GroupForm :environmentId="environmentId" @success="onFormSuccess" />
     </div>
 
     <!-- Tableau listant les groupes -->
-    <table>
+    <table class="u-w-full u-border-collapse u-mt-4">
       <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nom</th>
-          <th>Description</th>
-          <th>Actions</th>
+        <tr class="u-bg-gray-100">
+          <th class="u-border u-border-gray-300 u-px-4 u-py-2 u-text-left">ID</th>
+          <th class="u-border u-border-gray-300 u-px-4 u-py-2 u-text-left">Nom</th>
+          <th class="u-border u-border-gray-300 u-px-4 u-py-2 u-text-left">Description</th>
+          <th class="u-border u-border-gray-300 u-px-4 u-py-2 u-text-left">Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="group in groupsStore.groups" :key="group.id">
-          <td>{{ group.id }}</td>
-          <td>{{ group.name }}</td>
-          <td>{{ group.description }}</td>
-          <td>
-            <button @click="editGroup(group)">Modifier</button>
-            <button @click="deleteGroup(group.id)">Supprimer</button>
-            <button @click="manageFunctions(group)">Gérer Fonctions</button>
+        <tr v-for="group in groupsStore.groups" :key="group.id" class="u-hover:bg-gray-50">
+          <td class="u-border u-border-gray-300 u-px-4 u-py-2">{{ group.id }}</td>
+          <td class="u-border u-border-gray-300 u-px-4 u-py-2">{{ group.name }}</td>
+          <td class="u-border u-border-gray-300 u-px-4 u-py-2">{{ group.description }}</td>
+          <td class="u-border u-border-gray-300 u-px-4 u-py-2">
+            <div class="u-space-x-2">
+              <button
+                @click="editGroup(group)"
+                class="u-px-2 u-py-1 u-bg-yellow-500 u-text-white u-rounded u-text-sm u-hover:bg-yellow-600"
+              >
+                Modifier
+              </button>
+              <button
+                @click="deleteGroup(group.id)"
+                class="u-px-2 u-py-1 u-bg-red-500 u-text-white u-rounded u-text-sm u-hover:bg-red-600"
+              >
+                Supprimer
+              </button>
+              <button
+                @click="manageFunctions(group)"
+                class="u-px-2 u-py-1 u-bg-green-500 u-text-white u-rounded u-text-sm u-hover:bg-green-600"
+              >
+                Gérer Fonctions
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>
     </table>
 
     <!-- Pagination -->
-    <div>
+    <div class="u-mt-4 u-flex u-items-center u-gap-4">
       <p>Total : {{ groupsStore.total }}</p>
-      <button :disabled="groupsStore.currentPage === 1" @click="prevPage">
+      <button
+        :disabled="groupsStore.currentPage === 1"
+        @click="prevPage"
+        class="u-px-3 u-py-1 u-bg-gray-500 u-text-white u-rounded u-disabled:opacity-50 u-disabled:cursor-not-allowed u-hover:bg-gray-600"
+      >
         Précédent
       </button>
-      <span>Page {{ groupsStore.currentPage }}</span>
+      <span class="u-font-medium">Page {{ groupsStore.currentPage }}</span>
       <button
         :disabled="groupsStore.groups.length < groupsStore.perPage"
         @click="nextPage"
+        class="u-px-3 u-py-1 u-bg-gray-500 u-text-white u-rounded u-disabled:opacity-50 u-disabled:cursor-not-allowed u-hover:bg-gray-600"
       >
         Suivant
       </button>
     </div>
 
     <!-- Formulaire d'édition -->
-    <div v-if="editingGroup">
-      <h2>Modifier le groupe</h2>
+    <div v-if="editingGroup" class="u-mt-6 u-p-4 u-border u-border-gray-300 u-rounded">
+      <h2 class="u-text-xl u-font-bold u-mb-4">Modifier le groupe</h2>
       <GroupForm
         :environmentId="environmentId"
         :initialData="editingGroup"
         @success="onFormSuccess"
       />
-      <button @click="cancelEdit">Annuler</button>
+      <button
+        @click="cancelEdit"
+        class="u-px-4 u-py-2 u-bg-gray-500 u-text-white u-rounded u-mt-4 u-hover:bg-gray-600"
+      >
+        Annuler
+      </button>
     </div>
 
     <!-- Modal pour la gestion des fonctions du groupe -->
-    <div v-if="showFunctionManager" class="modal-overlay">
-      <div class="modal">
-        <h2>Gérer les fonctions du groupe "{{ managingGroup.name }}"</h2>
-        <GroupFunctionsManager :groupId="managingGroup.id" />
-        <button @click="closeFunctionManager">Fermer</button>
+    <div
+      v-if="showFunctionManager"
+      class="u-fixed u-top-0 u-left-0 u-right-0 u-bottom-0 u-bg-black u-bg-opacity-50 u-flex u-justify-center u-items-center"
+    >
+      <div class="u-bg-white u-p-6 u-rounded-lg u-w-4/5 u-max-w-4xl">
+        <h2 class="u-text-xl u-font-bold u-mb-4">
+          Gérer les fonctions du groupe "{{ managingGroup?.name }}"
+        </h2>
+        <GroupFunctionsManager :groupId="managingGroup?.id" />
+        <button
+          @click="closeFunctionManager"
+          class="u-px-4 u-py-2 u-bg-gray-500 u-text-white u-rounded u-mt-4 u-hover:bg-gray-600"
+        >
+          Fermer
+        </button>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from 'vue';
-import GroupForm from '@/components/GroupForm.vue';
-import { useGroupsStore } from '@/store/groups';
-import { deleteGroup as deleteGroupService } from '@/services/groupService';
-import { useNotificationStore } from '@/store/notifications';
-import GroupFunctionsManager from '@/components/GroupFunctionsManager.vue';
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import GroupForm from '@/components/GroupForm.vue'
+import { useGroupsStore } from '@/store/groups'
+import { deleteGroup as deleteGroupService } from '@/services/groupService'
+import { useNotificationStore } from '@/store/notifications'
+import GroupFunctionsManager from '@/components/GroupFunctionsManager.vue'
 
-export default defineComponent({
-  name: 'GroupsView',
-  components: { GroupForm, GroupFunctionsManager },
-  setup() {
-    // Pour cet exemple, l'ID de l'environnement est fixé à 1 (adaptable dynamiquement)
-    const environmentId = 1;
-    const groupsStore = useGroupsStore();
-    const notificationStore = useNotificationStore();
+interface Group {
+  id: number
+  name: string
+  description: string
+}
 
-    const filterName = ref('');
-    const showForm = ref(false);
-    const editingGroup = ref(null as any);
-    const managingGroup = ref(null as any);
-    const showFunctionManager = ref(false);
+// Pour cet exemple, l'ID de l'environnement est fixé à 1 (adaptable dynamiquement)
+const environmentId = 1
+const groupsStore = useGroupsStore()
+const notificationStore = useNotificationStore()
 
-    const fetchGroups = async () => {
-      await groupsStore.fetchGroups(environmentId);
-    };
+const filterName = ref('')
+const showForm = ref(false)
+const editingGroup = ref<Group | null>(null)
+const managingGroup = ref<Group | null>(null)
+const showFunctionManager = ref(false)
 
-    // Chargement initial
-    fetchGroups();
+const fetchGroups = async () => {
+  await groupsStore.fetchGroups(environmentId)
+}
 
-    const applyFilter = () => {
-      groupsStore.filters.name = filterName.value;
-      groupsStore.currentPage = 1;
-      fetchGroups();
-    };
+const applyFilter = () => {
+  groupsStore.filters.name = filterName.value
+  groupsStore.currentPage = 1
+  fetchGroups()
+}
 
-    const prevPage = () => {
-      if (groupsStore.currentPage > 1) {
-        groupsStore.currentPage--;
-        fetchGroups();
-      }
-    };
+const prevPage = () => {
+  if (groupsStore.currentPage > 1) {
+    groupsStore.currentPage--
+    fetchGroups()
+  }
+}
 
-    const nextPage = () => {
-      groupsStore.currentPage++;
-      fetchGroups();
-    };
+const nextPage = () => {
+  groupsStore.currentPage++
+  fetchGroups()
+}
 
-    const deleteGroup = async (groupId: number) => {
-      try {
-        await deleteGroupService(groupId);
-        notificationStore.addNotification({
-          type: 'success',
-          message: 'Groupe supprimé avec succès',
-        });
-        fetchGroups();
-      } catch (error) {
-        notificationStore.addNotification({
-          type: 'error',
-          message: 'Erreur lors de la suppression du groupe',
-        });
-      }
-    };
+const deleteGroup = async (groupId: number) => {
+  try {
+    await deleteGroupService(groupId)
+    notificationStore.addNotification({
+      type: 'success',
+      message: 'Groupe supprimé avec succès',
+    })
+    fetchGroups()
+  } catch (error) {
+    notificationStore.addNotification({
+      type: 'error',
+      message: 'Erreur lors de la suppression du groupe',
+    })
+  }
+}
 
-    const editGroup = (group: any) => {
-      editingGroup.value = group;
-    };
+const editGroup = (group: Group) => {
+  editingGroup.value = group
+}
 
-    const cancelEdit = () => {
-      editingGroup.value = null;
-    };
+const cancelEdit = () => {
+  editingGroup.value = null
+}
 
-    const onFormSuccess = () => {
-      editingGroup.value = null;
-      showForm.value = false;
-      fetchGroups();
-    };
+const onFormSuccess = () => {
+  editingGroup.value = null
+  showForm.value = false
+  fetchGroups()
+}
 
-    const toggleForm = () => {
-      showForm.value = !showForm.value;
-    };
+const toggleForm = () => {
+  showForm.value = !showForm.value
+}
 
-    // Ouvre la modal de gestion des fonctions pour le groupe sélectionné
-    const manageFunctions = (group: any) => {
-      managingGroup.value = group;
-      showFunctionManager.value = true;
-    };
+// Ouvre la modal de gestion des fonctions pour le groupe sélectionné
+const manageFunctions = (group: Group) => {
+  managingGroup.value = group
+  showFunctionManager.value = true
+}
 
-    const closeFunctionManager = () => {
-      showFunctionManager.value = false;
-    };
+const closeFunctionManager = () => {
+  showFunctionManager.value = false
+}
 
-    return {
-      environmentId,
-      groupsStore,
-      filterName,
-      showForm,
-      editingGroup,
-      applyFilter,
-      prevPage,
-      nextPage,
-      deleteGroup,
-      editGroup,
-      cancelEdit,
-      onFormSuccess,
-      toggleForm,
-      manageFunctions,
-      managingGroup,
-      showFunctionManager,
-      closeFunctionManager,
-    };
-  },
-});
+// Chargement initial
+onMounted(() => {
+  fetchGroups()
+})
 </script>
-
-<style scoped>
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-}
-th,
-td {
-  border: 1px solid #ccc;
-  padding: 0.5rem;
-}
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.modal {
-  background: #fff;
-  padding: 1rem;
-  border-radius: 8px;
-  width: 80%;
-  max-width: 600px;
-}
-</style>
-

@@ -6,7 +6,6 @@
       <el-form-item
         label="Ancien mot de passe"
         :error="OldPasswordError"
-        class="u-w-full"
       >
         <el-input
           v-model="state.oldPassword"
@@ -21,7 +20,6 @@
       <el-form-item
         label="Nouveau mot de passe"
         :error="NewPasswordError"
-        class="u-w-full"
       >
         <el-input
           v-model="state.newPassword"
@@ -45,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { reactive, computed } from 'vue';
 import { useVuelidate } from '@vuelidate/core';
 import { required, minLength, helpers } from '@vuelidate/validators';
 import { changePassword } from '@/services/userService';
@@ -76,6 +74,10 @@ const validationRules = {
 };
 
 const v$ = useVuelidate(validationRules, state);
+
+// Computed properties for error handling
+const OldPasswordError = computed(() => (v$.value.oldPassword.$error && v$.value.oldPassword?.$errors[0]?.$message) || '');
+const NewPasswordError = computed(() => (v$.value.newPassword.$error && v$.value.newPassword?.$errors[0]?.$message) || '');
 
 const handleSubmit = async () => {
   const isValid = await v$.value.$validate();

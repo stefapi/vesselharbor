@@ -339,6 +339,12 @@ docker-prod: ## 🐳 Start Docker production stack
 code-gen: ## 🤖 Generate API routes
 	$(POETRY) run dev/scripts/app_routes_gen.py
 
+generate-api: ## 🔄 Regenerate TypeScript API client from backend routes
+	$(POETRY) run python dev/scripts/daemon_routes_gen.py
+
+generate-openapi-docs: ## 📋 Generate comprehensive OpenAPI specification in .junie directory
+	$(POETRY) run python dev/scripts/generate_openapi_junie.py
+
 # ============================================================================
 # ALL-IN-ONE COMMANDS
 # ============================================================================

@@ -1,5 +1,6 @@
 // src/services/groupService.ts
 import api from '@/services/api.ts';
+import type { GroupListParams } from '@/types/api';
 
 /**
  * Crée un nouveau groupe dans l'environnement spécifié.
@@ -15,7 +16,7 @@ export async function createGroup(environmentId: number, group: { name: string; 
  * @param environmentId L'identifiant de l'environnement.
  * @param params Paramètres (skip, limit, nom, etc.).
  */
-export async function listGroups(environmentId: number, params: any = {}) {
+export async function listGroups(environmentId: number, params: GroupListParams = {}) {
   return api.get(`/groups/environment/${environmentId}`, { params });
 }
 
@@ -57,7 +58,7 @@ export async function removeUserFromGroup(groupId: number, userId: number) {
 /**
  * Liste tous les groupes (pour superadmin).
  */
-export async function listAllGroups(params: any = {}) {
+export async function listAllGroups(params: GroupListParams = {}) {
   return api.get('/groups', { params });
 }
 

@@ -16,7 +16,3 @@
 <script lang="ts" setup>
 defineOptions({ name: 'NotFound' });
 </script>
-
-<style scoped>
-/* Styles complémentaires éventuels */
-</style>

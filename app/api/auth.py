@@ -18,6 +18,7 @@ from ..repositories import user_repo
 from ..schema.password_reset import PasswordResetRequest, PasswordReset
 from ..core import auth
 from ..schema.user import UserOut
+from ..schema.auth import LoginResponse, LogoutResponse, RefreshTokenResponse, MeResponse, PasswordResetResponse
 
 router = APIRouter()
 
@@ -77,7 +78,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Identifiants invalides")
 
-@router.post("/login", response_model=dict, summary="Authentifier un utilisateur", description="Authentifie un utilisateur avec son email et mot de passe et retourne un token d'accès", responses={
+@router.post("/login", response_model=LoginResponse, summary="Authentifier un utilisateur", description="Authentifie un utilisateur avec son email et mot de passe et retourne un token d'accès", responses={
     200: {"description": "Login réussi"},
     400: {"description": "Email ou mot de passe incorrect"}
 })
@@ -93,7 +94,7 @@ def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db
     response_item.set_cookie("refresh_token", refresh_token, httponly=True, samesite="strict", secure=True, max_age=timedelta(days=7).total_seconds(), path="/")
     return response.success_response({"token_type": "bearer"}, "Login réussi")
 
-@router.post("/logout", response_model=dict, summary="Se déconnecter", description="Déconnecte l'utilisateur en supprimant les cookies d'authentification", responses={
+@router.post("/logout", response_model=LogoutResponse, summary="Se déconnecter", description="Déconnecte l'utilisateur en supprimant les cookies d'authentification", responses={
     200: {"description": "Déconnexion réussie"}
 })
 async def logout(response_item: Response):
@@ -101,7 +102,7 @@ async def logout(response_item: Response):
     response_item.delete_cookie("refresh_token")
     return response.success_response({}, "Déconnexion réussie")
 
-@router.post("/refresh-token", response_model=dict, summary="Renouveler le token", description="Renouvelle le token d'accès à partir d'un refresh token valide", responses={
+@router.post("/refresh-token", response_model=RefreshTokenResponse, summary="Renouveler le token", description="Renouvelle le token d'accès à partir d'un refresh token valide", responses={
     200: {"description": "Token renouvelé avec succès"},
     400: {"description": "Refresh token invalide ou expiré, ou n'est pas un refresh token"}
 })
@@ -125,14 +126,14 @@ def refresh_token(request: Request, response_item: Response = None, db: Session 
     response_item.set_cookie("access_token", access_token, httponly=True, samesite="strict", secure=True, max_age=timedelta(minutes=1))
     return response.success_response({"token_type": "access"}, "Token renouvelé avec succès")
 
-@router.get("/me", summary="Profil utilisateur connecté", description="Récupère les informations du profil de l'utilisateur actuellement connecté", response_model=dict, responses={
+@router.get("/me", summary="Profil utilisateur connecté", description="Récupère les informations du profil de l'utilisateur actuellement connecté", response_model=MeResponse, responses={
     200: {"description": "Information sur mon profil récupérée avec succès"},
     401: {"description": "Non authentifié ou token invalide"}
 })
 def get_me(current_user: User = Depends(get_current_user)):
     return response.success_response(UserOut.model_validate(current_user), "Information sur mon profil")
 
-@router.post("/users/reset_password_request", response_model=dict, summary="Demander une réinitialisation de mot de passe", description="Envoie un email contenant un lien de réinitialisation de mot de passe à l'adresse email fournie", responses={
+@router.post("/users/reset_password_request", response_model=PasswordResetResponse, summary="Demander une réinitialisation de mot de passe", description="Envoie un email contenant un lien de réinitialisation de mot de passe à l'adresse email fournie", responses={
     200: {"description": "Lien de réinitialisation envoyé par email (si l'email est enregistré)"}
 })
 def reset_password_request(reset_req: PasswordResetRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
@@ -143,7 +144,7 @@ def reset_password_request(reset_req: PasswordResetRequest, background_tasks: Ba
         audit.log_action(db, user.id, "Réinitialisation mot de passe", "Lien de réinitialisation envoyé par email")
     return response.success_response(None, "Si cet email est enregistré, vous recevrez un lien de réinitialisation.")
 
-@router.post("/users/reset_password", response_model=dict, summary="Réinitialiser le mot de passe", description="Réinitialise le mot de passe d'un utilisateur à l'aide d'un token de réinitialisation valide", responses={
+@router.post("/users/reset_password", response_model=PasswordResetResponse, summary="Réinitialiser le mot de passe", description="Réinitialise le mot de passe d'un utilisateur à l'aide d'un token de réinitialisation valide", responses={
     200: {"description": "Mot de passe réinitialisé avec succès"},
     400: {"description": "Token invalide, expiré ou incorrect"},
     404: {"description": "Utilisateur non trouvé"}

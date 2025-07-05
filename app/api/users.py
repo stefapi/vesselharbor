@@ -96,7 +96,7 @@ def get_user(user_id: int, current_user: User = Depends(get_current_user), db: S
 @router.put(
     "/{user_id}",
     response_model=dict,
-    summary="Mettre à jour les informations d’un utilisateur",
+    summary="Mettre à jour les informations d'un utilisateur",
     description="Modifie les informations personnelles d'un utilisateur existant (nom, prénom, email, username).",
     responses={
         200: {"description": "Utilisateur mis à jour avec succès"},

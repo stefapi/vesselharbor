@@ -19,3 +19,7 @@ trim_trailing_whitespace = false
 
 [Makefile]
 indent_style = tab
+
+# Dockerfile
+[Dockerfile]
+indent_size = 4

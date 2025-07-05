@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch, computed } from 'vue';
+import { reactive, watch, computed, type PropType } from 'vue';
 import { useVuelidate } from '@vuelidate/core';
 import { required, email, minLength, helpers } from '@vuelidate/validators';
 import { useNotificationStore } from '@/store/notifications';

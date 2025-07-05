@@ -1,5 +1,5 @@
 <template>
-  <el-table :data="users" stripe border class="u-rounded-xl u-shadow-sm" style="width: 100%">
+  <el-table :data="users" stripe border class="u-rounded-xl u-shadow-sm u-w-full">
     <el-table-column prop="id" label="ID" width="80" />
     <el-table-column prop="email" label="Email">
       <template #default="{ row }">

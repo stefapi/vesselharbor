@@ -1,4 +1,4 @@
-<!-- src/layouts/AuthLayout.vue -->
+// src/layouts/AuthLayout.vue
 <template>
   <!-- conteneur plein écran qui centre son contenu -->
   <el-container

@@ -1,11 +1,10 @@
 <!-- src/components/Auth/LoginForm.vue -->
 <template>
-    <form @submit.prevent="handleSubmit" class="form">
+    <form @submit.prevent="handleSubmit" class="u-space-y-4">
       <!-- Champ Email -->
       <el-form-item
         label="Email"
         :error="EmailError"
-        class="form-item"
       >
         <el-input
           v-model="state.email"
@@ -19,7 +18,6 @@
       <el-form-item
         label="Mot de passe"
         :error="PasswordError"
-        class="form-item"
       >
         <el-input
           v-model="state.password"
@@ -34,7 +32,7 @@
       <el-button
         type="primary"
         native-type="submit"
-        class="form-item"
+        class="u-w-full"
       >
         Se connecter
       </el-button>

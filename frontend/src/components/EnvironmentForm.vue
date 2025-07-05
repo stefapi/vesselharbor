@@ -1,56 +1,81 @@
 <!-- src/components/EnvironmentForm.vue -->
 <template>
-  <form @submit.prevent="submit">
-    <div>
-      <label for="name">Nom de l'environnement</label>
-      <Field id="name" name="name" placeholder="Entrez le nom de l'environnement" />
-      <ErrorMessage name="name" class="error" />
-    </div>
-    <button type="submit">Créer</button>
+  <form @submit.prevent="handleSubmit" class="u-space-y-4">
+    <el-form-item
+      label="Nom de l'environnement"
+      :error="NameError"
+    >
+      <el-input
+        v-model="state.name"
+        placeholder="Entrez le nom de l'environnement"
+        @blur="v$.name.$touch()"
+      />
+    </el-form-item>
+
+    <el-button
+      type="primary"
+      native-type="submit"
+      class="u-w-full"
+    >
+      Créer
+    </el-button>
   </form>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-import { useForm, Field, ErrorMessage } from 'vee-validate';
-import * as yup from 'yup';
-import { createEnvironment } from '@/services/environmentService';
-import { useEnvironmentsStore } from '@/store/entities';
-import { useNotificationStore } from '@/store/notifications';
+<script setup lang="ts">
+import { reactive, computed } from 'vue'
+import { useVuelidate } from '@vuelidate/core'
+import { required, helpers } from '@vuelidate/validators'
+import { createEnvironment } from '@/services/environmentService'
+import { useEnvironmentsStore } from '@/store/entities'
+import { useNotificationStore } from '@/store/notifications'
 
-export default defineComponent({
-  components: { Field, ErrorMessage },
-  setup() {
-    const environmentsStore = useEnvironmentsStore();
-    const notificationStore = useNotificationStore();
-    const schema = yup.object({
-      name: yup.string().required("Le nom de l'environnement est requis"),
-    });
+const environmentsStore = useEnvironmentsStore()
+const notificationStore = useNotificationStore()
 
-    const { handleSubmit, resetForm } = useForm({
-      validationSchema: schema,
-    });
+const emit = defineEmits<{
+  (e: 'success'): void
+}>()
 
-    const submit = handleSubmit(async (values) => {
-      try {
-        await createEnvironment(values);
-        await environmentsStore.fetchEnvironments();
-        resetForm();
-        notificationStore.addNotification({ type: 'success', message: "Environnement créé avec succès" });
-      } catch (error) {
-        console.error("Erreur lors de la création de l'environnement", error);
-        notificationStore.addNotification({ type: 'error', message: "Erreur lors de la création de l'environnement" });
-      }
-    });
+const state = reactive({
+  name: '',
+})
 
-    return { submit };
+// Règles de validation
+const validationRules = {
+  name: {
+    required: helpers.withMessage("Le nom de l'environnement est requis", required),
   },
-});
-</script>
-
-<style scoped>
-.error {
-  color: red;
 }
-</style>
 
+const v$ = useVuelidate(validationRules, state)
+
+// Computed properties for error handling
+const NameError = computed(() => (v$.value.name.$error && v$.value.name?.$errors[0]?.$message) || '')
+
+const handleSubmit = async () => {
+  const isValid = await v$.value.$validate()
+  if (!isValid) return
+
+  try {
+    await createEnvironment(state)
+    await environmentsStore.fetchEnvironments()
+
+    // Réinitialisation du formulaire
+    state.name = ''
+    v$.value.$reset()
+
+    notificationStore.addNotification({
+      type: 'success',
+      message: "Environnement créé avec succès"
+    })
+
+    emit('success')
+  } catch (error) {
+    notificationStore.addNotification({
+      type: 'error',
+      message: "Erreur lors de la création de l'environnement"
+    })
+  }
+}
+</script>

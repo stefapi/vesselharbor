@@ -4,7 +4,7 @@ import { dbPromise } from './db.ts'
 export type OfflineAction = {
   method: 'post' | 'put' | 'delete'
   url: string
-  data?: any
+  data?: unknown
   timestamp: number
   retries?: number
 }

@@ -1,5 +1,6 @@
 // src/services/userService.ts
 import api from '@/services/api.ts';
+import type { UserListParams } from '@/types/api';
 
 /**
  * Crée un nouvel utilisateur.
@@ -14,7 +15,7 @@ export async function createUser(user: { email: string; password: string }) {
  * Récupère la liste des utilisateurs.
  * On peut filtrer par email et utiliser la pagination.
  */
-export async function listUsers(params: any = {}) {
+export async function listUsers(params: UserListParams = {}) {
   return api.get('/users', { params });
 }
 

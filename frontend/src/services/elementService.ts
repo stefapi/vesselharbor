@@ -1,4 +1,5 @@
 import api from '@/services/api.ts';
+import type { ElementListParams } from '@/types/api';
 
 /**
  * Crée un nouvel élément dans l'environnement spécifié.
@@ -14,7 +15,7 @@ export async function createElement(environmentId: number, element: { name: stri
  * @param environmentId L'identifiant de l'environnement.
  * @param params Paramètres optionnels pour filtrer ou paginer la liste.
  */
-export async function listElements(environmentId: number, params: any = {}) {
+export async function listElements(environmentId: number, params: ElementListParams = {}) {
   return api.get(`/elements/environment/${environmentId}`, { params });
 }
 
