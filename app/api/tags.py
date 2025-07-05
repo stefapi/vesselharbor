@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from typing import List
 from ..models.user import User
 from ..models.element import Element
 from ..models.environment import Environment
@@ -10,6 +11,12 @@ from ..repositories import tag_repo
 from ..api.users import get_current_user
 from ..helper import permissions, audit, response
 from ..schema.tag import TagOut, TagCreate
+from ..schema.auth import BaseResponse, EmptyData
+from ..schema.user import UserOut
+from ..schema.group import GroupOut
+from ..schema.policy import PolicyOut
+from ..schema.element import ElementOut
+from ..schema.environment import EnvironmentOut
 
 router = APIRouter(prefix="/tags", tags=["tags"])
 
@@ -22,13 +29,13 @@ def get_db():
 
 @router.get(
     "",
-    response_model=dict,
-    summary="Lister tous les tags",
-    description="Renvoie la liste de tous les tags si l'utilisateur a les droits sur leur organisation.",
+    response_model=BaseResponse[List[TagOut]],
+    summary="List all tags",
+    description="Returns the list of all tags if the user has permissions on their organization.",
     responses={
-        200: {"description": "Liste des tags récupérée avec succès"},
-        401: {"description": "Non authentifié"},
-        403: {"description": "Permission insuffisante"},
+        200: {"description": "Tag list retrieved successfully"},
+        401: {"description": "Not authenticated"},
+        403: {"description": "Insufficient permissions"},
     }
 )
 def list_tags(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -61,24 +68,24 @@ def list_tags(current_user: User = Depends(get_current_user), db: Session = Depe
             accessible_tags.append(tag)
             continue
 
-    return response.success_response(accessible_tags, "Liste des tags accessible récupérée")
+    return response.success_response(accessible_tags, "Accessible tag list retrieved")
 
 @router.get(
     "/{tag_id}",
-    response_model=dict,
-    summary="Récupérer un tag",
-    description="Renvoie les informations d'un tag spécifique si l'utilisateur a les droits requis.",
+    response_model=BaseResponse[TagOut],
+    summary="Get a tag",
+    description="Returns information for a specific tag if the user has required permissions.",
     responses={
-        200: {"description": "Tag récupéré avec succès"},
-        401: {"description": "Non authentifié"},
-        403: {"description": "Permission insuffisante"},
-        404: {"description": "Tag non trouvé"},
+        200: {"description": "Tag retrieved successfully"},
+        401: {"description": "Not authenticated"},
+        403: {"description": "Insufficient permissions"},
+        404: {"description": "Tag not found"},
     }
 )
 def get_tag(tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     tag = tag_repo.get_tag(db, tag_id)
     if not tag:
-        raise HTTPException(status_code=404, detail="Tag non trouvé")
+        raise HTTPException(status_code=404, detail="Tag not found")
 
     # Check permissions through various relationships
     org_id = None
@@ -94,20 +101,20 @@ def get_tag(tag_id: int, current_user: User = Depends(get_current_user), db: Ses
         org_id = tag.environments[0].organization_id
 
     if not org_id or not permissions.has_permission(db, current_user, org_id, "tag:read"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante pour lire ce tag")
+        raise HTTPException(status_code=403, detail="Insufficient permissions to read this tag")
 
-    return response.success_response(TagOut.model_validate(tag), "Tag récupéré avec succès")
+    return response.success_response(TagOut.model_validate(tag), "Tag retrieved successfully")
 
 @router.post(
     "",
-    response_model=dict,
-    summary="Créer un tag",
-    description="Crée un nouveau tag. L'utilisateur doit avoir les droits sur une organisation spécifique.",
+    response_model=BaseResponse[TagOut],
+    summary="Create a tag",
+    description="Creates a new tag. The user must have permissions on a specific organization.",
     responses={
-        200: {"description": "Tag créé avec succès"},
-        400: {"description": "Tag existant"},
-        401: {"description": "Non authentifié"},
-        403: {"description": "Permission insuffisante"},
+        200: {"description": "Tag created successfully"},
+        400: {"description": "Tag already exists"},
+        401: {"description": "Not authenticated"},
+        403: {"description": "Insufficient permissions"},
     }
 )
 def create_tag(
@@ -116,34 +123,34 @@ def create_tag(
     db: Session = Depends(get_db)
 ):
     if not permissions.has_permission(db, current_user, tag_in.organization_id, "tag:create"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante pour créer un tag dans cette organisation")
+        raise HTTPException(status_code=403, detail="Insufficient permissions to create a tag in this organization")
 
     existing = tag_repo.get_tag_by_value(db, tag_in.value)
     if existing:
-        raise HTTPException(status_code=400, detail="Ce tag existe déjà.")
+        raise HTTPException(status_code=400, detail="This tag already exists.")
 
     tag = tag_repo.create_tag(db, value=tag_in.value)
-    audit.log_action(db, current_user.id, "Création tag", f"Tag '{tag.value}' créé pour l'organisation {tag_in.organization_id}")
-    return response.success_response(tag, "Tag créé avec succès")
+    audit.log_action(db, current_user.id, "Tag creation", f"Tag '{tag.value}' created for organization {tag_in.organization_id}")
+    return response.success_response(tag, "Tag created successfully")
 
 @router.delete(
     "/{tag_id}",
-    response_model=dict,
-    summary="Supprimer un tag",
-    description="Supprime un tag s'il est autorisé.",
+    response_model=BaseResponse[EmptyData],
+    summary="Delete a tag",
+    description="Deletes a tag if authorized.",
     responses={
-        200: {"description": "Tag supprimé avec succès"},
-        401: {"description": "Non authentifié"},
-        403: {"description": "Permission insuffisante"},
-        404: {"description": "Tag non trouvé"},
+        200: {"description": "Tag deleted successfully"},
+        401: {"description": "Not authenticated"},
+        403: {"description": "Insufficient permissions"},
+        404: {"description": "Tag not found"},
     }
 )
 def delete_tag(tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     tag = tag_repo.get_tag(db, tag_id)
     if not tag:
-        raise HTTPException(status_code=404, detail="Tag non trouvé")
+        raise HTTPException(status_code=404, detail="Tag not found")
 
-    # On cherche l'organisation liée au tag via une policy, un groupe, un user, un élément ou un environnement
+    # Find the organization linked to the tag via policy, group, user, element or environment
     org_id = None
     if tag.policies:
         org_id = tag.policies[0].organization_id
@@ -157,127 +164,127 @@ def delete_tag(tag_id: int, current_user: User = Depends(get_current_user), db: 
         org_id = tag.environments[0].organization_id
 
     if not org_id or not permissions.has_permission(db, current_user, org_id, "tag:delete"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante pour supprimer ce tag")
+        raise HTTPException(status_code=403, detail="Insufficient permissions to delete this tag")
 
-    audit.log_action(db, current_user.id, "Suppression tag", f"Tag '{tag.value}' supprimé (id={tag.id})")
+    audit.log_action(db, current_user.id, "Tag deletion", f"Tag '{tag.value}' deleted (id={tag.id})")
     tag_repo.delete_tag(db, tag)
-    return response.success_response(None, "Tag supprimé avec succès")
+    return response.success_response(None, "Tag deleted successfully")
 
 @router.get(
     "/{tag_id}/groups",
-    response_model=dict,
-    summary="Groupes liés à un tag",
-    description="Renvoie les groupes associés à un tag.",
+    response_model=BaseResponse[List[GroupOut]],
+    summary="Groups linked to a tag",
+    description="Returns groups associated with a tag.",
     responses={
-        200: {"description": "Groupes récupérés avec succès"},
-        401: {"description": "Non authentifié"},
-        403: {"description": "Permission insuffisante"},
-        404: {"description": "Tag non trouvé"},
+        200: {"description": "Groups retrieved successfully"},
+        401: {"description": "Not authenticated"},
+        403: {"description": "Insufficient permissions"},
+        404: {"description": "Tag not found"},
     }
 )
 def get_tag_groups(tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     tag = tag_repo.get_tag(db, tag_id)
     if not tag:
-        raise HTTPException(status_code=404, detail="Tag non trouvé")
+        raise HTTPException(status_code=404, detail="Tag not found")
     org_id = tag.groups[0].organization_id if tag.groups else None
     if not org_id or not permissions.has_permission(db, current_user, org_id, "tag:read"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante pour lire ce tag")
-    return response.success_response(tag.groups, "Groupes récupérés")
+        raise HTTPException(status_code=403, detail="Insufficient permissions to read this tag")
+    return response.success_response(tag.groups, "Groups retrieved")
 
 @router.get(
     "/{tag_id}/users",
-    response_model=dict,
-    summary="Utilisateurs liés à un tag",
-    description="Renvoie les utilisateurs associés à un tag.",
+    response_model=BaseResponse[List[UserOut]],
+    summary="Users linked to a tag",
+    description="Returns users associated with a tag.",
     responses={
-        200: {"description": "Utilisateurs récupérés avec succès"},
-        401: {"description": "Non authentifié"},
-        403: {"description": "Permission insuffisante"},
-        404: {"description": "Tag non trouvé"},
+        200: {"description": "Users retrieved successfully"},
+        401: {"description": "Not authenticated"},
+        403: {"description": "Insufficient permissions"},
+        404: {"description": "Tag not found"},
     }
 )
 def get_tag_users(tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     tag = tag_repo.get_tag(db, tag_id)
     if not tag:
-        raise HTTPException(status_code=404, detail="Tag non trouvé")
+        raise HTTPException(status_code=404, detail="Tag not found")
     org_id = tag.users[0].organizations[0].id if tag.users and tag.users[0].organizations else None
     if not org_id or not permissions.has_permission(db, current_user, org_id, "tag:read"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante pour lire ce tag")
-    return response.success_response(tag.users, "Utilisateurs récupérés")
+        raise HTTPException(status_code=403, detail="Insufficient permissions to read this tag")
+    return response.success_response(tag.users, "Users retrieved")
 
 @router.get(
     "/{tag_id}/policies",
-    response_model=dict,
-    summary="Policies liées à un tag",
-    description="Renvoie les policies associées à un tag.",
+    response_model=BaseResponse[List[PolicyOut]],
+    summary="Policies linked to a tag",
+    description="Returns policies associated with a tag.",
     responses={
-        200: {"description": "Policies récupérées avec succès"},
-        401: {"description": "Non authentifié"},
-        403: {"description": "Permission insuffisante"},
-        404: {"description": "Tag non trouvé"},
+        200: {"description": "Policies retrieved successfully"},
+        401: {"description": "Not authenticated"},
+        403: {"description": "Insufficient permissions"},
+        404: {"description": "Tag not found"},
     }
 )
 def get_tag_policies(tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     tag = tag_repo.get_tag(db, tag_id)
     if not tag:
-        raise HTTPException(status_code=404, detail="Tag non trouvé")
+        raise HTTPException(status_code=404, detail="Tag not found")
     org_id = tag.policies[0].organization_id if tag.policies else None
     if not org_id or not permissions.has_permission(db, current_user, org_id, "tag:read"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante pour lire ce tag")
-    return response.success_response(tag.policies, "Policies récupérées")
+        raise HTTPException(status_code=403, detail="Insufficient permissions to read this tag")
+    return response.success_response(tag.policies, "Policies retrieved")
 
 @router.get(
     "/{tag_id}/elements",
-    response_model=dict,
-    summary="Éléments liés à un tag",
-    description="Renvoie les éléments associés à un tag.",
+    response_model=BaseResponse[List[ElementOut]],
+    summary="Elements linked to a tag",
+    description="Returns elements associated with a tag.",
     responses={
-        200: {"description": "Éléments récupérés avec succès"},
-        401: {"description": "Non authentifié"},
-        403: {"description": "Permission insuffisante"},
-        404: {"description": "Tag non trouvé"},
+        200: {"description": "Elements retrieved successfully"},
+        401: {"description": "Not authenticated"},
+        403: {"description": "Insufficient permissions"},
+        404: {"description": "Tag not found"},
     }
 )
 def get_tag_elements(tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     tag = tag_repo.get_tag(db, tag_id)
     if not tag:
-        raise HTTPException(status_code=404, detail="Tag non trouvé")
+        raise HTTPException(status_code=404, detail="Tag not found")
 
-    # Vérifier si le tag a des éléments
+    # Check if the tag has elements
     if not tag.elements:
-        return response.success_response([], "Aucun élément associé à ce tag")
+        return response.success_response([], "No elements associated with this tag")
 
-    # Vérifier les permissions sur l'organisation de l'environnement du premier élément
+    # Check permissions on the environment organization of the first element
     org_id = tag.elements[0].environment.organization_id if tag.elements and tag.elements[0].environment else None
     if not org_id or not permissions.has_permission(db, current_user, org_id, "tag:read"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante pour lire ce tag")
+        raise HTTPException(status_code=403, detail="Insufficient permissions to read this tag")
 
-    return response.success_response(tag.elements, "Éléments récupérés")
+    return response.success_response(tag.elements, "Elements retrieved")
 
 @router.get(
     "/{tag_id}/environments",
-    response_model=dict,
-    summary="Environnements liés à un tag",
-    description="Renvoie les environnements associés à un tag.",
+    response_model=BaseResponse[List[EnvironmentOut]],
+    summary="Environments linked to a tag",
+    description="Returns environments associated with a tag.",
     responses={
-        200: {"description": "Environnements récupérés avec succès"},
-        401: {"description": "Non authentifié"},
-        403: {"description": "Permission insuffisante"},
-        404: {"description": "Tag non trouvé"},
+        200: {"description": "Environments retrieved successfully"},
+        401: {"description": "Not authenticated"},
+        403: {"description": "Insufficient permissions"},
+        404: {"description": "Tag not found"},
     }
 )
 def get_tag_environments(tag_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     tag = tag_repo.get_tag(db, tag_id)
     if not tag:
-        raise HTTPException(status_code=404, detail="Tag non trouvé")
+        raise HTTPException(status_code=404, detail="Tag not found")
 
-    # Vérifier si le tag a des environnements
+    # Check if the tag has environments
     if not tag.environments:
-        return response.success_response([], "Aucun environnement associé à ce tag")
+        return response.success_response([], "No environments associated with this tag")
 
-    # Vérifier les permissions sur l'organisation du premier environnement
+    # Check permissions on the organization of the first environment
     org_id = tag.environments[0].organization_id if tag.environments else None
     if not org_id or not permissions.has_permission(db, current_user, org_id, "tag:read"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante pour lire ce tag")
+        raise HTTPException(status_code=403, detail="Insufficient permissions to read this tag")
 
-    return response.success_response(tag.environments, "Environnements récupérés")
+    return response.success_response(tag.environments, "Environments retrieved")

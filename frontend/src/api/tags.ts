@@ -1,72 +1,72 @@
 import type * as Types from './types.ts'
 
 /**
- * Renvoie la liste de tous les tags si l'utilisateur a les droits sur leur organisation.
+ * Returns the list of all tags if the user has permissions on their organization.
  */
-export async function listertouslestags() {
+export async function listalltags() {
   return api.get('/tags')
 }
 
 /**
- * Crée un nouveau tag. L'utilisateur doit avoir les droits sur une organisation spécifique.
+ * Creates a new tag. The user must have permissions on a specific organization.
  * @param data Request data
  */
-export async function creeruntag(data: Types.TagCreate) {
+export async function createatag(data: Types.TagCreate) {
   return api.post('/tags', data)
 }
 
 /**
- * Renvoie les informations d'un tag spécifique si l'utilisateur a les droits requis.
+ * Returns information for a specific tag if the user has required permissions.
  * @param tag_id tag_id parameter
  */
-export async function recupereruntag(tag_id: number) {
+export async function getatagtags(tag_id: number) {
   return api.get(`/tags/${tag_id}`)
 }
 
 /**
- * Supprime un tag s'il est autorisé.
+ * Deletes a tag if authorized.
  * @param tag_id tag_id parameter
  */
-export async function supprimeruntag(tag_id: number) {
+export async function deleteatag(tag_id: number) {
   return api.delete(`/tags/${tag_id}`)
 }
 
 /**
- * Renvoie les groupes associés à un tag.
+ * Returns groups associated with a tag.
  * @param tag_id tag_id parameter
  */
-export async function groupesliesauntag(tag_id: number) {
+export async function groupslinkedtoatag(tag_id: number) {
   return api.get(`/tags/${tag_id}/groups`)
 }
 
 /**
- * Renvoie les utilisateurs associés à un tag.
+ * Returns users associated with a tag.
  * @param tag_id tag_id parameter
  */
-export async function utilisateursliesauntag(tag_id: number) {
+export async function userslinkedtoatag(tag_id: number) {
   return api.get(`/tags/${tag_id}/users`)
 }
 
 /**
- * Renvoie les policies associées à un tag.
+ * Returns policies associated with a tag.
  * @param tag_id tag_id parameter
  */
-export async function policieslieesauntag(tag_id: number) {
+export async function policieslinkedtoatag(tag_id: number) {
   return api.get(`/tags/${tag_id}/policies`)
 }
 
 /**
- * Renvoie les éléments associés à un tag.
+ * Returns elements associated with a tag.
  * @param tag_id tag_id parameter
  */
-export async function elementsliesauntag(tag_id: number) {
+export async function elementslinkedtoatag(tag_id: number) {
   return api.get(`/tags/${tag_id}/elements`)
 }
 
 /**
- * Renvoie les environnements associés à un tag.
+ * Returns environments associated with a tag.
  * @param tag_id tag_id parameter
  */
-export async function environnementsliesauntag(tag_id: number) {
+export async function environmentslinkedtoatag(tag_id: number) {
   return api.get(`/tags/${tag_id}/environments`)
 }

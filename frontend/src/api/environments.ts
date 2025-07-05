@@ -1,169 +1,169 @@
 import type * as Types from './types.ts'
 
 /**
- * Liste les environnements filtrés par nom ou organisation (superadmins voient tout, les autres uniquement ce qu'ils ont le droit de lire).
+ * Lists environments filtered by name or organization (superadmins see everything, others only what they have permission to read).
  */
-export async function listerlesenvironnementsenvironments() {
+export async function listenvironments() {
   return api.get('/environments')
 }
 
 /**
- * Crée un environnement rattaché à une organisation. Associe une policy d’admin au créateur si nécessaire.
+ * Creates an environment attached to an organization. Assigns an admin policy to the creator if needed.
  * @param data Request data
  */
-export async function creerunenvironnement(data: Types.EnvironmentCreate) {
+export async function createanenvironment(data: Types.EnvironmentCreate) {
   return api.post('/environments', data)
 }
 
 /**
- * Renvoie les détails d’un environnement si l’utilisateur y a accès.
+ * Returns environment details if the user has access.
  * @param environment_id environment_id parameter
  */
-export async function detaildunenvironnement(environment_id: number) {
+export async function environmentdetails(environment_id: number) {
   return api.get(`/environments/${environment_id}`)
 }
 
 /**
- * Met à jour un environnement s’il existe et si l’utilisateur a les droits.
+ * Updates an environment if it exists and the user has permission.
  * @param environment_id environment_id parameter
  */
-export async function mettreajourunenvironnement(environment_id: number, data: Types.EnvironmentCreate) {
+export async function updateanenvironment(environment_id: number, data: Types.EnvironmentCreate) {
   return api.put(`/environments/${environment_id}`, data)
 }
 
 /**
- * Supprime un environnement si l’utilisateur a les droits requis.
+ * Deletes an environment if the user has the required permissions.
  * @param environment_id environment_id parameter
  */
-export async function supprimerunenvironnement(environment_id: number) {
+export async function deleteanenvironment(environment_id: number) {
   return api.delete(`/environments/${environment_id}`)
 }
 
 /**
- * Renvoie la liste des hôtes physiques associés à un environnement si l'utilisateur y a accès.
+ * Returns the list of physical hosts associated with an environment if the user has access to it.
  * @param environment_id environment_id parameter
  */
-export async function listedeshotesphysiquesdunenvironnementenvironments(environment_id: number) {
+export async function listphysicalhostsofanenvironmentenvironments(environment_id: number) {
   return api.get(`/environments/${environment_id}/physical-hosts`)
 }
 
 /**
- * Génère un nom unique à partir d'un animal ou d'un adjectif.
+ * Generates a unique name from an animal or an adjective.
  */
-export async function genererunnomaleatoire() {
+export async function generatearandomname() {
   return api.get('/environments/generate-name')
 }
 
 /**
- * Renvoie tous les utilisateurs ayant accès à un environnement via une policy (via les rules).
+ * Returns all users who have access to an environment via a policy (via rules).
  * @param environment_id environment_id parameter
  */
-export async function utilisateursliesaunenvironnement(environment_id: number) {
+export async function userslinkedtoanenvironment(environment_id: number) {
   return api.get(`/environments/${environment_id}/users`)
 }
 
 /**
- * Liste les éléments d'un environnement avec pagination et filtrage par nom et type.
+ * Lists the elements of an environment with pagination and filtering by name and type.
  * @param environment_id environment_id parameter
  */
-export async function listerleselementsdunenvironnementenvironments(environment_id: number) {
+export async function listelementsofanenvironmentenvironments(environment_id: number) {
   return api.get(`/environments/${environment_id}/elements`)
 }
 
 /**
- * Récupère tous les tags associés à un environnement.
+ * Retrieves all tags associated with an environment.
  * @param environment_id environment_id parameter
  */
-export async function listerlestagsdunenvironnementenvironments(environment_id: number) {
+export async function listenvironmenttagsenvironments(environment_id: number) {
   return api.get(`/environments/${environment_id}/tags`)
 }
 
 /**
- * Associe un tag existant à un environnement.
+ * Associates an existing tag with an environment.
  * @param environment_id environment_id parameter
  * @param tag_id tag_id parameter
  */
-export async function ajouteruntagaunenvironnement(environment_id: number, tag_id: number) {
+export async function addatagtoanenvironment(environment_id: number, tag_id: number) {
   return api.post(`/environments/${environment_id}/tags/${tag_id}`)
 }
 
 /**
- * Retire l'association entre un tag et un environnement.
+ * Removes association between a tag and an environment.
  * @param environment_id environment_id parameter
  * @param tag_id tag_id parameter
  */
-export async function retireruntagdunenvironnement(environment_id: number, tag_id: number) {
+export async function removeatagfromanenvironment(environment_id: number, tag_id: number) {
   return api.delete(`/environments/${environment_id}/tags/${tag_id}`)
 }
 
 /**
- * Liste les éléments de type réseau dans un environnement avec pagination et filtrage par nom.
+ * Lists network-type elements in an environment with pagination and name filtering.
  * @param environment_id environment_id parameter
  */
-export async function listerlesreseauxdunenvironnementenvironments(environment_id: number) {
+export async function listnetworksofanenvironmentenvironments(environment_id: number) {
   return api.get(`/environments/${environment_id}/networks`)
 }
 
 /**
- * Liste les éléments de type machine virtuelle dans un environnement avec pagination et filtrage par nom.
+ * Lists virtual machine-type elements in an environment with pagination and name filtering.
  * @param environment_id environment_id parameter
  */
-export async function listerlesmachinesvirtuellesdunenvironnementenvironments(environment_id: number) {
+export async function listvirtualmachinesofanenvironmentenvironments(environment_id: number) {
   return api.get(`/environments/${environment_id}/vms`)
 }
 
 /**
- * Liste les éléments de type pool de stockage dans un environnement avec pagination et filtrage par nom.
+ * Lists storage pool-type elements in an environment with pagination and name filtering.
  * @param environment_id environment_id parameter
  */
-export async function listerlespoolsdestockagedunenvironnementenvironments(environment_id: number) {
+export async function liststoragepoolsofanenvironmentenvironments(environment_id: number) {
   return api.get(`/environments/${environment_id}/storage-pools`)
 }
 
 /**
- * Liste les éléments de type volume dans un environnement avec pagination et filtrage par nom.
+ * Lists volume-type elements in an environment with pagination and name filtering.
  * @param environment_id environment_id parameter
  */
-export async function listerlesvolumesdunenvironnementenvironments(environment_id: number) {
+export async function listvolumesofanenvironmentenvironments(environment_id: number) {
   return api.get(`/environments/${environment_id}/volumes`)
 }
 
 /**
- * Liste les éléments de type domaine dans un environnement avec pagination et filtrage par nom.
+ * Lists domain-type elements in an environment with pagination and name filtering.
  * @param environment_id environment_id parameter
  */
-export async function listerlesdomainesdunenvironnementenvironments(environment_id: number) {
+export async function listdomainsofanenvironmentenvironments(environment_id: number) {
   return api.get(`/environments/${environment_id}/domains`)
 }
 
 /**
- * Liste les éléments de type noeud de conteneur dans un environnement avec pagination et filtrage par nom.
+ * Lists container node-type elements in an environment with pagination and name filtering.
  * @param environment_id environment_id parameter
  */
-export async function listerlesnoeudsdeconteneurdunenvironnementenvironments(environment_id: number) {
+export async function listcontainernodesofanenvironmentenvironments(environment_id: number) {
   return api.get(`/environments/${environment_id}/container-nodes`)
 }
 
 /**
- * Liste les éléments de type cluster de conteneur dans un environnement avec pagination et filtrage par nom.
+ * Lists container cluster-type elements in an environment with pagination and name filtering.
  * @param environment_id environment_id parameter
  */
-export async function listerlesclustersdeconteneurdunenvironnementenvironments(environment_id: number) {
+export async function listcontainerclustersofanenvironmentenvironments(environment_id: number) {
   return api.get(`/environments/${environment_id}/container-clusters`)
 }
 
 /**
- * Liste les éléments de type stack dans un environnement avec pagination et filtrage par nom.
+ * Lists stack-type elements in an environment with pagination and name filtering.
  * @param environment_id environment_id parameter
  */
-export async function listerlesstacksdunenvironnementenvironments(environment_id: number) {
+export async function liststacksofanenvironmentenvironments(environment_id: number) {
   return api.get(`/environments/${environment_id}/stacks`)
 }
 
 /**
- * Liste les éléments de type application dans un environnement avec pagination et filtrage par nom.
+ * Lists application-type elements in an environment with pagination and name filtering.
  * @param environment_id environment_id parameter
  */
-export async function listerlesapplicationsdunenvironnementenvironments(environment_id: number) {
+export async function listapplicationsofanenvironmentenvironments(environment_id: number) {
   return api.get(`/environments/${environment_id}/applications`)
 }

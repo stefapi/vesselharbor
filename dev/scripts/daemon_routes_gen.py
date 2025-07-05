@@ -243,7 +243,9 @@ def get_path_objects(app: FastAPI):
             for key, value in value.items():
                 if key == "schemas":
                     for key, value in value.items():
-                        schemas[key] = [k for k, v in value['properties'].items()]
+                        # Only process schemas that have properties (object schemas)
+                        if 'properties' in value:
+                            schemas[key] = [k for k, v in value['properties'].items()]
 
     for path in paths:
         for verb in path.http_verbs:

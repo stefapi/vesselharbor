@@ -1,16 +1,16 @@
 import type * as Types from './types.ts'
 
 /**
- * Renvoie toutes les fonctions si l'utilisateur a les droits requis.
+ * Returns all functions if the user has required permissions.
  */
-export async function listerlesfonctionsfunctions() {
+export async function listfunctions() {
   return api.get('/functions')
 }
 
 /**
- * Renvoie les informations d'une fonction spécifique.
+ * Returns information for a specific function.
  * @param function_id function_id parameter
  */
-export async function recupererunefonction(function_id: number) {
+export async function getafunctionfunctions(function_id: number) {
   return api.get(`/functions/${function_id}`)
 }

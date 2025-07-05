@@ -1,27 +1,26 @@
+from typing import Optional, List
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List, Optional
 
+from ..api.users import get_current_user
 from ..database.session import SessionLocal
+from ..helper import response, permissions, audit
 from ..helper.cosmicname import generate_codename
+from ..models.environment import Environment
+from ..models.function import Function
+from ..models.group import Group
 from ..models.organization import Organization
 from ..models.user import User
-from ..models.tag import Tag
-from ..models.group import Group
-from ..models.policy import Policy
-from ..models.function import Function
 from ..repositories import tag_repo, policy_repo, rule_repo, group_repo
-from ..api.users import get_current_user
-from ..helper import response, permissions, audit
-from ..schema.organization import OrganizationOut, OrganizationCreate, OrganizationUpdate
-from ..schema.tag import TagOut
-from ..schema.group import GroupOut
-from ..schema.policy import PolicyOut, PolicyCreate
-from ..schema.environment import EnvironmentOut
-from ..models.environment import Environment
-from ..schema.user import UserOut
+from ..schema.auth import BaseResponse, EmptyData
 from ..schema.element import ElementOut
-from ..models.element import Element
+from ..schema.environment import EnvironmentOut
+from ..schema.group import GroupOut
+from ..schema.organization import OrganizationOut, OrganizationCreate, OrganizationUpdate
+from ..schema.policy import PolicyOut, PolicyCreate
+from ..schema.tag import TagOut
+from ..schema.user import UserOut
 
 router = APIRouter(prefix="/organizations", tags=["organizations"])
 
@@ -32,9 +31,9 @@ def get_db():
     finally:
         db.close()
 
-@router.get("", response_model=dict, summary="Lister les organisations", description="Récupère la liste des organisations auxquelles l'utilisateur a accès", responses={
-    200: {"description": "Liste des organisations récupérée avec succès"},
-    401: {"description": "Non authentifié"}
+@router.get("", response_model=BaseResponse[List[OrganizationOut]], summary="List organizations", description="Retrieve list of organizations accessible to the user", responses={
+    200: {"description": "Organization list retrieved successfully"},
+    401: {"description": "Unauthenticated"}
 })
 def list_organizations(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     orgs = db.query(Organization).all()
@@ -42,30 +41,30 @@ def list_organizations(current_user: User = Depends(get_current_user), db: Sessi
     serializable_orgs = [
         OrganizationOut.model_validate(org) for org in orgs if permissions.has_permission(db, current_user, org.id, "organization:read")
     ]
-    return response.success_response(serializable_orgs, "Organisations visibles récupérées")
+    return response.success_response(serializable_orgs, "Visible organizations retrieved")
 
-@router.get("/{org_id}", response_model=dict, summary="Détail d'une organisation", description="Récupère les détails d'une organisation spécifique", responses={
-    200: {"description": "Détails de l'organisation récupérés avec succès"},
-    401: {"description": "Non authentifié"},
-    403: {"description": "Permission insuffisante"},
-    404: {"description": "Organisation non trouvée"}
+@router.get("/{org_id}", response_model=BaseResponse[OrganizationOut], summary="Organization details", description="Retrieve details of a specific organization", responses={
+    200: {"description": "Organization details retrieved successfully"},
+    401: {"description": "Unauthenticated"},
+    403: {"description": "Insufficient permissions"},
+    404: {"description": "Organization not found"}
 })
 def get_organization(org_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     org = db.query(Organization).get(org_id)
     if not org:
-        raise HTTPException(status_code=404, detail="Organisation non trouvée")
+        raise HTTPException(status_code=404, detail="Organization not found")
     if not permissions.has_permission(db, current_user, org.id, "organization:read"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante")
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
     # Convert Organization object to OrganizationOut object for proper serialization
     serializable_org = OrganizationOut.model_validate(org)
-    return response.success_response(serializable_org, "Organisation récupérée")
+    return response.success_response(serializable_org, "Organization retrieved")
 
-@router.post("", response_model=dict, summary="Créer une organisation", description="Crée une nouvelle organisation et configure les groupes et politiques par défaut", responses={
-    200: {"description": "Organisation créée avec succès"},
-    400: {"description": "Une organisation avec ce nom existe déjà"},
-    401: {"description": "Non authentifié"},
-    403: {"description": "Vous êtes déjà administrateur d'une organization"},
-    500: {"description": "Erreur serveur - fonction admin non trouvée"}
+@router.post("", response_model=BaseResponse[OrganizationOut], summary="Create organization", description="Create a new organization and configure default groups/policies", responses={
+    200: {"description": "Organization created successfully"},
+    400: {"description": "An organization with this name already exists"},
+    401: {"description": "Unauthenticated"},
+    403: {"description": "You are already administrator of an organization"},
+    500: {"description": "Server error - admin function not found"}
 })
 def create_organization(org_in: OrganizationCreate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if org_in.name == '':
@@ -73,7 +72,7 @@ def create_organization(org_in: OrganizationCreate, current_user: User = Depends
     # Check if an organization with the same name already exists
     existing_org = db.query(Organization).filter(Organization.name == org_in.name).first()
     if existing_org:
-        raise HTTPException(status_code=400, detail="Une organisation avec ce nom existe déjà")
+        raise HTTPException(status_code=400, detail="An organization with this name already exists")
 
     # Check if user is already admin of another organization (unless superadmin)
     if not current_user.is_superadmin:
@@ -83,7 +82,7 @@ def create_organization(org_in: OrganizationCreate, current_user: User = Depends
             if current_user in admin_group.users:
                 raise HTTPException(
                     status_code=403,
-                    detail="Vous êtes déjà administrateur d'une autre organisation. Un utilisateur ne peut être administrateur que d'une seule organisation."
+                    detail="You are already administrator of another organization. A user can only be administrator of one organization."
                 )
 
     # Create the organization
@@ -102,14 +101,12 @@ def create_organization(org_in: OrganizationCreate, current_user: User = Depends
     # Create admin function
     admin_function = db.query(Function).filter(Function.name == "admin").first()
     if not admin_function:
-        raise HTTPException(status_code=500, detail="Fonction admin non trouvée")
-
-
+        raise HTTPException(status_code=500, detail="Admin function not found")
 
     # Create admin policy for the organization
     admin_policy = policy_repo.create_policy(db, PolicyCreate(
         name=f"Admin {org.name}",
-        description=f"Politique d'administration pour {org.name}",
+        description=f"Administration policy for {org.name}",
         organization_id=org.id
     ))
 
@@ -119,7 +116,7 @@ def create_organization(org_in: OrganizationCreate, current_user: User = Depends
     # Create readonly policy for the organization
     readonly_policy = policy_repo.create_policy(db, PolicyCreate(
         name=f"Readonly {org.name}",
-        description=f"Politique de lecture seule pour {org.name}",
+        description=f"Read-only policy for {org.name}",
         organization_id=org.id
     ))
 
@@ -131,12 +128,12 @@ def create_organization(org_in: OrganizationCreate, current_user: User = Depends
             rule_repo.create_rule(db, readonly_policy.id, func.id)
 
     # Create 'admin' group
-    admin_group = group_repo.create_group(db, org.id, "admin", "Administrateurs de l'organisation")
+    admin_group = group_repo.create_group(db, org.id, "admin", "Organization administrators")
     # Assign admin policy to 'admin' group
     policy_repo.add_group(db, admin_policy, admin_group)
 
     # Create 'editors' group
-    editors_group = group_repo.create_group(db, org.id, "editors", "Éditeurs avec accès en lecture seule")
+    editors_group = group_repo.create_group(db, org.id, "editors", "Editors with read-only access")
     # Assign readonly policy to 'editors' group
     policy_repo.add_group(db, readonly_policy, editors_group)
 
@@ -147,50 +144,50 @@ def create_organization(org_in: OrganizationCreate, current_user: User = Depends
         user_in_session = db.query(User).get(current_user.id)
         group_repo.add_user_to_group(db, admin_group, user_in_session)
 
-    audit.log_action(db, current_user.id, "Création organisation", f"Organisation '{org.name}'")
+    audit.log_action(db, current_user.id, "Organization creation", f"Organization '{org.name}'")
     # Convert Organization object to OrganizationOut object for proper serialization
     serializable_org = OrganizationOut.model_validate(org)
-    return response.success_response(serializable_org, "Organisation créée")
+    return response.success_response(serializable_org, "Organization created")
 
-@router.put("/{org_id}", response_model=dict, summary="Mettre à jour une organisation", description="Met à jour les informations d'une organisation existante", responses={
-    200: {"description": "Organisation mise à jour avec succès"},
-    400: {"description": "Une organisation avec ce nom existe déjà"},
-    401: {"description": "Non authentifié"},
-    403: {"description": "Permission insuffisante"},
-    404: {"description": "Organisation non trouvée"}
+@router.put("/{org_id}", response_model=BaseResponse[OrganizationOut], summary="Update organization", description="Update information of an existing organization", responses={
+    200: {"description": "Organization updated successfully"},
+    400: {"description": "An organization with this name already exists"},
+    401: {"description": "Unauthenticated"},
+    403: {"description": "Insufficient permissions"},
+    404: {"description": "Organization not found"}
 })
 def update_organization(org_id: int, org_in: OrganizationUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     org = db.query(Organization).get(org_id)
     if not org:
-        raise HTTPException(status_code=404, detail="Organisation non trouvée")
+        raise HTTPException(status_code=404, detail="Organization not found")
     if not permissions.has_permission(db, current_user, org.id, "organization:update"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante")
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
 
     # Check if another organization with the same name already exists
     existing_org = db.query(Organization).filter(Organization.name == org_in.name, Organization.id != org_id).first()
     if existing_org:
-        raise HTTPException(status_code=400, detail="Une organisation avec ce nom existe déjà")
+        raise HTTPException(status_code=400, detail="An organization with this name already exists")
 
     org.name = org_in.name
     org.description = org_in.description
     db.commit()
-    audit.log_action(db, current_user.id, "Mise à jour organisation", f"Organisation '{org.name}'")
+    audit.log_action(db, current_user.id, "Organization update", f"Organization '{org.name}'")
     # Convert Organization object to OrganizationOut object for proper serialization
     serializable_org = OrganizationOut.model_validate(org)
-    return response.success_response(serializable_org, "Organisation mise à jour")
+    return response.success_response(serializable_org, "Organization updated")
 
-@router.delete("/{org_id}", response_model=dict, summary="Supprimer une organisation", description="Supprime une organisation existante et toutes ses données associées", responses={
-    200: {"description": "Organisation supprimée avec succès"},
-    401: {"description": "Non authentifié"},
-    403: {"description": "Permission insuffisante ou utilisateurs appartenant à d'autres organisations"},
-    404: {"description": "Organisation non trouvée"}
+@router.delete("/{org_id}", response_model=BaseResponse[EmptyData], summary="Delete organization", description="Delete an existing organization and all associated data", responses={
+    200: {"description": "Organization deleted successfully"},
+    401: {"description": "Unauthenticated"},
+    403: {"description": "Insufficient permissions or users belong to other organizations"},
+    404: {"description": "Organization not found"}
 })
 def delete_organization(org_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     org = db.query(Organization).get(org_id)
     if not org:
-        raise HTTPException(status_code=404, detail="Organisation non trouvée")
+        raise HTTPException(status_code=404, detail="Organization not found")
     if not permissions.has_permission(db, current_user, org.id, "organization:delete"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante")
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
 
     # If the user is not a superadmin, check if any user in the organization belongs to other organizations
     if not current_user.is_superadmin:
@@ -198,51 +195,51 @@ def delete_organization(org_id: int, current_user: User = Depends(get_current_us
             if len(user.organizations) <= 1:
                 raise HTTPException(
                     status_code=403,
-                    detail="Impossible de supprimer l'organisation car certains utilisateurs appartiennent à d'autres organisations"
+                    detail="Cannot delete organization because some users belong to other organizations"
                 )
 
     db.delete(org)
     db.commit()
-    audit.log_action(db, current_user.id, "Suppression organisation", f"Organisation '{org.name}'")
-    return response.success_response(None, "Organisation supprimée")
+    audit.log_action(db, current_user.id, "Organization deletion", f"Organization '{org.name}'")
+    return response.success_response(None, "Organization deleted")
 
-# --- Utilisateurs ---
+# --- Users ---
 
-@router.post("/{org_id}/users/{user_id}", response_model=dict, summary="Ajouter un utilisateur à une organisation", description="Ajoute un utilisateur spécifié à une organisation", responses={
-    200: {"description": "Utilisateur ajouté à l'organisation avec succès"},
-    401: {"description": "Non authentifié"},
-    403: {"description": "Permission insuffisante"},
-    404: {"description": "Organisation ou utilisateur introuvable"}
+@router.post("/{org_id}/users/{user_id}", response_model=BaseResponse[List[UserOut]], summary="Add user to organization", description="Add specified user to an organization", responses={
+    200: {"description": "User added to organization successfully"},
+    401: {"description": "Unauthenticated"},
+    403: {"description": "Insufficient permissions"},
+    404: {"description": "Organization or user not found"}
 })
 def add_user_to_organization(org_id: int, user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     org = db.query(Organization).get(org_id)
     user = db.query(User).get(user_id)
     if not org or not user:
-        raise HTTPException(status_code=404, detail="Organisation ou utilisateur introuvable")
+        raise HTTPException(status_code=404, detail="Organization or user not found")
     if not permissions.has_permission(db, current_user, org.id, "organization:update"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante")
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
     if user not in org.users:
         org.users.append(user)
         db.commit()
-        audit.log_action(db, current_user.id, "Ajout utilisateur", f"Utilisateur {user.email} ajouté à l'organisation {org.name}")
+        audit.log_action(db, current_user.id, "User added", f"User {user.email} added to organization {org.name}")
     # Convert User objects to UserOut objects for proper serialization
     serializable_users = [UserOut.model_validate(user) for user in org.users]
-    return response.success_response(serializable_users, "Utilisateur ajouté")
+    return response.success_response(serializable_users, "User added")
 
-@router.delete("/{org_id}/users/{user_id}", response_model=dict, summary="Retirer un utilisateur d'une organisation", description="Retire un utilisateur spécifié d'une organisation", responses={
-    200: {"description": "Utilisateur retiré de l'organisation avec succès"},
-    401: {"description": "Non authentifié"},
-    403: {"description": "Permission insuffisante"},
-    404: {"description": "Organisation ou utilisateur introuvable"},
-    409: {"description": "Impossible de retirer le dernier administrateur de l'organisation"}
+@router.delete("/{org_id}/users/{user_id}", response_model=BaseResponse[List[UserOut]], summary="Remove user from organization", description="Remove specified user from an organization", responses={
+    200: {"description": "User removed from organization successfully"},
+    401: {"description": "Unauthenticated"},
+    403: {"description": "Insufficient permissions"},
+    404: {"description": "Organization or user not found"},
+    409: {"description": "Cannot remove last administrator from the organization"}
 })
 def remove_user_from_organization(org_id: int, user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     org = db.query(Organization).get(org_id)
     user = db.query(User).get(user_id)
     if not org or not user:
-        raise HTTPException(status_code=404, detail="Organisation ou utilisateur introuvable")
+        raise HTTPException(status_code=404, detail="Organization or user not found")
     if not permissions.has_permission(db, current_user, org.id, "organization:update"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante")
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
 
     # Check if user is in the admin group
     admin_group = db.query(Group).filter(Group.organization_id == org.id, Group.name == "admin").first()
@@ -254,28 +251,28 @@ def remove_user_from_organization(org_id: int, user_id: int, current_user: User 
         if admin_count <= 1:
             raise HTTPException(
                 status_code=409,
-                detail="Impossible de retirer le dernier administrateur de l'organisation"
+                detail="Cannot remove the last administrator from the organization"
             )
 
     if user in org.users:
         org.users.remove(user)
         db.commit()
-        audit.log_action(db, current_user.id, "Retrait utilisateur", f"Utilisateur {user.email} retiré de l'organisation {org.name}")
+        audit.log_action(db, current_user.id, "User removed", f"User {user.email} removed from organization {org.name}")
 
     # Convert User objects to UserOut objects for proper serialization
     serializable_users = [UserOut.model_validate(user) for user in org.users]
-    return response.success_response(serializable_users, "Utilisateur retiré")
+    return response.success_response(serializable_users, "User removed")
 
 # --- Tags ---
 
-@router.get("/{org_id}/tags", response_model=dict, summary="Lister les tags d'une organisation", description="Récupère tous les tags associés à une organisation", responses={
-    200: {"description": "Tags de l'organisation récupérés avec succès"},
-    401: {"description": "Non authentifié"},
-    403: {"description": "Permission insuffisante"}
+@router.get("/{org_id}/tags", response_model=BaseResponse[List[TagOut]], summary="List organization tags", description="Retrieve all tags associated with an organization", responses={
+    200: {"description": "Organization tags retrieved successfully"},
+    401: {"description": "Unauthenticated"},
+    403: {"description": "Insufficient permissions"}
 })
 def list_organization_tags(org_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if not permissions.has_permission(db, current_user, org_id, "tag:read"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante")
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
     tags = [tag for tag in tag_repo.list_tags(db) if any(
         p.organization_id == org_id for p in tag.policies
     ) or any(
@@ -283,53 +280,53 @@ def list_organization_tags(org_id: int, current_user: User = Depends(get_current
     )]
     # Convert Tag objects to TagOut objects for proper serialization
     serializable_tags = [TagOut.model_validate(tag) for tag in tags]
-    return response.success_response(serializable_tags, "Tags de l'organisation récupérés")
+    return response.success_response(serializable_tags, "Organization tags retrieved")
 
 # --- Policies ---
 
-@router.get("/{org_id}/policies", response_model=dict, summary="Lister les politiques d'une organisation", description="Récupère toutes les politiques associées à une organisation", responses={
-    200: {"description": "Politiques de l'organisation récupérées avec succès"},
-    401: {"description": "Non authentifié"},
-    403: {"description": "Permission insuffisante"},
-    404: {"description": "Organisation non trouvée"}
+@router.get("/{org_id}/policies", response_model=BaseResponse[List[PolicyOut]], summary="List organization policies", description="Retrieve all policies associated with an organization", responses={
+    200: {"description": "Organization policies retrieved successfully"},
+    401: {"description": "Unauthenticated"},
+    403: {"description": "Insufficient permissions"},
+    404: {"description": "Organization not found"}
 })
 def list_organization_policies(org_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     org = db.query(Organization).get(org_id)
     if not org:
-        raise HTTPException(status_code=404, detail="Organisation non trouvée")
+        raise HTTPException(status_code=404, detail="Organization not found")
     if not permissions.has_permission(db, current_user, org.id, "policy:read"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante")
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
     # Convert Policy objects to PolicyOut objects for proper serialization
     serializable_policies = [PolicyOut.model_validate(policy) for policy in org.policies]
-    return response.success_response(serializable_policies, "Policies récupérées")
+    return response.success_response(serializable_policies, "Policies retrieved")
 
-# --- Groupes ---
+# --- Groups ---
 
-@router.get("/{org_id}/groups", response_model=dict, summary="Lister les groupes d'une organisation", description="Récupère tous les groupes associés à une organisation", responses={
-    200: {"description": "Groupes de l'organisation récupérés avec succès"},
-    401: {"description": "Non authentifié"},
-    403: {"description": "Permission insuffisante"},
-    404: {"description": "Organisation non trouvée"}
+@router.get("/{org_id}/groups", response_model=BaseResponse[List[GroupOut]], summary="List organization groups", description="Retrieve all groups associated with an organization", responses={
+    200: {"description": "Organization groups retrieved successfully"},
+    401: {"description": "Unauthenticated"},
+    403: {"description": "Insufficient permissions"},
+    404: {"description": "Organization not found"}
 })
 def list_organization_groups(org_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     org = db.query(Organization).get(org_id)
     if not org:
-        raise HTTPException(status_code=404, detail="Organisation non trouvée")
+        raise HTTPException(status_code=404, detail="Organization not found")
     if not permissions.has_permission(db, current_user, org.id, "group:read"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante")
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
     # Convert Group objects to GroupOut objects for proper serialization
     serializable_groups = [GroupOut.model_validate(group) for group in org.groups]
-    return response.success_response(serializable_groups, "Groupes récupérés")
+    return response.success_response(serializable_groups, "Groups retrieved")
 
-@router.get("/{org_id}/environments", response_model=dict, summary="Lister les environnements d'une organisation", description="Récupère tous les environnements associés à une organisation", responses={
-    200: {"description": "Environnements de l'organisation récupérés avec succès"},
-    401: {"description": "Non authentifié"},
-    404: {"description": "Organisation non trouvée"}
+@router.get("/{org_id}/environments", response_model=BaseResponse[List[EnvironmentOut]], summary="List organization environments", description="Retrieve all environments associated with an organization", responses={
+    200: {"description": "Organization environments retrieved successfully"},
+    401: {"description": "Unauthenticated"},
+    404: {"description": "Organization not found"}
 })
 def list_organization_environments(org_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     org = db.query(Organization).get(org_id)
     if not org:
-        raise HTTPException(status_code=404, detail="Organisation non trouvée")
+        raise HTTPException(status_code=404, detail="Organization not found")
 
     # Query environments for this organization
     query = db.query(Environment).filter(Environment.organization_id == org_id)
@@ -344,29 +341,29 @@ def list_organization_environments(org_id: int, current_user: User = Depends(get
 
     # Convert Environment objects to EnvironmentOut objects for proper serialization
     serializable_environments = [EnvironmentOut.model_validate(env) for env in environments]
-    return response.success_response(serializable_environments, "Environnements de l'organisation récupérés")
+    return response.success_response(serializable_environments, "Organization environments retrieved")
 
-@router.get("/{org_id}/users", response_model=dict, summary="Lister les utilisateurs d'une organisation", description="Récupère tous les utilisateurs ayant accès à une organisation spécifique.", responses={
-    200: {"description": "Utilisateurs de l'organisation récupérés avec succès"},
-    401: {"description": "Non authentifié"},
-    403: {"description": "Permission insuffisante"},
-    404: {"description": "Organisation non trouvée"}
+@router.get("/{org_id}/users", response_model=BaseResponse[List[UserOut]], summary="List organization users", description="Retrieve all users with access to a specific organization.", responses={
+    200: {"description": "Organization users retrieved successfully"},
+    401: {"description": "Unauthenticated"},
+    403: {"description": "Insufficient permissions"},
+    404: {"description": "Organization not found"}
 })
 def list_organization_users(org_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     org = db.query(Organization).get(org_id)
     if not org:
-        raise HTTPException(status_code=404, detail="Organisation non trouvée")
+        raise HTTPException(status_code=404, detail="Organization not found")
     if not permissions.has_permission(db, current_user, org.id, "organization:read"):
-        raise HTTPException(status_code=403, detail="Permission insuffisante")
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
 
     # Convert User objects to UserOut objects for proper serialization
     serializable_users = [UserOut.model_validate(user) for user in org.users]
-    return response.success_response(serializable_users, "Utilisateurs de l'organisation récupérés")
+    return response.success_response(serializable_users, "Organization users retrieved")
 
-@router.get("/{org_id}/elements", response_model=dict, summary="Lister les éléments d'une organisation", description="Récupère tous les éléments d'une organisation auxquels l'utilisateur a accès, avec pagination et filtrage par nom.", responses={
-    200: {"description": "Éléments de l'organisation récupérés avec succès"},
-    401: {"description": "Non authentifié"},
-    404: {"description": "Organisation non trouvée"}
+@router.get("/{org_id}/elements", response_model=BaseResponse[List[ElementOut]], summary="List organization elements", description="Retrieve all elements in an organization accessible to the user, with pagination and name filtering.", responses={
+    200: {"description": "Organization elements retrieved successfully"},
+    401: {"description": "Unauthenticated"},
+    404: {"description": "Organization not found"}
 })
 def list_organization_elements(
     org_id: int,
@@ -378,7 +375,7 @@ def list_organization_elements(
 ):
     org = db.query(Organization).get(org_id)
     if not org:
-        raise HTTPException(status_code=404, detail="Organisation non trouvée")
+        raise HTTPException(status_code=404, detail="Organization not found")
 
     # Get all elements from the organization
     all_elements = org.elements
@@ -398,4 +395,4 @@ def list_organization_elements(
 
     # Convert Element objects to ElementOut objects for proper serialization
     serializable_elements = [ElementOut.model_validate(element) for element in paginated_elements]
-    return response.success_response(serializable_elements, "Éléments de l'organisation récupérés")
+    return response.success_response(serializable_elements, "Organization elements retrieved")

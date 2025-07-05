@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from ..schema.audit_log import AuditLogOut
+from ..schema.auth import BaseResponse
 from ..models.audit_log import AuditLog
 from ..database.session import SessionLocal
 from ..api.users import get_current_user
@@ -20,13 +21,13 @@ def get_db():
 
 @router.get(
     "/",
-    response_model=dict,
-    summary="Lister les logs d'audit",
-    description="Liste les logs d'audit avec pagination et filtrage par action et user_id (accessible uniquement par superadmin).",
+    response_model=BaseResponse[List[AuditLogOut]],
+    summary="List audit logs",
+    description="Lists audit logs with pagination and filtering by action and user_id (accessible only by superadmin).",
     responses={
-        200: {"description": "Logs d'audit récupérés avec succès"},
-        401: {"description": "Non authentifié"},
-        403: {"description": "Non autorisé"}
+        200: {"description": "Audit logs retrieved successfully"},
+        401: {"description": "Not authenticated"},
+        403: {"description": "Not authorized"}
     }
 )
 def list_audit_logs(
@@ -38,11 +39,11 @@ def list_audit_logs(
     user_id: Optional[int] = None
 ):
     if not current_user.is_superadmin:
-        raise HTTPException(status_code=403, detail="Non autorisé")
+        raise HTTPException(status_code=403, detail="Not authorized")
     query = db.query(AuditLog)
     if action:
         query = query.filter(AuditLog.action.ilike(f"%{action}%"))
     if user_id:
         query = query.filter(AuditLog.user_id == user_id)
     logs = query.order_by(AuditLog.timestamp.desc()).offset(skip).limit(limit).all()
-    return response.success_response(logs, "Logs d'audit récupérés")
+    return response.success_response(logs, "Audit logs retrieved")

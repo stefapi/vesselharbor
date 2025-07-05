@@ -1,8 +1,344 @@
 // This Content is Auto Generated
 
 /**
- * Body_login_login_post
+ * ApplicationOut
+ 
+ */
 
+export interface ApplicationOut {
+  id: number
+
+  name: string
+
+  description: string | null
+
+  plugin_name: string
+
+  plugin_version: string
+
+  application_type: string
+
+  deployment_status: string
+
+  config: Record<string, unknown> | null
+
+  is_active: boolean
+
+  element_id: number
+
+  stack_id: number | null
+
+  vm_id: number | null
+
+  physical_host_id: number | null
+}
+
+/**
+ * AuditLogOut
+ 
+ */
+
+export interface AuditLogOut {
+  id: number
+
+  user_id: number | null
+
+  action: string
+
+  details: string | null
+
+  timestamp: string
+}
+
+/**
+ * BaseResponse[ElementOut]
+ 
+ */
+
+export interface BaseResponse_ElementOut_ {
+  status: string
+
+  message: string
+
+  data: ElementOut
+}
+
+/**
+ * BaseResponse[EmptyData]
+ 
+ */
+
+export interface BaseResponse_EmptyData_ {
+  status: string
+
+  message: string
+
+  data: EmptyData
+}
+
+/**
+ * BaseResponse[EnvironmentOut]
+ 
+ */
+
+export interface BaseResponse_EnvironmentOut_ {
+  status: string
+
+  message: string
+
+  data: EnvironmentOut
+}
+
+/**
+ * BaseResponse[FunctionOut]
+ 
+ */
+
+export interface BaseResponse_FunctionOut_ {
+  status: string
+
+  message: string
+
+  data: FunctionOut
+}
+
+/**
+ * BaseResponse[GroupOut]
+ 
+ */
+
+export interface BaseResponse_GroupOut_ {
+  status: string
+
+  message: string
+
+  data: GroupOut
+}
+
+/**
+ * BaseResponse[List[AuditLogOut]]
+ 
+ */
+
+export interface BaseResponse_List_AuditLogOut__ {
+  status: string
+
+  message: string
+
+  data: AuditLogOut[]
+}
+
+/**
+ * BaseResponse[List[ElementOut]]
+ 
+ */
+
+export interface BaseResponse_List_ElementOut__ {
+  status: string
+
+  message: string
+
+  data: ElementOut[]
+}
+
+/**
+ * BaseResponse[List[EnvironmentOut]]
+ 
+ */
+
+export interface BaseResponse_List_EnvironmentOut__ {
+  status: string
+
+  message: string
+
+  data: EnvironmentOut[]
+}
+
+/**
+ * BaseResponse[List[FunctionOut]]
+ 
+ */
+
+export interface BaseResponse_List_FunctionOut__ {
+  status: string
+
+  message: string
+
+  data: FunctionOut[]
+}
+
+/**
+ * BaseResponse[List[GroupOut]]
+ 
+ */
+
+export interface BaseResponse_List_GroupOut__ {
+  status: string
+
+  message: string
+
+  data: GroupOut[]
+}
+
+/**
+ * BaseResponse[List[OrganizationOut]]
+ 
+ */
+
+export interface BaseResponse_List_OrganizationOut__ {
+  status: string
+
+  message: string
+
+  data: OrganizationOut[]
+}
+
+/**
+ * BaseResponse[List[PhysicalHostOut]]
+ 
+ */
+
+export interface BaseResponse_List_PhysicalHostOut__ {
+  status: string
+
+  message: string
+
+  data: PhysicalHostOut[]
+}
+
+/**
+ * BaseResponse[List[PolicyOut]]
+ 
+ */
+
+export interface BaseResponse_List_PolicyOut__ {
+  status: string
+
+  message: string
+
+  data: PolicyOut[]
+}
+
+/**
+ * BaseResponse[List[RuleOut]]
+ 
+ */
+
+export interface BaseResponse_List_RuleOut__ {
+  status: string
+
+  message: string
+
+  data: RuleOut[]
+}
+
+/**
+ * BaseResponse[List[TagOut]]
+ 
+ */
+
+export interface BaseResponse_List_TagOut__ {
+  status: string
+
+  message: string
+
+  data: TagOut[]
+}
+
+/**
+ * BaseResponse[List[UserOut]]
+ 
+ */
+
+export interface BaseResponse_List_UserOut__ {
+  status: string
+
+  message: string
+
+  data: UserOut[]
+}
+
+/**
+ * BaseResponse[OrganizationOut]
+ 
+ */
+
+export interface BaseResponse_OrganizationOut_ {
+  status: string
+
+  message: string
+
+  data: OrganizationOut
+}
+
+/**
+ * BaseResponse[PolicyOut]
+ 
+ */
+
+export interface BaseResponse_PolicyOut_ {
+  status: string
+
+  message: string
+
+  data: PolicyOut
+}
+
+/**
+ * BaseResponse[RuleOut]
+ 
+ */
+
+export interface BaseResponse_RuleOut_ {
+  status: string
+
+  message: string
+
+  data: RuleOut
+}
+
+/**
+ * BaseResponse[TagOut]
+ 
+ */
+
+export interface BaseResponse_TagOut_ {
+  status: string
+
+  message: string
+
+  data: TagOut
+}
+
+/**
+ * BaseResponse[UserOut]
+ 
+ */
+
+export interface BaseResponse_UserOut_ {
+  status: string
+
+  message: string
+
+  data: UserOut
+}
+
+/**
+ * BaseResponse[str]
+ 
+ */
+
+export interface BaseResponse_str_ {
+  status: string
+
+  message: string
+
+  data: string
+}
+
+/**
+ * Body_login_login_post
+ 
  */
 
 export interface Body_login_login_post {
@@ -21,7 +357,7 @@ export interface Body_login_login_post {
 
 /**
  * ChangePassword
-
+ 
  */
 
 export interface ChangePassword {
@@ -34,7 +370,7 @@ export interface ChangePassword {
 
 /**
  * ChangeSuperadmin
-
+ 
  */
 
 export interface ChangeSuperadmin {
@@ -42,8 +378,86 @@ export interface ChangeSuperadmin {
 }
 
 /**
- * ElementCreate
+ * ComponentHealth
+ * Health status of a system component
+ */
 
+export interface ComponentHealth {
+  status: string
+
+  details?: string | null
+}
+
+/**
+ * ContainerClusterOut
+ 
+ */
+
+export interface ContainerClusterOut {
+  id: number
+
+  mode: string
+
+  version: string
+
+  ha_enabled: boolean
+
+  endpoint: string
+
+  stack_id: number | null
+
+  element_id: number
+}
+
+/**
+ * ContainerNodeOut
+ 
+ */
+
+export interface ContainerNodeOut {
+  id: number
+
+  cluster_id: number
+
+  vm_id: number | null
+
+  host_id: number | null
+
+  role: string
+
+  element_id: number
+}
+
+/**
+ * DomainOut
+ 
+ */
+
+export interface DomainOut {
+  id: number
+
+  element_id: number
+
+  fqdn: string
+
+  dnssec_enabled: boolean
+
+  dnssec_status: string | null
+
+  dnssec_last_signed: string | null
+
+  dnssec_key_tag: number | null
+
+  dnssec_algorithm: number | null
+
+  dnssec_digest_type: number | null
+
+  dnssec_digest: string | null
+}
+
+/**
+ * ElementCreate
+ 
  */
 
 export interface ElementCreate {
@@ -59,8 +473,53 @@ export interface ElementCreate {
 }
 
 /**
- * ElementUpdate
+ * ElementOut
+ 
+ */
 
+export interface ElementOut {
+  id: number
+
+  name: string
+
+  description: string | null
+
+  environment_id: number
+
+  environment?: EnvironmentBase | null
+
+  rules?: RuleOut[] | null
+
+  users?: UserOut[] | null
+
+  groups?: GroupOut[] | null
+
+  tags?: TagOut[] | null
+
+  environment_physical_hosts?: PhysicalHostOut[] | null
+
+  network?: NetworkOut | null
+
+  vm?: VMOut | null
+
+  storage_pool?: StoragePoolOut | null
+
+  volume?: VolumeOut | null
+
+  domain?: DomainOut | null
+
+  container_node?: ContainerNodeOut | null
+
+  container_cluster?: ContainerClusterOut | null
+
+  stack?: StackOut | null
+
+  application?: ApplicationOut | null
+}
+
+/**
+ * ElementUpdate
+ 
  */
 
 export interface ElementUpdate {
@@ -79,8 +538,23 @@ export interface ElementUpdate {
 export type EmptyData = Record<string, never>
 
 /**
- * EnvironmentCreate
+ * EnvironmentBase
+ 
+ */
 
+export interface EnvironmentBase {
+  id: number
+
+  name: string
+
+  description: string | null
+
+  organization_id: number
+}
+
+/**
+ * EnvironmentCreate
+ 
  */
 
 export interface EnvironmentCreate {
@@ -92,8 +566,50 @@ export interface EnvironmentCreate {
 }
 
 /**
- * GroupCreate
+ * EnvironmentOut
+ 
+ */
 
+export interface EnvironmentOut {
+  id: number
+
+  name: string
+
+  description: string | null
+
+  organization_id: number
+
+  organization?: OrganizationOut | null
+
+  elements?: ElementOut[]
+
+  rules?: RuleOut[]
+
+  users?: UserOut[]
+
+  groups_with_access?: GroupOut[]
+
+  tags?: TagOut[]
+
+  physical_hosts?: PhysicalHostOut[]
+}
+
+/**
+ * FunctionOut
+ 
+ */
+
+export interface FunctionOut {
+  id: number
+
+  name: string
+
+  description: string | null
+}
+
+/**
+ * GroupCreate
+ 
  */
 
 export interface GroupCreate {
@@ -105,8 +621,25 @@ export interface GroupCreate {
 }
 
 /**
- * GroupUpdate
+ * GroupOut
+ 
+ */
 
+export interface GroupOut {
+  id: number
+
+  name: string
+
+  description: string | null
+
+  tags?: TagOut[]
+
+  organization_id: number
+}
+
+/**
+ * GroupUpdate
+ 
  */
 
 export interface GroupUpdate {
@@ -117,11 +650,44 @@ export interface GroupUpdate {
 
 /**
  * HTTPValidationError
-
+ 
  */
 
 export interface HTTPValidationError {
   detail?: ValidationError[]
+}
+
+/**
+ * HealthComponents
+ * Collection of system component health statuses
+ */
+
+export interface HealthComponents {
+  database: ComponentHealth
+}
+
+/**
+ * HealthData
+ * Health check data structure
+ */
+
+export interface HealthData {
+  status: string
+
+  components: HealthComponents
+}
+
+/**
+ * HealthResponse
+ * Response schema for health check endpoint
+ */
+
+export interface HealthResponse {
+  status: string
+
+  message: string
+
+  data: HealthData
 }
 
 /**
@@ -173,8 +739,27 @@ export interface MeResponse {
 }
 
 /**
- * OrganizationCreate
+ * NetworkOut
+ 
+ */
 
+export interface NetworkOut {
+  id: number
+
+  cidr: string
+
+  vlan: number | null
+
+  type: string
+
+  environment_scoped: boolean
+
+  element_id: number
+}
+
+/**
+ * OrganizationCreate
+ 
  */
 
 export interface OrganizationCreate {
@@ -184,8 +769,29 @@ export interface OrganizationCreate {
 }
 
 /**
- * OrganizationUpdate
+ * OrganizationOut
+ 
+ */
 
+export interface OrganizationOut {
+  name: string
+
+  description?: string | null
+
+  id: number
+
+  users?: UserOut[]
+
+  environments?: EnvironmentOut[]
+
+  groups?: GroupOut[]
+
+  policies?: PolicyOut[]
+}
+
+/**
+ * OrganizationUpdate
+ 
  */
 
 export interface OrganizationUpdate {
@@ -196,7 +802,7 @@ export interface OrganizationUpdate {
 
 /**
  * PasswordReset
-
+ 
  */
 
 export interface PasswordReset {
@@ -207,7 +813,7 @@ export interface PasswordReset {
 
 /**
  * PasswordResetRequest
-
+ 
  */
 
 export interface PasswordResetRequest {
@@ -228,8 +834,33 @@ export interface PasswordResetResponse {
 }
 
 /**
- * PolicyCreate
+ * PhysicalHostOut
+ 
+ */
 
+export interface PhysicalHostOut {
+  id: number
+
+  fqdn: string
+
+  ip_mgmt: string
+
+  cpu_threads: number
+
+  ram_mb: number
+
+  hypervisor_type: HypervisorType
+
+  is_schedulable: boolean
+
+  allocation_mode: AllocationMode
+
+  dedicated_environment_id?: number | null
+}
+
+/**
+ * PolicyCreate
+ 
  */
 
 export interface PolicyCreate {
@@ -241,8 +872,29 @@ export interface PolicyCreate {
 }
 
 /**
- * PolicyUpdate
+ * PolicyOut
+ 
+ */
 
+export interface PolicyOut {
+  id: number
+
+  name: string
+
+  description: string | null
+
+  organization_id: number
+
+  tags?: TagOut[]
+
+  users?: UserOut[]
+
+  groups?: GroupOut[]
+}
+
+/**
+ * PolicyUpdate
+ 
  */
 
 export interface PolicyUpdate {
@@ -275,7 +927,7 @@ export interface RefreshTokenResponse {
 
 /**
  * RuleCreate
-
+ 
  */
 
 export interface RuleCreate {
@@ -291,8 +943,25 @@ export interface RuleCreate {
 }
 
 /**
- * RuleUpdate
+ * RuleOut
+ 
+ */
 
+export interface RuleOut {
+  id: number
+
+  function_id: number
+
+  environment_id: number | null
+
+  element_id: number | null
+
+  access_schedule: Record<string, unknown> | null
+}
+
+/**
+ * RuleUpdate
+ 
  */
 
 export interface RuleUpdate {
@@ -306,8 +975,40 @@ export interface RuleUpdate {
 }
 
 /**
- * TagCreate
+ * StackOut
+ 
+ */
 
+export interface StackOut {
+  id: number
+
+  name: string
+
+  description: string | null
+
+  element_id: number
+}
+
+/**
+ * StoragePoolOut
+ 
+ */
+
+export interface StoragePoolOut {
+  id: number
+
+  type: string
+
+  parameters: Record<string, unknown> | null
+
+  scope: string
+
+  element_id: number | null
+}
+
+/**
+ * TagCreate
+ 
  */
 
 export interface TagCreate {
@@ -318,7 +1019,7 @@ export interface TagCreate {
 
 /**
  * TagOut
-
+ 
  */
 
 export interface TagOut {
@@ -329,7 +1030,7 @@ export interface TagOut {
 
 /**
  * UserCreate
-
+ 
  */
 
 export interface UserCreate {
@@ -346,7 +1047,7 @@ export interface UserCreate {
 
 /**
  * UserOut
-
+ 
  */
 
 export interface UserOut {
@@ -367,7 +1068,7 @@ export interface UserOut {
 
 /**
  * UserUpdate
-
+ 
  */
 
 export interface UserUpdate {
@@ -381,8 +1082,33 @@ export interface UserUpdate {
 }
 
 /**
- * ValidationError
+ * VMOut
+ 
+ */
 
+export interface VMOut {
+  id: number
+
+  host_id: number
+
+  name: string
+
+  vcpu: number
+
+  ram_mb: number
+
+  disk_gb: number
+
+  os_image: string
+
+  stack_id: number | null
+
+  element_id: number
+}
+
+/**
+ * ValidationError
+ 
  */
 
 export interface ValidationError {
@@ -391,4 +1117,21 @@ export interface ValidationError {
   msg: string
 
   type: string
+}
+
+/**
+ * VolumeOut
+ 
+ */
+
+export interface VolumeOut {
+  id: number
+
+  pool_id: number
+
+  size_gb: number
+
+  mode: string
+
+  element_id: number
 }

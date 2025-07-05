@@ -34,10 +34,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from ..helper import response
 from ..database.session import SessionLocal
+from ..schema.health import HealthResponse
 
 router = APIRouter(prefix="/health", tags=["health"])
 
 def get_db():
+    """Database dependency provider"""
     db = SessionLocal()
     try:
         yield db
@@ -46,7 +48,7 @@ def get_db():
 
 @router.get(
     "/",
-    response_model=dict,
+    response_model=HealthResponse,
     summary="Health Check",
     description="Returns a 200 OK status code if the service is running. Used for Kubernetes/Docker health checks.",
     status_code=status.HTTP_200_OK,
@@ -56,6 +58,7 @@ def get_db():
     }
 )
 def health_check(db: Session = Depends(get_db)):
+    """System health verification endpoint"""
     health_status = {
         "status": "up",
         "components": {
@@ -66,9 +69,9 @@ def health_check(db: Session = Depends(get_db)):
         }
     }
 
-    # Check database connection
+    # Database connection verification
     try:
-        # Execute a simple query to check database connection
+        # Simple test query to verify database connectivity
         db.execute(text("SELECT 1"))
         health_status["components"]["database"]["status"] = "up"
     except Exception as e:

@@ -1,11 +1,16 @@
 # app/schema/organization.py
+
+from __future__ import annotations
+
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 
 from .user import UserOut
-from .environment import EnvironmentOut
 from .group import GroupOut
 from .policy import PolicyOut
+
+if TYPE_CHECKING:
+    from .environment import EnvironmentOut
 
 class OrganizationBase(BaseModel):
     name: str = Field(..., max_length=80)
@@ -20,7 +25,7 @@ class OrganizationUpdate(OrganizationBase):
 class OrganizationOut(OrganizationBase):
     id: int
     users: List[UserOut] = []
-    environments: List[EnvironmentOut] = []
+    environments: List['EnvironmentOut'] = []
     groups: List[GroupOut] = []
     policies: List[PolicyOut] = []
 

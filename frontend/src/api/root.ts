@@ -1,45 +1,45 @@
 import type * as Types from './types.ts'
 
 /**
- * Authentifie un utilisateur avec son email et mot de passe et retourne un token d'accès
+ * Authenticates a user with their email and password and returns an access token
  */
-export async function authentifierunutilisateur() {
+export async function authenticateauser() {
   return api.post('/login')
 }
 
 /**
- * Déconnecte l'utilisateur en supprimant les cookies d'authentification
+ * Logs out the user by deleting authentication cookies
  */
-export async function sedeconnecter() {
+export async function logout() {
   return api.post('/logout')
 }
 
 /**
- * Renouvelle le token d'accès à partir d'un refresh token valide
+ * Renews the access token from a valid refresh token
  */
-export async function renouvelerletoken() {
+export async function renewtoken() {
   return api.post('/refresh-token')
 }
 
 /**
- * Récupère les informations du profil de l'utilisateur actuellement connecté
+ * Retrieves the profile information of the currently connected user
  */
-export async function profilutilisateurconnecte() {
+export async function connecteduserprofile() {
   return api.get('/me')
 }
 
 /**
- * Envoie un email contenant un lien de réinitialisation de mot de passe à l'adresse email fournie
+ * Sends an email containing a password reset link to the provided email address
  * @param data Request data
  */
-export async function demanderunereinitialisationdemotdepasse(data: Types.PasswordResetRequest) {
+export async function requestpasswordreset(data: Types.PasswordResetRequest) {
   return api.post('/users/reset_password_request', data)
 }
 
 /**
- * Réinitialise le mot de passe d'un utilisateur à l'aide d'un token de réinitialisation valide
+ * Resets a user's password using a valid reset token
  * @param data Request data
  */
-export async function reinitialiserlemotdepasse(data: Types.PasswordReset) {
+export async function resetpassword(data: Types.PasswordReset) {
   return api.post('/users/reset_password', data)
 }

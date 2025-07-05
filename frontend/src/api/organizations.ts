@@ -1,106 +1,106 @@
 import type * as Types from './types.ts'
 
 /**
- * Récupère la liste des organisations auxquelles l'utilisateur a accès
+ * Retrieve list of organizations accessible to the user
  */
-export async function listerlesorganisationsorganizations() {
+export async function listorganizations() {
   return api.get('/organizations')
 }
 
 /**
- * Crée une nouvelle organisation et configure les groupes et politiques par défaut
+ * Create a new organization and configure default groups/policies
  * @param data Request data
  */
-export async function creeruneorganisation(data: Types.OrganizationCreate) {
+export async function createorganization(data: Types.OrganizationCreate) {
   return api.post('/organizations', data)
 }
 
 /**
- * Récupère les détails d'une organisation spécifique
+ * Retrieve details of a specific organization
  * @param org_id org_id parameter
  */
-export async function detailduneorganisation(org_id: number) {
+export async function organizationdetails(org_id: number) {
   return api.get(`/organizations/${org_id}`)
 }
 
 /**
- * Met à jour les informations d'une organisation existante
+ * Update information of an existing organization
  * @param org_id org_id parameter
  */
-export async function mettreajouruneorganisation(org_id: number, data: Types.OrganizationUpdate) {
+export async function updateorganization(org_id: number, data: Types.OrganizationUpdate) {
   return api.put(`/organizations/${org_id}`, data)
 }
 
 /**
- * Supprime une organisation existante et toutes ses données associées
+ * Delete an existing organization and all associated data
  * @param org_id org_id parameter
  */
-export async function supprimeruneorganisation(org_id: number) {
+export async function deleteorganization(org_id: number) {
   return api.delete(`/organizations/${org_id}`)
 }
 
 /**
- * Ajoute un utilisateur spécifié à une organisation
+ * Add specified user to an organization
  * @param org_id org_id parameter
  * @param user_id user_id parameter
  */
-export async function ajouterunutilisateurauneorganisation(org_id: number, user_id: number) {
+export async function addusertoorganization(org_id: number, user_id: number) {
   return api.post(`/organizations/${org_id}/users/${user_id}`)
 }
 
 /**
- * Retire un utilisateur spécifié d'une organisation
+ * Remove specified user from an organization
  * @param org_id org_id parameter
  * @param user_id user_id parameter
  */
-export async function retirerunutilisateurduneorganisation(org_id: number, user_id: number) {
+export async function removeuserfromorganization(org_id: number, user_id: number) {
   return api.delete(`/organizations/${org_id}/users/${user_id}`)
 }
 
 /**
- * Récupère tous les tags associés à une organisation
+ * Retrieve all tags associated with an organization
  * @param org_id org_id parameter
  */
-export async function listerlestagsduneorganisationorganizations(org_id: number) {
+export async function listorganizationtagsorganizations(org_id: number) {
   return api.get(`/organizations/${org_id}/tags`)
 }
 
 /**
- * Récupère toutes les politiques associées à une organisation
+ * Retrieve all policies associated with an organization
  * @param org_id org_id parameter
  */
-export async function listerlespolitiquesduneorganisationorganizations(org_id: number) {
+export async function listorganizationpoliciesorganizations(org_id: number) {
   return api.get(`/organizations/${org_id}/policies`)
 }
 
 /**
- * Récupère tous les groupes associés à une organisation
+ * Retrieve all groups associated with an organization
  * @param org_id org_id parameter
  */
-export async function listerlesgroupesduneorganisationorganizations(org_id: number) {
+export async function listorganizationgroupsorganizations(org_id: number) {
   return api.get(`/organizations/${org_id}/groups`)
 }
 
 /**
- * Récupère tous les environnements associés à une organisation
+ * Retrieve all environments associated with an organization
  * @param org_id org_id parameter
  */
-export async function listerlesenvironnementsduneorganisationorganizations(org_id: number) {
+export async function listorganizationenvironmentsorganizations(org_id: number) {
   return api.get(`/organizations/${org_id}/environments`)
 }
 
 /**
- * Récupère tous les utilisateurs ayant accès à une organisation spécifique.
+ * Retrieve all users with access to a specific organization.
  * @param org_id org_id parameter
  */
-export async function listerlesutilisateursduneorganisationorganizations(org_id: number) {
+export async function listorganizationusersorganizations(org_id: number) {
   return api.get(`/organizations/${org_id}/users`)
 }
 
 /**
- * Récupère tous les éléments d'une organisation auxquels l'utilisateur a accès, avec pagination et filtrage par nom.
+ * Retrieve all elements in an organization accessible to the user, with pagination and name filtering.
  * @param org_id org_id parameter
  */
-export async function listerleselementsduneorganisationorganizations(org_id: number) {
+export async function listorganizationelementsorganizations(org_id: number) {
   return api.get(`/organizations/${org_id}/elements`)
 }

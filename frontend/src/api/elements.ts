@@ -1,59 +1,59 @@
 import type * as Types from './types.ts'
 
 /**
- * Crée un élément dans un environnement donné.
+ * Creates an element in a given environment.
  * @param environment_id environment_id parameter
  */
-export async function creerunelement(environment_id: number, data: Types.ElementCreate) {
+export async function createanelement(environment_id: number, data: Types.ElementCreate) {
   return api.post(`/elements/${environment_id}`, data)
 }
 
 /**
- * Renvoie les informations d'un élément spécifique.
+ * Returns information about a specific element.
  * @param element_id element_id parameter
  */
-export async function recupererunelement(element_id: number) {
+export async function getanelementelements(element_id: number) {
   return api.get(`/elements/${element_id}`)
 }
 
 /**
- * Modifie les informations d'un élément.
+ * Modifies the information of an element.
  * @param element_id element_id parameter
  */
-export async function mettreajourunelement(element_id: number, data: Types.ElementUpdate) {
+export async function updateanelement(element_id: number, data: Types.ElementUpdate) {
   return api.put(`/elements/${element_id}`, data)
 }
 
 /**
- * Supprime un élément donné.
+ * Deletes a given element.
  * @param element_id element_id parameter
  */
-export async function supprimerunelement(element_id: number) {
+export async function deleteanelement(element_id: number) {
   return api.delete(`/elements/${element_id}`)
 }
 
 /**
- * Récupère tous les tags associés à un élément.
+ * Retrieves all tags associated with an element.
  * @param element_id element_id parameter
  */
-export async function listerlestagsdunelementelements(element_id: number) {
+export async function listelementtagselements(element_id: number) {
   return api.get(`/elements/${element_id}/tags`)
 }
 
 /**
- * Associe un tag existant à un élément.
+ * Associates an existing tag with an element.
  * @param element_id element_id parameter
  * @param tag_id tag_id parameter
  */
-export async function ajouteruntagaunelement(element_id: number, tag_id: number) {
+export async function addatagtoanelement(element_id: number, tag_id: number) {
   return api.post(`/elements/${element_id}/tags/${tag_id}`)
 }
 
 /**
- * Retire l'association entre un tag et un élément.
+ * Removes the association between a tag and an element.
  * @param element_id element_id parameter
  * @param tag_id tag_id parameter
  */
-export async function retireruntagdunelement(element_id: number, tag_id: number) {
+export async function removeatagfromanelement(element_id: number, tag_id: number) {
   return api.delete(`/elements/${element_id}/tags/${tag_id}`)
 }

@@ -1,33 +1,33 @@
 import type * as Types from './types.ts'
 
 /**
- * Crée une nouvelle règle associée à une politique
+ * Creates a new rule associated with a policy
  * @param data Request data
  */
-export async function creeruneregle(data: Types.RuleCreate) {
+export async function createarule(data: Types.RuleCreate) {
   return api.post('/rules', data)
 }
 
 /**
- * Récupère les détails d'une règle spécifique
+ * Retrieves details of a specific rule
  * @param rule_id rule_id parameter
  */
-export async function detailduneregle(rule_id: number) {
+export async function ruledetails(rule_id: number) {
   return api.get(`/rules/${rule_id}`)
 }
 
 /**
- * Met à jour une règle existante
+ * Updates an existing rule
  * @param rule_id rule_id parameter
  */
-export async function mettreajouruneregle(rule_id: number, data: Types.RuleUpdate) {
+export async function updatearule(rule_id: number, data: Types.RuleUpdate) {
   return api.put(`/rules/${rule_id}`, data)
 }
 
 /**
- * Supprime une règle existante
+ * Deletes an existing rule
  * @param rule_id rule_id parameter
  */
-export async function supprimeruneregle(rule_id: number) {
+export async function deletearule(rule_id: number) {
   return api.delete(`/rules/${rule_id}`)
 }

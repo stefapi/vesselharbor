@@ -29,21 +29,24 @@
 #  SOFTWARE.
 #
 
-from fastapi import APIRouter, status
-from ..helper import response
-from ..schema.auth import BaseResponse, EmptyData
+from pydantic import BaseModel
+from typing import Optional
+from .auth import BaseResponse
 
-router = APIRouter(prefix="/coffee", tags=["coffee"])
+class ComponentHealth(BaseModel):
+    """Health status of a system component"""
+    status: str
+    details: Optional[str] = None
 
-@router.get(
-    "/",
-    response_model=BaseResponse[EmptyData],
-    summary="I'm a teapot",
-    description="Returns a 418 I'm a teapot status code, as per RFC 2324.",
-    status_code=status.HTTP_418_IM_A_TEAPOT,
-    responses={
-        418: {"description": "I'm a teapot"}
-    }
-)
-def im_a_teapot():
-    return response.success_response(None, "I'm a teapot")
+class HealthComponents(BaseModel):
+    """Collection of system component health statuses"""
+    database: ComponentHealth
+
+class HealthData(BaseModel):
+    """Health check data structure"""
+    status: str
+    components: HealthComponents
+
+class HealthResponse(BaseResponse[HealthData]):
+    """Response schema for health check endpoint"""
+    pass

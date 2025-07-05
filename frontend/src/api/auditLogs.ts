@@ -1,8 +1,8 @@
 import type * as Types from './types.ts'
 
 /**
- * Liste les logs d'audit avec pagination et filtrage par action et user_id (accessible uniquement par superadmin).
+ * Lists audit logs with pagination and filtering by action and user_id (accessible only by superadmin).
  */
-export async function listerleslogsdauditauditLogs() {
+export async function listauditlogsauditLogs() {
   return api.get('/audit-logs/')
 }

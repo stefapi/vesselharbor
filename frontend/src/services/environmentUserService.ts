@@ -1,5 +1,6 @@
+import type { EnvironmentUserListParams } from '@/types/api.ts'
+
 import api from '@/services/api.ts'
-import type { EnvironmentUserListParams } from '@/types/api'
 
 /**
  * Récupère la liste des utilisateurs associés à un environnement donné.

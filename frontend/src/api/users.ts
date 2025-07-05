@@ -1,114 +1,114 @@
 import type * as Types from './types.ts'
 
 /**
- * Crée un nouvel utilisateur en mode libre dans le système. Le premier utilisateur créé devient automatiquement superadmin.
+ * Creates a new user in free mode in the system. The first user created automatically becomes superadmin.
  * @param data Request data
  */
-export async function creerunutilisateurenmodelibre(data: Types.UserCreate) {
+export async function createauserinfreemode(data: Types.UserCreate) {
   return api.post('/users', data)
 }
 
 /**
- * Récupère la liste des utilisateurs avec pagination et filtrage optionnel par email.
+ * Retrieves the list of users with pagination and optional filtering by email.
  */
-export async function listerlesutilisateursusers() {
+export async function listusers() {
   return api.get('/users')
 }
 
 /**
- * Crée un nouvel utilisateur dans le système. Il est rattaché à une Organization
+ * Creates a new user in the system. It is attached to an Organization
  * @param organization_id organization_id parameter
  */
-export async function creerunutilisateur(organization_id: number, data: Types.UserCreate) {
+export async function createauser(organization_id: number, data: Types.UserCreate) {
   return api.post(`/users/${organization_id}`, data)
 }
 
 /**
- * Récupère les informations détaillées d'un utilisateur spécifique par son ID.
+ * Retrieves detailed information of a specific user by their ID.
  * @param user_id user_id parameter
  */
-export async function obtenirunutilisateur(user_id: number) {
+export async function getauserusers(user_id: number) {
   return api.get(`/users/${user_id}`)
 }
 
 /**
- * Modifie les informations personnelles d'un utilisateur existant (nom, prénom, email, username).
+ * Modifies the personal information of an existing user (last name, first name, email, username).
  * @param user_id user_id parameter
  */
-export async function mettreajourlesinformationsdunutilisateur(user_id: number, data: Types.UserUpdate) {
+export async function updateuserinformation(user_id: number, data: Types.UserUpdate) {
   return api.put(`/users/${user_id}`, data)
 }
 
 /**
- * Supprime définitivement un utilisateur du système. Un utilisateur ne peut pas se supprimer lui-même, et le dernier superadmin ne peut pas être supprimé.
+ * Permanently deletes a user from the system. A user cannot delete themselves, and the last superadmin cannot be deleted.
  * @param user_id user_id parameter
  */
-export async function supprimerunutilisateur(user_id: number) {
+export async function deleteauser(user_id: number) {
   return api.delete(`/users/${user_id}`)
 }
 
 /**
- * Permet à un utilisateur de changer son propre mot de passe ou à un administrateur de réinitialiser le mot de passe d'un autre utilisateur.
+ * Allows a user to change their own password or an administrator to reset another user's password.
  * @param user_id user_id parameter
  */
-export async function changerlemotdepasse(user_id: number, data: Types.ChangePassword) {
+export async function changepassword(user_id: number, data: Types.ChangePassword) {
   return api.put(`/users/${user_id}/password`, data)
 }
 
 /**
- * Permet à un superadmin de modifier le statut superadmin d'un autre utilisateur. Un superadmin ne peut pas modifier son propre statut, et le dernier superadmin ne peut pas être déclassé.
+ * Allows a superadmin to modify another user's superadmin status. A superadmin cannot modify their own status, and the last superadmin cannot be demoted.
  * @param user_id user_id parameter
  */
-export async function modifierstatutsuperadmin(user_id: number, data: Types.ChangeSuperadmin) {
+export async function modifysuperadminstatus(user_id: number, data: Types.ChangeSuperadmin) {
   return api.put(`/users/${user_id}/superadmin`, data)
 }
 
 /**
- * Récupère la liste des groupes auxquels l'utilisateur appartient.
+ * Retrieves the list of groups the user belongs to.
  * @param user_id user_id parameter
  */
-export async function groupesduuser(user_id: number) {
+export async function usergroups(user_id: number) {
   return api.get(`/users/${user_id}/groups`)
 }
 
 /**
- * Récupère la liste des policies directement associées à l'utilisateur.
+ * Retrieves the list of policies directly associated with the user.
  * @param user_id user_id parameter
  */
-export async function policiesduuser(user_id: number) {
+export async function userpolicies(user_id: number) {
   return api.get(`/users/${user_id}/policies`)
 }
 
 /**
- * Récupère la liste des organisations auxquelles l'utilisateur est associé.
+ * Retrieves the list of organizations the user is associated with.
  * @param user_id user_id parameter
  */
-export async function organisationsduuser(user_id: number) {
+export async function userorganizations(user_id: number) {
   return api.get(`/users/${user_id}/organizations`)
 }
 
 /**
- * Récupère la liste des tags associés à un utilisateur spécifique.
+ * Retrieves the list of tags associated with a specific user.
  * @param user_id user_id parameter
  */
-export async function listerlestagsdunutilisateurusers(user_id: number) {
+export async function listusertagsusers(user_id: number) {
   return api.get(`/users/${user_id}/tags`)
 }
 
 /**
- * Ajoute un tag spécifique à un utilisateur pour le catégoriser ou lui attribuer des caractéristiques particulières.
+ * Adds a specific tag to a user for categorization or special attributes.
  * @param user_id user_id parameter
  * @param tag_id tag_id parameter
  */
-export async function associeruntagaunutilisateur(user_id: number, tag_id: number) {
+export async function associatetagwithuser(user_id: number, tag_id: number) {
   return api.post(`/users/${user_id}/tags/${tag_id}`)
 }
 
 /**
- * Retire un tag spécifique d'un utilisateur, supprimant ainsi la catégorisation ou les caractéristiques associées.
+ * Removes a specific tag from a user, deleting the associated categorization or attributes.
  * @param user_id user_id parameter
  * @param tag_id tag_id parameter
  */
-export async function dissocieruntagdunutilisateur(user_id: number, tag_id: number) {
+export async function removetagfromuser(user_id: number, tag_id: number) {
   return api.delete(`/users/${user_id}/tags/${tag_id}`)
 }
