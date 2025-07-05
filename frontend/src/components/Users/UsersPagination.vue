@@ -1,13 +1,6 @@
 <!-- src/components/Users/UsersPagination.vue -->
 <template>
-  <el-pagination
-    :total="totalNum"
-    :page-size="perPageNum"
-    :current-page="currentPageNum"
-    layout="prev, pager, next"
-    @update:current-page="emit('page-change', $event)"
-    class="u-my-4 u-flex u-justify-center"
-  >
+  <el-pagination :total="totalNum" :page-size="perPageNum" :current-page="currentPageNum" layout="prev, pager, next" @update:current-page="emit('page-change', $event)" class="u-my-4 u-flex u-justify-center">
     <template #prev>
       <i-mdi-chevron-left class="u-text-lg" />
     </template>

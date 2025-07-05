@@ -1,5 +1,5 @@
 <template>
-  <el-container class=" u-bg-white dark:u-bg-gray-900 u-flex u-flex-col">
+  <el-container class="u-bg-white dark:u-bg-gray-900 u-flex u-flex-col">
     <!-- NAVBAR -->
     <el-header v-if="isAuthenticated" class="u-bg-primary u-text-white u-h-16 u-px-4 u-flex u-items-center u-justify-between">
       <div class="u-flex u-items-center">

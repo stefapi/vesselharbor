@@ -1,10 +1,10 @@
 // src/store/entities.ts
-import { defineStore } from 'pinia';
-import api from '@/services/api.ts';
+import { defineStore } from 'pinia'
+import api from '@/services/api.ts'
 
 interface Environment {
-  id: number;
-  name: string;
+  id: number
+  name: string
   // Autres propriétés de l'environnement si nécessaire
 }
 
@@ -25,15 +25,14 @@ export const useEnvironmentsStore = defineStore('environments', {
           skip: (this.currentPage - 1) * this.perPage,
           limit: this.perPage,
           name: this.filters.name,
-        };
-        const response = await api.get('/environments', { params });
+        }
+        const response = await api.get('/environments', { params })
         // Adaptez la structure en fonction du retour de votre API
-        this.environments = response.data.data;
-        this.total = response.data.total;
+        this.environments = response.data.data
+        this.total = response.data.total
       } catch (error) {
-        throw error;
+        throw error
       }
     },
   },
-});
-
+})

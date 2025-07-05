@@ -1,24 +1,13 @@
 <!-- src/views/Users/EnvironmentUsersView.vue -->
 <template>
   <div class="u-p-6">
-    <h1 class="u-text-2xl u-font-bold u-mb-4">
-      Utilisateurs de l'Environnement {{ environmentId }}
-    </h1>
+    <h1 class="u-text-2xl u-font-bold u-mb-4">Utilisateurs de l'Environnement {{ environmentId }}</h1>
 
     <div class="u-mb-4">
-      <input
-        v-model="filterEmail"
-        type="text"
-        placeholder="Rechercher par email"
-        class="u-px-3 u-py-2 u-border u-border-gray-300 u-rounded u-w-64"
-        @input="applyFilter"
-      />
+      <input v-model="filterEmail" type="text" placeholder="Rechercher par email" class="u-px-3 u-py-2 u-border u-border-gray-300 u-rounded u-w-64" @input="applyFilter" />
     </div>
 
-    <button
-      class="u-px-4 u-py-2 u-bg-blue-500 u-text-white u-rounded u-hover:bg-blue-600 u-mb-4"
-      @click="toggleForm"
-    >
+    <button class="u-px-4 u-py-2 u-bg-blue-500 u-text-white u-rounded u-hover:bg-blue-600 u-mb-4" @click="toggleForm">
       {{ showForm ? 'Annuler' : 'Créer un utilisateur' }}
     </button>
 
@@ -43,24 +32,9 @@
             {{ user.is_superadmin ? 'Oui' : 'Non' }}
           </td>
           <td class="u-border u-border-gray-300 u-px-2 u-py-2">
-            <button
-              class="u-px-2 u-py-1 u-bg-yellow-500 u-text-white u-rounded u-text-sm u-mr-2 u-hover:bg-yellow-600"
-              @click="editUser(user)"
-            >
-              Modifier
-            </button>
-            <button
-              class="u-px-2 u-py-1 u-bg-red-500 u-text-white u-rounded u-text-sm u-mr-2 u-hover:bg-red-600"
-              @click="deleteUser(user.id)"
-            >
-              Supprimer
-            </button>
-            <button
-              class="u-px-2 u-py-1 u-bg-green-500 u-text-white u-rounded u-text-sm u-hover:bg-green-600"
-              @click="manageGroups(user)"
-            >
-              Gérer Groupes
-            </button>
+            <button class="u-px-2 u-py-1 u-bg-yellow-500 u-text-white u-rounded u-text-sm u-mr-2 u-hover:bg-yellow-600" @click="editUser(user)">Modifier</button>
+            <button class="u-px-2 u-py-1 u-bg-red-500 u-text-white u-rounded u-text-sm u-mr-2 u-hover:bg-red-600" @click="deleteUser(user.id)">Supprimer</button>
+            <button class="u-px-2 u-py-1 u-bg-green-500 u-text-white u-rounded u-text-sm u-hover:bg-green-600" @click="manageGroups(user)">Gérer Groupes</button>
           </td>
         </tr>
       </tbody>
@@ -68,19 +42,11 @@
 
     <div class="u-mt-4 u-flex u-items-center u-gap-4">
       <p>Total : {{ usersStore.total }}</p>
-      <button
-        :disabled="usersStore.currentPage === 1"
-        class="u-px-3 u-py-1 u-bg-gray-500 u-text-white u-rounded u-disabled:opacity-50 u-disabled:cursor-not-allowed u-hover:bg-gray-600"
-        @click="prevPage"
-      >
+      <button :disabled="usersStore.currentPage === 1" class="u-px-3 u-py-1 u-bg-gray-500 u-text-white u-rounded u-disabled:opacity-50 u-disabled:cursor-not-allowed u-hover:bg-gray-600" @click="prevPage">
         Précédent
       </button>
       <span class="u-font-medium">Page {{ usersStore.currentPage }}</span>
-      <button
-        :disabled="usersStore.users.length < usersStore.perPage"
-        class="u-px-3 u-py-1 u-bg-gray-500 u-text-white u-rounded u-disabled:opacity-50 u-disabled:cursor-not-allowed u-hover:bg-gray-600"
-        @click="nextPage"
-      >
+      <button :disabled="usersStore.users.length < usersStore.perPage" class="u-px-3 u-py-1 u-bg-gray-500 u-text-white u-rounded u-disabled:opacity-50 u-disabled:cursor-not-allowed u-hover:bg-gray-600" @click="nextPage">
         Suivant
       </button>
     </div>
@@ -88,33 +54,15 @@
     <div v-if="editingUser" class="u-mt-6 u-p-4 u-border u-border-gray-300 u-rounded">
       <h2 class="u-text-xl u-font-bold u-mb-4">Modifier l'utilisateur</h2>
       <UserForm mode="edit" :initialData="editingUser" @success="onFormSuccess" />
-      <button
-        class="u-px-4 u-py-2 u-bg-gray-500 u-text-white u-rounded u-mt-4 u-hover:bg-gray-600"
-        @click="cancelEdit"
-      >
-        Annuler
-      </button>
+      <button class="u-px-4 u-py-2 u-bg-gray-500 u-text-white u-rounded u-mt-4 u-hover:bg-gray-600" @click="cancelEdit">Annuler</button>
     </div>
 
     <!-- Modal pour la gestion des groupes -->
-    <div
-      v-if="showGroupManager"
-      class="u-fixed u-top-0 u-left-0 u-right-0 u-bottom-0 u-bg-black u-bg-opacity-50 u-flex u-justify-center u-items-center"
-    >
+    <div v-if="showGroupManager" class="u-fixed u-top-0 u-left-0 u-right-0 u-bottom-0 u-bg-black u-bg-opacity-50 u-flex u-justify-center u-items-center">
       <div class="u-bg-white u-p-4 u-rounded-lg u-w-4/5 u-max-w-2xl">
-        <h2 class="u-text-xl u-font-bold u-mb-4">
-          Gestion des Groupes pour {{ managingUser?.email }}
-        </h2>
-        <UserGroupsManager
-          :userId="managingUser?.id"
-          :environmentId="environmentId"
-        />
-        <button
-          class="u-px-4 u-py-2 u-bg-gray-500 u-text-white u-rounded u-mt-4 u-hover:bg-gray-600"
-          @click="closeGroupManager"
-        >
-          Fermer
-        </button>
+        <h2 class="u-text-xl u-font-bold u-mb-4">Gestion des Groupes pour {{ managingUser?.email }}</h2>
+        <UserGroupsManager v-if="managingUser?.id" :userId="managingUser.id" :environmentId="environmentId" />
+        <button class="u-px-4 u-py-2 u-bg-gray-500 u-text-white u-rounded u-mt-4 u-hover:bg-gray-600" @click="closeGroupManager">Fermer</button>
       </div>
     </div>
   </div>
@@ -170,13 +118,13 @@ const deleteUser = async (userId: number) => {
     await deleteUserService(userId)
     notificationStore.addNotification({
       type: 'success',
-      message: 'Utilisateur supprimé avec succès'
+      message: 'Utilisateur supprimé avec succès',
     })
     fetchUsers()
   } catch (error) {
     notificationStore.addNotification({
       type: 'error',
-      message: 'Erreur lors de la suppression de l\'utilisateur'
+      message: "Erreur lors de la suppression de l'utilisateur",
     })
   }
 }

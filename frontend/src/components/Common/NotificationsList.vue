@@ -1,14 +1,6 @@
 <template>
   <div class="u-fixed u-top-4 u-right-4 u-z-50 u-space-y-2 u-max-w-sm">
-    <el-alert
-      v-for="notification in notifications"
-      :key="notification.id"
-      :title="notification.message"
-      :type="notification.type"
-      :closable="true"
-      @close="removeNotification(notification.id)"
-      show-icon
-    />
+    <el-alert v-for="notification in notifications" :key="notification.id" :title="notification.message" :type="notification.type" :closable="true" @close="removeNotification(notification.id)" show-icon />
   </div>
 </template>
 

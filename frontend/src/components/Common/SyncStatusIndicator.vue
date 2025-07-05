@@ -4,10 +4,7 @@
     <el-tooltip :content="tooltipText" placement="bottom">
       <el-button link @click="syncStore.syncNow" :loading="false" class="u-relative">
         <!-- 🔁 En cours -->
-        <i-material-symbols-autorenew
-          v-if="syncStore.isSyncing"
-          class="u-text-blue-500 u-text-xl u-animate-spin"
-        />
+        <i-material-symbols-autorenew v-if="syncStore.isSyncing" class="u-text-blue-500 u-text-xl u-animate-spin" />
 
         <!-- 🟡 En attente -->
         <template v-else-if="syncStore.pendingCount > 0">
@@ -16,10 +13,7 @@
         </template>
 
         <!-- ✅ OK -->
-        <i-material-symbols-check-circle
-          v-else
-          class="u-text-green-500 u-text-xl"
-        />
+        <i-material-symbols-check-circle v-else class="u-text-green-500 u-text-xl" />
       </el-button>
     </el-tooltip>
   </div>
@@ -33,8 +27,7 @@ const syncStore = useOfflineSyncStore()
 
 const tooltipText = computed(() => {
   if (syncStore.isSyncing) return 'Synchronisation en cours...'
-  if (syncStore.pendingCount > 0)
-    return `${syncStore.pendingCount} action${syncStore.pendingCount > 1 ? 's' : ''} en attente`
+  if (syncStore.pendingCount > 0) return `${syncStore.pendingCount} action${syncStore.pendingCount > 1 ? 's' : ''} en attente`
   return 'Tout est synchronisé'
 })
 </script>

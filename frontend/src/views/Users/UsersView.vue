@@ -8,43 +8,19 @@
     <!-- Contenu principal -->
     <el-main class="u-p-4 u-bg-gray-50 dark:u-bg-gray-900">
       <!-- Barre de recherche + bouton de création -->
-      <user-filters
-        :filter-email="filterEmail"
-        :is-form-open="showForm || editingUser"
-        @filter="onFilterChange"
-        @toggle-form="toggleForm"
-      />
+      <user-filters :filter-email="filterEmail" :is-form-open="showForm || editingUser" @filter="onFilterChange" @toggle-form="toggleForm" />
 
       <!-- Tableau -->
-      <users-table
-        :users="usersStore.users"
-        @edit="editUser"
-        @delete="confirmDelete"
-        @manage-groups="manageGroups"
-      />
+      <users-table :users="usersStore.users" @edit="editUser" @delete="confirmDelete" @manage-groups="manageGroups" />
 
       <!-- Pagination custom -->
-      <users-pagination
-        :total="usersStore.total"
-        :per-page="usersStore.perPage"
-        :current-page="usersStore.currentPage"
-        @page-change="handlePageChange"
-      />
+      <users-pagination :total="usersStore.total" :per-page="usersStore.perPage" :current-page="usersStore.currentPage" @page-change="handlePageChange" />
 
       <!-- Drawer création / édition -->
-      <user-form-drawer
-        :visible="showForm || !!editingUser"
-        :editing-user="editingUser"
-        @close="closeDrawer"
-        @success="onFormSuccess"
-      />
+      <user-form-drawer :visible="showForm || !!editingUser" :editing-user="editingUser" @close="closeDrawer" @success="onFormSuccess" />
 
       <!-- Dialog groupes -->
-      <UserGroupsDialog
-        :visible="showGroupManager"
-        :user="managingUser"
-        @close="closeGroupManager"
-      />
+      <UserGroupsDialog :visible="showGroupManager" :user="managingUser" @close="closeGroupManager" />
     </el-main>
   </el-container>
 </template>
@@ -127,18 +103,18 @@ const confirmDelete = async (userId: number) => {
   if (authStore.user && authStore.user.id === userId) {
     notificationStore.addNotification({
       type: 'warning',
-      message: "Vous ne pouvez pas supprimer votre propre compte"
+      message: 'Vous ne pouvez pas supprimer votre propre compte',
     })
     return
   }
 
   // Trouver l'utilisateur à supprimer
-  const userToDelete = usersStore.users.find(u => u.id === userId)
+  const userToDelete = usersStore.users.find((u) => u.id === userId)
 
   if (!userToDelete) {
     notificationStore.addNotification({
       type: 'error',
-      message: "Utilisateur introuvable"
+      message: 'Utilisateur introuvable',
     })
     return
   }
@@ -148,34 +124,30 @@ const confirmDelete = async (userId: number) => {
     if (userToDelete.is_superadmin) {
       await ElMessageBox.confirm(
         'Attention ! Vous êtes sur le point de supprimer un utilisateur avec des droits Superadmin. ' +
-        'Cette action est irréversible et peut avoir des conséquences importantes sur la sécurité du système. ' +
-        'Êtes-vous absolument sûr de vouloir continuer ?',
+          'Cette action est irréversible et peut avoir des conséquences importantes sur la sécurité du système. ' +
+          'Êtes-vous absolument sûr de vouloir continuer ?',
         'Confirmation - Suppression Superadmin',
         {
           confirmButtonText: 'Supprimer définitivement',
           cancelButtonText: 'Annuler',
-          type: 'danger' as const,
-          distinguishCancelAndClose: true
+          type: 'error',
+          distinguishCancelAndClose: true,
         }
       )
     } else {
       // Message standard pour les utilisateurs normaux
-      await ElMessageBox.confirm(
-        'Êtes-vous sûr de vouloir supprimer cet utilisateur ?',
-        'Confirmation',
-        {
-          confirmButtonText: 'Supprimer',
-          cancelButtonText: 'Annuler',
-          type: 'warning' as const
-        }
-      )
+      await ElMessageBox.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?', 'Confirmation', {
+        confirmButtonText: 'Supprimer',
+        cancelButtonText: 'Annuler',
+        type: 'warning' as const,
+      })
     }
 
     // Procéder à la suppression
     await deleteUserService(userId)
     notificationStore.addNotification({
       type: 'success',
-      message: 'Utilisateur supprimé avec succès'
+      message: 'Utilisateur supprimé avec succès',
     })
     fetchUsers()
   } catch (error) {
@@ -183,7 +155,7 @@ const confirmDelete = async (userId: number) => {
     if (error !== 'cancel' && error !== 'close') {
       notificationStore.addNotification({
         type: 'error',
-        message: "Erreur lors de la suppression de l'utilisateur"
+        message: "Erreur lors de la suppression de l'utilisateur",
       })
     }
   }

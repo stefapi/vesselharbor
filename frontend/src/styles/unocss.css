@@ -1,7 +1,7 @@
 @unocss;
 
 .shiki {
-  border: 2px  solid darkgray;
+  border: 2px solid darkgray;
   background: #f5f5f5;
   @apply shiki-block !important;
 }

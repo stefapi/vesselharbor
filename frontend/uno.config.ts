@@ -1,5 +1,6 @@
 import { defineConfig, presetUno, presetTypography, presetWebFonts, presetIcons, presetWind } from 'unocss'
 import { presetAttributify, transformerDirectives, transformerVariantGroup } from 'unocss'
+import { presetElementPlus } from 'unocss-preset-element-plus'
 
 export default defineConfig({
   content: {
@@ -8,6 +9,7 @@ export default defineConfig({
     },
   },
   presets: [
+    presetElementPlus(), // ✅ Element Plus preset - doit être en premier pour la priorité CSS
     presetUno({
       prefix: 'u-', // ✅ Ton préfixe personnalisé
     }),

@@ -1,5 +1,5 @@
-import api from '@/services/api.ts';
-import type { EnvironmentUserListParams } from '@/types/api';
+import api from '@/services/api.ts'
+import type { EnvironmentUserListParams } from '@/types/api'
 
 /**
  * Récupère la liste des utilisateurs associés à un environnement donné.
@@ -8,7 +8,7 @@ import type { EnvironmentUserListParams } from '@/types/api';
  * @param params Paramètres optionnels pour filtrer ou paginer la liste.
  */
 export async function listEnvironmentUsers(environmentId: number, params: EnvironmentUserListParams = {}) {
-  return api.get(`/environment/${environmentId}/users`, { params });
+  return api.get(`/environment/${environmentId}/users`, { params })
 }
 
 /**
@@ -19,5 +19,5 @@ export async function listEnvironmentUsers(environmentId: number, params: Enviro
  * @param rights Un objet contenant les nouvelles affectations/droits à appliquer.
  */
 export async function updateUserEnvironmentRights(environmentId: number, userId: number, rights: { role?: string; permissions?: string[] }) {
-  return api.put(`/environment/${environmentId}/users/${userId}`, rights);
+  return api.put(`/environment/${environmentId}/users/${userId}`, rights)
 }

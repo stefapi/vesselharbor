@@ -1,31 +1,32 @@
-import { defineConfig, PluginOption } from 'vite'
+import path from 'node:path'
+
 import vue from '@vitejs/plugin-vue'
-import UnoCSS from 'unocss/vite'
-import { presetUno, presetAttributify, presetIcons, presetWind, transformerDirectives, transformerVariantGroup } from 'unocss'
-import Inspect from 'vite-plugin-inspect'
-import VueDevTools from 'vite-plugin-vue-devtools'
-import Components from 'unplugin-vue-components/vite'
-import AutoImport from 'unplugin-auto-import/vite'
-import Inspector from 'unplugin-vue-inspector/vite'
-import dts from 'vite-plugin-dts'
-import mkcert from 'vite-plugin-mkcert'
-import compression from 'vite-plugin-compression'
-import { VitePWA } from 'vite-plugin-pwa'
-import VueRouter from 'unplugin-vue-router/vite'
-import VueMacros from 'unplugin-vue-macros/vite'
-import Icons from 'unplugin-icons/vite'
-import IconsResolver from 'unplugin-icons/resolver'
-import Markdown from 'unplugin-vue-markdown/vite'
+import vueJsx from '@vitejs/plugin-vue-jsx'
+// @ts-expect-error - No type definitions available for markdown-it-link-attributes
 import LinkAttributes from 'markdown-it-link-attributes'
 import Shiki from 'markdown-it-shiki'
-import vueJsx from '@vitejs/plugin-vue-jsx'
-import webfontDownload from 'vite-plugin-webfont-dl'
-import { FileSystemIconLoader } from 'unplugin-icons/loaders'
-import { VueRouterAutoImports } from 'unplugin-vue-router'
 import { visualizer } from 'rollup-plugin-visualizer'
-import path from 'node:path'
+import UnoCSS from 'unocss/vite'
+import AutoImport from 'unplugin-auto-import/vite'
 import ElementPlus from 'unplugin-element-plus/vite'
+import { FileSystemIconLoader } from 'unplugin-icons/loaders'
+import IconsResolver from 'unplugin-icons/resolver'
+import Icons from 'unplugin-icons/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import Components from 'unplugin-vue-components/vite'
+import { default as Inspector } from 'unplugin-vue-inspector/vite'
+import VueMacros from 'unplugin-vue-macros/vite'
+import Markdown from 'unplugin-vue-markdown/vite'
+import { VueRouterAutoImports } from 'unplugin-vue-router'
+import VueRouter from 'unplugin-vue-router/vite'
+import { defineConfig } from 'vite'
+import compression from 'vite-plugin-compression'
+import dts from 'vite-plugin-dts'
+import Inspect from 'vite-plugin-inspect'
+import mkcert from 'vite-plugin-mkcert'
+import { VitePWA } from 'vite-plugin-pwa'
+import VueDevTools from 'vite-plugin-vue-devtools'
+import webfontDownload from 'vite-plugin-webfont-dl'
 
 export default defineConfig({
   plugins: [
@@ -44,20 +45,22 @@ export default defineConfig({
       routesFolder: 'src/pages',
       extensions: ['.vue', '.md'],
       dts: 'src/types/typed-router.d.ts',
-      routeBlockLang: 'yaml', // ou json, selon ta préférence
+      routeBlockLang: 'yaml', // or json, depending on your preference
     }),
     ElementPlus({
-      useSource: true, // Active les styles SCSS personnalisables
+      useSource: true, // Enable customizable SCSS styles
     }),
-    // 🧪 Outils d’inspection des plugins Vite
+    // 🧪 Vite plugin inspection tools
     Inspect({
       build: true,
       outputDir: '.vite-inspect',
     }),
 
+    // @ts-expect-error - Plugin callable issue
     Inspector({
       launchEditor: 'pycharm',
     }),
+    // @ts-expect-error - Plugin callable issue
     mkcert(),
 
     // https://github.com/antfu/vite-plugin-pwa
@@ -69,10 +72,14 @@ export default defineConfig({
         globPatterns: ['manifest.webmanifest', '**/*.{js,css,html,ico,png,svg,webp,woff,woff2,ttf}'],
       },
       manifest: {
-        name: 'appName',
-        short_name: 'appShort',
-        description: 'My Vue Application',
+        name: 'VesselHarbor',
+        short_name: 'VesselHarbor',
+        description: 'Self-hosted platform for managing and orchestrating containerized applications and virtual machines',
         theme_color: '#ffffff',
+        background_color: '#ffffff',
+        display: 'standalone',
+        start_url: '/',
+        scope: '/',
         // strategies: "injectManifest",
         icons: [
           {
@@ -94,20 +101,8 @@ export default defineConfig({
         ],
       },
     }),
-    UnoCSS({
-      presets: [
-        presetUno({
-          prefix: 'u-', // ✅ Ton préfixe personnalisé
-        }),
-        presetAttributify(),
-
-        presetWind(), // style tailwind-like
-        presetIcons(),
-      ],
-      transformers: [transformerDirectives(), transformerVariantGroup()],
-      inspector: true,
-    }), // Ajout du plugin UnoCSS
-    // ⚡ Auto-import d’API Vue + VueUse + Pinia + Router
+    UnoCSS(), // ✅ Uses configuration from uno.config.ts
+    // ⚡ Auto-import Vue API + VueUse + Pinia + Router
     AutoImport({
       imports: ['vue', 'vue-router', 'pinia', '@vueuse/core', VueRouterAutoImports],
       dts: 'src/auto-imports.d.ts',
@@ -118,14 +113,14 @@ export default defineConfig({
     Icons({
       compiler: 'vue3',
       autoInstall: true,
-      scale: 1.5, // Échelle par défaut des icônes
-      defaultClass: 'icon', // Classe CSS par défaut
+      scale: 1.5, // Default scale for icons
+      defaultClass: 'icon', // Default CSS class
       customCollections: {
         // Your custom icons
         'my-icons': FileSystemIconLoader('./src/assets/icons'),
       },
     }),
-    // 🧩 Auto-import des composants Vue
+    // 🧩 Auto-import Vue components
     Components({
       dts: 'src/components.d.ts',
       dirs: ['src/components'],
@@ -133,8 +128,8 @@ export default defineConfig({
       resolvers: [
         ElementPlusResolver(),
         IconsResolver({
-          prefix: 'i', // Préfixe optionnel (défaut: 'i')
-          enabledCollections: ['carbon', 'fa', 'mdi', 'twemoji', 'material-symbols'], // Collections activées
+          prefix: 'i', // Optional prefix (default: 'i')
+          enabledCollections: ['carbon', 'fa', 'mdi', 'twemoji', 'material-symbols'], // Enabled collections
         }),
       ],
       deep: true,
@@ -142,6 +137,7 @@ export default defineConfig({
     Markdown({
       headEnabled: true,
       markdownItSetup(md) {
+        // @ts-expect-error - Shiki plugin type compatibility issue
         md.use(Shiki)
         md.use(LinkAttributes, {
           matcher: (link: string) => /^https?:\/\//.test(link),
@@ -160,11 +156,13 @@ export default defineConfig({
       staticImport: true, // uses static imports in declaration files
     }),
 
-    // 🐞 Vue Devtools en développement (local)
+    // 🐞 Vue Devtools in development (local)
     VueDevTools(),
     // Performance optimizations
+    // @ts-expect-error - Plugin callable issue
     compression(),
     // Webfont download
+    // @ts-expect-error - Plugin callable issue
     webfontDownload(),
 
     // Bundle analysis (only in build mode)
@@ -172,7 +170,7 @@ export default defineConfig({
       open: true,
       gzipSize: true,
       brotliSize: true,
-    }) as PluginOption,
+    }),
   ],
   resolve: {
     alias: {
@@ -180,25 +178,55 @@ export default defineConfig({
     },
   },
   server: {
-    // @ts-ignore
     https: false,
-    port: 3000,
+    port: 3001, // Changed to 3001 to match e2e test scripts
     watch: {
-      ignored: ['!**/src/layouts/**'], // 👈 Vite va surveiller ce dossier
+      ignored: ['!**/src/layouts/**'], // 👈 Vite will watch this folder
+    },
+  },
+  preview: {
+    port: 3000, // Preview server port for built files
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@use "sass:math";`,
+      },
     },
   },
   base: './',
   build: {
     manifest: true,
+    target: 'esnext',
+    minify: 'esbuild',
     rollupOptions: {
       output: {
-        manualChunks(id) {
+        manualChunks(id: string) {
+          // Core Vue ecosystem
           if (id.includes('pinia')) return 'pinia'
           if (id.includes('vue-router')) return 'vue-router'
+          if (id.includes('vue') && !id.includes('vue-router') && !id.includes('@vue')) return 'vue'
+          if (id.includes('@vue/')) return 'vue'
+
+          // UI Libraries
+          if (id.includes('element-plus')) return 'element-plus'
           if (id.includes('@iconify')) return 'iconify'
-          if (id.includes('vue')) return 'vue'
+          if (id.includes('unplugin-icons')) return 'iconify'
+
+          // Utilities
+          if (id.includes('@vueuse/core')) return 'vueuse'
+          if (id.includes('axios')) return 'axios'
+          if (id.includes('workbox')) return 'workbox'
+
+          // Large vendor libraries
+          if (id.includes('node_modules')) {
+            return 'vendor'
+          }
         },
       },
     },
+  },
+  optimizeDeps: {
+    include: ['vue', 'vue-router', 'pinia', 'pinia-plugin-persistedstate', 'element-plus', '@vueuse/core', 'axios', '@iconify/vue', '@unhead/vue', 'nprogress', 'idb', 'workbox-window'],
   },
 })

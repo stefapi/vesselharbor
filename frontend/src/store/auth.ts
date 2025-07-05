@@ -1,6 +1,6 @@
 // src/store/auth.ts
 import { defineStore } from 'pinia'
-import { logout as logoutService,login as loginService, refresh } from '@/services/authService.ts'
+import { logout as logoutService, login as loginService, refresh } from '@/services/authService.ts'
 import { getUser } from '@/services/authService.ts'
 import type { User } from '@/types/user.ts' // Importation du type partagé
 import { useRouter } from 'vue-router'
@@ -52,11 +52,11 @@ export const useAuthStore = defineStore('auth', {
     // Méthode à appeler au démarrage de l'application pour recharger l'état
     async initialize() {
       try {
-        await this.renewSession();
+        await this.renewSession()
       } catch (error) {
-        this.logout();
+        this.logout()
       }
-      this.isInitialized = true;
+      this.isInitialized = true
     },
 
     async login(credentials: Credentials) {
@@ -69,32 +69,31 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-     async renewSession() {
+    async renewSession() {
       try {
         // On tente d'abord de rafraîchir le token avant de récupérer l'utilisateur
-        await this.refreshTokenAction();
-        const response = await getUser();
-        this.user = response.data;
-        this.isAuthenticated = true;
+        await this.refreshTokenAction()
+        const response = await getUser()
+        this.user = response.data
+        this.isAuthenticated = true
       } catch (error) {
-        this.logout();
-        throw error;
+        this.logout()
+        throw error
       }
     },
 
     async refreshTokenAction() {
       try {
-        const response = await refresh();
+        const response = await refresh()
       } catch (error) {
-        this.logout();
-        throw new Error('Échec du rafraîchissement du token');
+        this.logout()
+        throw new Error('Échec du rafraîchissement du token')
       }
     },
 
     logout() {
       this.user = null
       this.isAuthenticated = false
-
 
       clearAllOfflineData()
       logoutService()

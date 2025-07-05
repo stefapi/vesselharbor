@@ -4,7 +4,7 @@
     <el-header class="u-flex u-items-center u-justify-between u-py-4 u-border-b">
       <div class="u-flex u-items-center">
         <router-link to="/users" class="u-mr-4">
-          <el-button icon>
+          <el-button>
             <i-mdi-arrow-left class="u-text-xl" />
           </el-button>
         </router-link>
@@ -22,22 +22,13 @@
 
         <!-- Groupes de l'utilisateur -->
         <el-col :span="12">
-          <UserGroupsCard
-            :userGroups="userGroups"
-            @showAddGroupDialog="showAddGroupDialog = true"
-            @removeGroup="removeGroupFromUser"
-          />
+          <UserGroupsCard :userGroups="userGroups" @showAddGroupDialog="showAddGroupDialog = true" @removeGroup="removeGroupFromUser" />
         </el-col>
       </el-row>
     </el-main>
 
     <!-- Dialog pour ajouter un groupe -->
-    <AddGroupDialog
-      v-model="showAddGroupDialog"
-      :availableGroups="availableGroups"
-      v-model:selectedGroup="selectedGroup"
-      @addGroup="addGroupToUser"
-    />
+    <AddGroupDialog v-model="showAddGroupDialog" :availableGroups="availableGroups" v-model:selectedGroup="selectedGroup" @addGroup="addGroupToUser" />
   </el-container>
 </template>
 
@@ -77,7 +68,7 @@ const fetchUserData = async () => {
     userGroups.value = userGroupsResponse.data.map((group: any) => ({
       id: group.id,
       name: group.name,
-      environment_name: group.environment ? group.environment.name : null
+      environment_name: group.environment ? group.environment.name : null,
     }))
 
     // Récupérer tous les groupes disponibles
@@ -85,17 +76,15 @@ const fetchUserData = async () => {
     const allGroups = groupsResponse.data.map((group: any) => ({
       id: group.id,
       name: group.name,
-      environment_name: group.environment ? group.environment.name : null
+      environment_name: group.environment ? group.environment.name : null,
     }))
 
     // Filtrer pour ne garder que les groupes auxquels l'utilisateur n'appartient pas déjà
-    availableGroups.value = allGroups.filter(
-      group => !userGroups.value.some(ug => ug.id === group.id)
-    )
+    availableGroups.value = allGroups.filter((group: any) => !userGroups.value.some((ug) => ug.id === group.id))
   } catch (error) {
     notificationStore.addNotification({
       type: 'error',
-      message: "Erreur lors du chargement des données de l'utilisateur"
+      message: "Erreur lors du chargement des données de l'utilisateur",
     })
     router.push('/users')
   }
@@ -110,13 +99,13 @@ const addGroupToUser = async () => {
     await addUserToGroup(userId, selectedGroup.value)
 
     // Mettre à jour l'interface utilisateur
-    const groupToAdd = availableGroups.value.find(g => g.id === selectedGroup.value)
+    const groupToAdd = availableGroups.value.find((g) => g.id === selectedGroup.value)
     if (groupToAdd) {
       userGroups.value.push(groupToAdd)
-      availableGroups.value = availableGroups.value.filter(g => g.id !== selectedGroup.value)
+      availableGroups.value = availableGroups.value.filter((g) => g.id !== selectedGroup.value)
       notificationStore.addNotification({
         type: 'success',
-        message: "Groupe ajouté avec succès"
+        message: 'Groupe ajouté avec succès',
       })
     }
 
@@ -125,7 +114,7 @@ const addGroupToUser = async () => {
   } catch (error) {
     notificationStore.addNotification({
       type: 'error',
-      message: "Erreur lors de l'ajout du groupe"
+      message: "Erreur lors de l'ajout du groupe",
     })
   }
 }
@@ -133,22 +122,18 @@ const addGroupToUser = async () => {
 // Supprimer un groupe de l'utilisateur
 const removeGroupFromUser = async (groupId: number) => {
   try {
-    await ElMessageBox.confirm(
-      'Êtes-vous sûr de vouloir retirer ce groupe de l\'utilisateur ?',
-      'Confirmation',
-      {
-        confirmButtonText: 'Oui',
-        cancelButtonText: 'Annuler',
-        type: 'warning'
-      }
-    )
+    await ElMessageBox.confirm("Êtes-vous sûr de vouloir retirer ce groupe de l'utilisateur ?", 'Confirmation', {
+      confirmButtonText: 'Oui',
+      cancelButtonText: 'Annuler',
+      type: 'warning',
+    })
 
     // Appel API pour retirer l'utilisateur du groupe
     await removeUserFromGroup(userId, groupId)
 
     // Mettre à jour l'interface utilisateur
-    const removedGroup = userGroups.value.find(g => g.id === groupId)
-    userGroups.value = userGroups.value.filter(g => g.id !== groupId)
+    const removedGroup = userGroups.value.find((g) => g.id === groupId)
+    userGroups.value = userGroups.value.filter((g) => g.id !== groupId)
 
     if (removedGroup) {
       availableGroups.value.push(removedGroup)
@@ -156,14 +141,14 @@ const removeGroupFromUser = async (groupId: number) => {
 
     notificationStore.addNotification({
       type: 'success',
-      message: "Groupe retiré avec succès"
+      message: 'Groupe retiré avec succès',
     })
   } catch (error) {
     // Si c'est une erreur de l'API et non une annulation de l'utilisateur
     if (error && error !== 'cancel') {
       notificationStore.addNotification({
         type: 'error',
-        message: "Erreur lors du retrait du groupe"
+        message: 'Erreur lors du retrait du groupe',
       })
     }
     // Sinon, l'utilisateur a simplement annulé l'opération

@@ -3,9 +3,7 @@
     <template #header>
       <div class="u-flex u-items-center u-justify-between">
         <h2 class="u-text-lg u-font-bold">Groupes</h2>
-        <el-button type="primary" size="small" @click="$emit('showAddGroupDialog')">
-          Ajouter un groupe
-        </el-button>
+        <el-button type="primary" size="small" @click="$emit('showAddGroupDialog')"> Ajouter un groupe </el-button>
       </div>
     </template>
     <div v-if="userGroups.length > 0">
@@ -18,12 +16,7 @@
         </el-table-column>
         <el-table-column label="Actions" width="100" align="center">
           <template #default="{ row }">
-            <el-button
-              type="danger"
-              size="small"
-              icon
-              @click="$emit('removeGroup', row.id)"
-            >
+            <el-button type="danger" size="small" @click="$emit('removeGroup', row.id)">
               <i-mdi-delete />
             </el-button>
           </template>

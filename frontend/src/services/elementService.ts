@@ -1,5 +1,5 @@
-import api from '@/services/api.ts';
-import type { ElementListParams } from '@/types/api';
+import api from '@/services/api.ts'
+import type { ElementListParams } from '@/types/api'
 
 /**
  * Crée un nouvel élément dans l'environnement spécifié.
@@ -7,7 +7,7 @@ import type { ElementListParams } from '@/types/api';
  * @param element Les données de l'élément (nom, description, etc.).
  */
 export async function createElement(environmentId: number, element: { name: string; description: string }) {
-  return api.post(`/elements/${environmentId}`, element);
+  return api.post(`/elements/${environmentId}`, element)
 }
 
 /**
@@ -16,7 +16,7 @@ export async function createElement(environmentId: number, element: { name: stri
  * @param params Paramètres optionnels pour filtrer ou paginer la liste.
  */
 export async function listElements(environmentId: number, params: ElementListParams = {}) {
-  return api.get(`/elements/environment/${environmentId}`, { params });
+  return api.get(`/elements/environment/${environmentId}`, { params })
 }
 
 /**
@@ -24,7 +24,7 @@ export async function listElements(environmentId: number, params: ElementListPar
  * @param elementId L'identifiant de l'élément.
  */
 export async function getElement(elementId: number) {
-  return api.get(`/elements/${elementId}`);
+  return api.get(`/elements/${elementId}`)
 }
 
 /**
@@ -33,7 +33,7 @@ export async function getElement(elementId: number) {
  * @param element Les nouvelles données de l'élément.
  */
 export async function updateElement(elementId: number, element: { name: string; description: string }) {
-  return api.put(`/elements/${elementId}`, element);
+  return api.put(`/elements/${elementId}`, element)
 }
 
 /**
@@ -41,5 +41,5 @@ export async function updateElement(elementId: number, element: { name: string; 
  * @param elementId L'identifiant de l'élément à supprimer.
  */
 export async function deleteElement(elementId: number) {
-  return api.delete(`/elements/${elementId}`);
+  return api.delete(`/elements/${elementId}`)
 }

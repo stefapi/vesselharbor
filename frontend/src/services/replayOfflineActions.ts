@@ -1,8 +1,4 @@
-import {
-  getQueuedActions,
-  clearQueuedAction,
-  incrementRetryCount
-} from './offlineQueue.ts'
+import { getQueuedActions, clearQueuedAction, incrementRetryCount } from './offlineQueue.ts'
 import api, { isAxiosError } from './api.ts'
 import { useNotificationStore } from '@/store/notifications.ts'
 import { useOfflineSyncStore } from '@/store/offlineSync.ts'
@@ -55,9 +51,7 @@ export async function replayOfflineActions() {
           // 🔁 Réessai possible → incrémenter le compteur
           await incrementRetryCount(action.timestamp)
           failed++
-          console.warn(
-            `[OfflineSync] Échec temporaire : ${action.method.toUpperCase()} ${action.url} (tentative ${retries + 1}/3)`
-          )
+          console.warn(`[OfflineSync] Échec temporaire : ${action.method.toUpperCase()} ${action.url} (tentative ${retries + 1}/3)`)
         }
       }
     }

@@ -57,7 +57,7 @@ const handleLoginError = (error: unknown) => {
   let errorMessage = 'Une erreur est survenue lors de la connexion'
 
   if (isAxiosError(error)) {
-    errorMessage = error.response?.data?.message || errorMessage
+    errorMessage = (error.response?.data as any)?.message || errorMessage
     if (error.response?.status === 401) {
       errorMessage = 'Identifiants incorrects'
     }

@@ -6,71 +6,64 @@
 
       <ForgotPasswordForm @submit="handleFormSubmit" />
 
-      <router-link
-        to="/login"
-        class="u-block u-text-center u-text-primary u-mt-4"
-      >
-        Retour à la connexion
-      </router-link>
+      <router-link to="/login" class="u-block u-text-center u-text-primary u-mt-4"> Retour à la connexion </router-link>
     </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useNotificationStore } from '@/store/notifications';
-import { useRouter } from 'vue-router';
-import ForgotPasswordForm from '@/components/Auth/ForgotPasswordForm.vue';
-import { isAxiosError } from '@/services/api';
-import {reset_password} from "@/services/authService.js";
+import { useNotificationStore } from '@/store/notifications'
+import { useRouter } from 'vue-router'
+import ForgotPasswordForm from '@/components/Auth/ForgotPasswordForm.vue'
+import { isAxiosError } from '@/services/api'
+import { reset_password_request } from '@/services/authService.js'
 
 interface ForgotPasswordSubmitEvent {
   isValid: boolean
   email: string
 }
 
-const notificationStore = useNotificationStore();
-const router = useRouter();
+const notificationStore = useNotificationStore()
+const router = useRouter()
 
 const handleFormSubmit = async (event: ForgotPasswordSubmitEvent) => {
   if (!event.isValid) {
     notificationStore.addNotification({
       type: 'error',
-      message: 'Veuillez corriger les erreurs dans le formulaire'
-    });
-    return;
+      message: 'Veuillez corriger les erreurs dans le formulaire',
+    })
+    return
   }
 
   try {
-    await reset_password_request(event.email );
+    await reset_password_request(event.email)
 
     notificationStore.addNotification({
       type: 'success',
-      message: 'Si cet email est enregistré, vous recevrez un lien de réinitialisation'
-    });
+      message: 'Si cet email est enregistré, vous recevrez un lien de réinitialisation',
+    })
 
     setTimeout(() => {
-      router.push({ name: 'Login' });
-    }, 150);
-
+      router.push({ name: 'Login' })
+    }, 150)
   } catch (error: unknown) {
-    handlePasswordResetError(error);
+    handlePasswordResetError(error)
   }
-};
+}
 
 const handlePasswordResetError = (error: unknown) => {
-  let errorMessage = "Erreur lors de la demande de réinitialisation";
+  let errorMessage = 'Erreur lors de la demande de réinitialisation'
 
   if (isAxiosError(error)) {
-    errorMessage = error.response?.data?.message || errorMessage;
+    errorMessage = (error.response?.data as any)?.message || errorMessage
     if (error.response?.status === 404) {
-      errorMessage = "Aucun compte associé à cet email";
+      errorMessage = 'Aucun compte associé à cet email'
     }
   }
 
   notificationStore.addNotification({
     type: 'error',
-    message: errorMessage
-  });
-};
-
+    message: errorMessage,
+  })
+}
 </script>

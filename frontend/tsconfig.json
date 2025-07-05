@@ -2,7 +2,7 @@
   "extends": "@vue/tsconfig/tsconfig.json",
   "compilerOptions": {
     "target": "ESNext",
-    "module": "ESNext",
+    "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "strict": true,
     "jsx": "preserve",
@@ -42,9 +42,5 @@
     "dist",
     "**/*.js",
     "public"
-  ],
-  "references": [
-    { "path": "./tsconfig.node.json" },
-    { "path": "./tsconfig.app.json" }
   ]
 }

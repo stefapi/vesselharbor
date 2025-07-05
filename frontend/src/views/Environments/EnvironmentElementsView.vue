@@ -1,25 +1,17 @@
 <!-- src/views/Environments/EnvironmentElementsView.vue -->
 <template>
   <div class="u-p-6">
-    <h1 class="u-text-3xl u-font-bold u-mb-6">
-      Environnement : {{ environment.name }}
-    </h1>
+    <h1 class="u-text-3xl u-font-bold u-mb-6">Environnement : {{ environment.name }}</h1>
 
     <div class="u-mb-6">
       <h2 class="u-text-2xl u-font-semibold u-mb-4">Liste des éléments</h2>
 
       <div v-if="elements.length === 0" class="u-text-center u-py-8">
-        <p class="u-text-gray-500 u-text-lg">
-          Aucun élément disponible dans cet environnement.
-        </p>
+        <p class="u-text-gray-500 u-text-lg">Aucun élément disponible dans cet environnement.</p>
       </div>
 
       <ul v-else class="u-space-y-3">
-        <li
-          v-for="element in elements"
-          :key="element.id"
-          class="u-p-4 u-bg-white u-border u-border-gray-200 u-rounded-lg u-shadow-sm"
-        >
+        <li v-for="element in elements" :key="element.id" class="u-p-4 u-bg-white u-border u-border-gray-200 u-rounded-lg u-shadow-sm">
           <div class="u-flex u-justify-between u-items-start">
             <div>
               <h3 class="u-font-semibold u-text-lg u-text-gray-900">
@@ -67,7 +59,7 @@ const fetchEnvironment = async () => {
   } catch (error) {
     notificationStore.addNotification({
       type: 'error',
-      message: "Erreur lors de la récupération de l'environnement"
+      message: "Erreur lors de la récupération de l'environnement",
     })
   }
 }
@@ -79,7 +71,7 @@ const fetchElements = async () => {
   } catch (error) {
     notificationStore.addNotification({
       type: 'error',
-      message: "Erreur lors de la récupération des éléments"
+      message: 'Erreur lors de la récupération des éléments',
     })
   }
 }

@@ -1,41 +1,22 @@
 <!-- src/components/GroupForm.vue -->
 <template>
   <form @submit.prevent="handleSubmit" class="u-space-y-4">
-    <el-form-item
-      label="Nom du groupe"
-      :error="NameError"
-    >
-      <el-input
-        v-model="state.name"
-        placeholder="Nom du groupe"
-        @blur="v$.name.$touch()"
-      />
+    <el-form-item label="Nom du groupe" :error="NameError">
+      <el-input v-model="state.name" placeholder="Nom du groupe" @blur="v$.name.$touch()" />
     </el-form-item>
 
-    <el-form-item
-      label="Description"
-      :error="DescriptionError"
-    >
-      <el-input
-        v-model="state.description"
-        type="textarea"
-        placeholder="Description du groupe"
-        @blur="v$.description.$touch()"
-      />
+    <el-form-item label="Description" :error="DescriptionError">
+      <el-input v-model="state.description" type="textarea" placeholder="Description du groupe" @blur="v$.description.$touch()" />
     </el-form-item>
 
-    <el-button
-      type="primary"
-      native-type="submit"
-      class="u-w-full"
-    >
+    <el-button type="primary" native-type="submit" class="u-w-full">
       {{ isEdit ? 'Mettre à jour' : 'Créer' }}
     </el-button>
   </form>
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, watch } from 'vue'
+import { reactive, computed, watch, unref } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { required, helpers } from '@vuelidate/validators'
 import { createGroup, updateGroup } from '@/services/groupService'
@@ -47,7 +28,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  initialData: null
+  initialData: null,
 })
 
 const emit = defineEmits<{
@@ -75,8 +56,8 @@ const validationRules = {
 const v$ = useVuelidate(validationRules, state)
 
 // Computed properties for error handling
-const NameError = computed(() => (v$.value.name.$error && v$.value.name?.$errors[0]?.$message) || '')
-const DescriptionError = computed(() => (v$.value.description.$error && v$.value.description?.$errors[0]?.$message) || '')
+const NameError = computed(() => unref((v$.value.name.$error && v$.value.name?.$errors[0]?.$message) || ''))
+const DescriptionError = computed(() => unref((v$.value.description.$error && v$.value.description?.$errors[0]?.$message) || ''))
 
 // Synchronisation des données initiales
 watch(
@@ -100,14 +81,14 @@ const handleSubmit = async () => {
       await updateGroup(props.initialData.id, state)
       notificationStore.addNotification({
         type: 'success',
-        message: 'Groupe mis à jour avec succès'
+        message: 'Groupe mis à jour avec succès',
       })
     } else {
       // Création d'un nouveau groupe
       await createGroup(props.environmentId, state)
       notificationStore.addNotification({
         type: 'success',
-        message: 'Groupe créé avec succès'
+        message: 'Groupe créé avec succès',
       })
     }
 
@@ -119,7 +100,7 @@ const handleSubmit = async () => {
   } catch (error) {
     notificationStore.addNotification({
       type: 'error',
-      message: "Erreur lors de l'opération sur le groupe"
+      message: "Erreur lors de l'opération sur le groupe",
     })
   }
 }

@@ -1,6 +1,6 @@
 // src/services/groupService.ts
-import api from '@/services/api.ts';
-import type { GroupListParams } from '@/types/api';
+import api from '@/services/api.ts'
+import type { GroupListParams } from '@/types/api'
 
 /**
  * Crée un nouveau groupe dans l'environnement spécifié.
@@ -8,7 +8,7 @@ import type { GroupListParams } from '@/types/api';
  * @param group Un objet contenant le nom et la description du groupe.
  */
 export async function createGroup(environmentId: number, group: { name: string; description: string }) {
-  return api.post(`/groups/${environmentId}`, group);
+  return api.post(`/groups/${environmentId}`, group)
 }
 
 /**
@@ -17,7 +17,7 @@ export async function createGroup(environmentId: number, group: { name: string; 
  * @param params Paramètres (skip, limit, nom, etc.).
  */
 export async function listGroups(environmentId: number, params: GroupListParams = {}) {
-  return api.get(`/groups/environment/${environmentId}`, { params });
+  return api.get(`/groups/environment/${environmentId}`, { params })
 }
 
 /**
@@ -26,7 +26,7 @@ export async function listGroups(environmentId: number, params: GroupListParams 
  * @param group Un objet contenant le nom et la description mis à jour.
  */
 export async function updateGroup(groupId: number, group: { name: string; description: string }) {
-  return api.put(`/groups/${groupId}`, group);
+  return api.put(`/groups/${groupId}`, group)
 }
 
 /**
@@ -34,7 +34,7 @@ export async function updateGroup(groupId: number, group: { name: string; descri
  * @param groupId L'identifiant du groupe à supprimer.
  */
 export async function deleteGroup(groupId: number) {
-  return api.delete(`/groups/${groupId}`);
+  return api.delete(`/groups/${groupId}`)
 }
 
 /**
@@ -43,7 +43,7 @@ export async function deleteGroup(groupId: number) {
  * @param userId L'identifiant de l'utilisateur.
  */
 export async function assignUserToGroup(groupId: number, userId: number) {
-  return api.post(`/groups/${groupId}/users/${userId}`);
+  return api.post(`/groups/${groupId}/users/${userId}`)
 }
 
 /**
@@ -52,14 +52,14 @@ export async function assignUserToGroup(groupId: number, userId: number) {
  * @param userId L'identifiant de l'utilisateur.
  */
 export async function removeUserFromGroup(groupId: number, userId: number) {
-  return api.delete(`/groups/${groupId}/users/${userId}`);
+  return api.delete(`/groups/${groupId}/users/${userId}`)
 }
 
 /**
  * Liste tous les groupes (pour superadmin).
  */
 export async function listAllGroups(params: GroupListParams = {}) {
-  return api.get('/groups', { params });
+  return api.get('/groups', { params })
 }
 
 /**
@@ -67,21 +67,21 @@ export async function listAllGroups(params: GroupListParams = {}) {
  */
 // Ajoute une fonction à un groupe
 export async function addFunctionToGroup(groupId: number, func: { name: string; description: string }) {
-  return api.post(`/groups/${groupId}/functions`, func);
+  return api.post(`/groups/${groupId}/functions`, func)
 }
 
 // Retire une fonction d’un groupe
 export async function removeFunctionFromGroup(groupId: number, functionId: number) {
-  return api.delete(`/groups/${groupId}/functions/${functionId}`);
+  return api.delete(`/groups/${groupId}/functions/${functionId}`)
 }
 
 // Récupère les fonctions assignées à un groupe
 export async function getGroupFunctions(groupId: number) {
   // On suppose que l’API renvoie dans la réponse la liste des fonctions assignées
-  return api.get(`/groups/${groupId}/functions`);
+  return api.get(`/groups/${groupId}/functions`)
 }
 
 // Récupère la liste des fonctions disponibles depuis l’API
 export async function getAvailableFunctions() {
-  return api.get('/functions'); // On suppose que cet endpoint existe
+  return api.get('/functions') // On suppose que cet endpoint existe
 }

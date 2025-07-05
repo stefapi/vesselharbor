@@ -1,13 +1,7 @@
 <template>
   <div class="u-w-full u-flex u-flex-wrap u-items-center u-justify-between u-gap-4 u-mb-4">
     <!-- Champ de recherche -->
-    <el-input
-      v-model="model"
-      placeholder="Rechercher par email"
-      clearable
-      class="u-flex-1 u-min-w-[220px]"
-      @input="emit('filter', model)"
-    >
+    <el-input v-model="model" placeholder="Rechercher par email" clearable class="u-flex-1 u-min-w-[220px]" @input="emit('filter', model)">
       <template #prefix>
         <i-mdi-magnify class="u-text-xl u-text-gray-500" />
       </template>

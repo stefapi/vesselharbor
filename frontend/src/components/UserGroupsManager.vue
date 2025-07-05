@@ -5,53 +5,23 @@
       <div>
         <h2 class="u-text-lg u-font-semibold u-mb-4">Groupes assignés</h2>
         <div class="u-space-y-2">
-          <el-card
-            v-for="group in assignedGroups"
-            :key="group.id"
-            class="u-bg-gray-50"
-            shadow="never"
-          >
+          <el-card v-for="group in assignedGroups" :key="group.id" class="u-bg-gray-50" shadow="never">
             <div class="u-flex u-justify-between u-items-center">
               <span class="u-font-medium">{{ group.name }}</span>
-              <el-button
-                type="danger"
-                size="small"
-                @click="removeGroup(group.id)"
-              >
-                Retirer
-              </el-button>
+              <el-button type="danger" size="small" @click="removeGroup(group.id)"> Retirer </el-button>
             </div>
           </el-card>
-          <el-empty
-            v-if="assignedGroups.length === 0"
-            description="Aucun groupe assigné"
-            :image-size="60"
-          />
+          <el-empty v-if="assignedGroups.length === 0" description="Aucun groupe assigné" :image-size="60" />
         </div>
       </div>
 
       <div>
         <h2 class="u-text-lg u-font-semibold u-mb-4">Ajouter un groupe</h2>
         <div class="u-flex u-gap-2">
-          <el-select
-            v-model="selectedGroupId"
-            placeholder="Sélectionnez un groupe"
-            class="u-flex-1"
-          >
-            <el-option
-              v-for="group in availableGroups"
-              :key="group.id"
-              :label="group.name"
-              :value="group.id"
-            />
+          <el-select v-model="selectedGroupId" placeholder="Sélectionnez un groupe" class="u-flex-1">
+            <el-option v-for="group in availableGroups" :key="group.id" :label="group.name" :value="group.id" />
           </el-select>
-          <el-button
-            type="primary"
-            @click="assignGroup"
-            :disabled="!selectedGroupId"
-          >
-            Ajouter
-          </el-button>
+          <el-button type="primary" @click="assignGroup" :disabled="!selectedGroupId"> Ajouter </el-button>
         </div>
       </div>
     </div>
@@ -80,7 +50,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  environmentId: null
+  environmentId: null,
 })
 
 const assignedGroups = ref<Group[]>([])
@@ -96,7 +66,7 @@ const fetchAssignedGroups = async () => {
   } catch (error) {
     notificationStore.addNotification({
       type: 'error',
-      message: "Erreur lors du chargement des groupes assignés",
+      message: 'Erreur lors du chargement des groupes assignés',
     })
   }
 }
@@ -114,7 +84,7 @@ const fetchAvailableGroups = async () => {
   } catch (error) {
     notificationStore.addNotification({
       type: 'error',
-      message: "Erreur lors du chargement des groupes disponibles",
+      message: 'Erreur lors du chargement des groupes disponibles',
     })
   }
 }
@@ -126,7 +96,7 @@ const assignGroup = async () => {
     await assignUserToGroup(selectedGroupId.value as number, props.userId)
     notificationStore.addNotification({
       type: 'success',
-      message: "Groupe assigné avec succès",
+      message: 'Groupe assigné avec succès',
     })
     selectedGroupId.value = ''
     await fetchAssignedGroups()
@@ -144,13 +114,13 @@ const removeGroup = async (groupId: number) => {
     await removeUserFromGroup(groupId, props.userId)
     notificationStore.addNotification({
       type: 'success',
-      message: "Groupe retiré avec succès",
+      message: 'Groupe retiré avec succès',
     })
     await fetchAssignedGroups()
   } catch (error) {
     notificationStore.addNotification({
       type: 'error',
-      message: "Erreur lors du retrait du groupe",
+      message: 'Erreur lors du retrait du groupe',
     })
   }
 }

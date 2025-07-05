@@ -22,8 +22,8 @@ const route = useRoute()
 
 /* Petit dictionnaire des layouts disponibles  */
 const layouts = {
-  main: MainLayout,   // par défaut : barre latérale + header
-  auth: AuthLayout,   // pages publiques (login, register, etc.)
+  main: MainLayout, // par défaut : barre latérale + header
+  auth: AuthLayout, // pages publiques (login, register, etc.)
 }
 
 /* renvoie le composant layout demandé ou, sinon, MainLayout */

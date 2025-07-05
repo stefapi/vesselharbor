@@ -18,8 +18,8 @@ import NProgress from 'nprogress'
 
 const manualRoutes: RouteRecordRaw[] = [
   { path: '/login', name: 'Login', component: LoginView, meta: { layout: 'auth' } },
-  { path: '/forgot-password', name: 'ForgotPassword', component: ForgotPasswordView, meta: { layout: 'auth' }  },
-  { path: '/reset-password', name: 'ResetPassword', component: ResetPasswordView, meta: { layout: 'auth' }  },
+  { path: '/forgot-password', name: 'ForgotPassword', component: ForgotPasswordView, meta: { layout: 'auth' } },
+  { path: '/reset-password', name: 'ResetPassword', component: ResetPasswordView, meta: { layout: 'auth' } },
   { path: '/', name: 'Dashboard', component: DashboardView, meta: { requiresAuth: true } },
   { path: '/account', name: 'Account', component: AccountView, meta: { requiresAuth: true, requiredRole: 'self' } },
   { path: '/environment/:envId/elements', name: 'EnvironmentElements', component: EnvironmentElementsView, meta: { requiresAuth: true } },
