@@ -8,6 +8,10 @@ from ..helper.security import get_password_hash
 from ..models.user import User
 from ..models.function import Function
 from ..models.organization import Organization
+from ..models.group import Group
+from ..models.policy import Policy
+from ..repositories import group_repo, user_repo, policy_repo, rule_repo
+from ..schema.policy import PolicyCreate
 
 # Charger les variables d'environnement
 load_dotenv()
@@ -75,6 +79,12 @@ DEFAULT_FUNCTIONS = [
     {"name": "organization:delete", "description": "Supprimer une organisation."},
 ]
 
+DEFAULT_GROUPS = [
+    {"name": "Administrators", "description": "Groupe des administrateurs avec tous les privilèges."},
+    {"name": "Users", "description": "Groupe des utilisateurs standard."},
+    {"name": "Viewers", "description": "Groupe avec accès en lecture seule."},
+]
+
 def get_env_var(name: str) -> Optional[str]:
     """Helper pour récupérer une variable d'environnement avec vérification"""
     value = os.environ.get(name)
@@ -99,7 +109,126 @@ def seed_organization(db: Session) -> Organization:
         db.refresh(org)
     return org
 
-def seed_superadmin(db: Session):
+def seed_default_groups(db: Session, organization: Organization):
+    """Crée les groupes par défaut pour l'organisation"""
+    for group_data in DEFAULT_GROUPS:
+        existing = db.query(Group).filter(
+            Group.name == group_data["name"],
+            Group.organization_id == organization.id
+        ).first()
+        if not existing:
+            group_repo.create_group(
+                db,
+                organization_id=organization.id,
+                name=group_data["name"],
+                description=group_data["description"]
+            )
+            print(f"✅ Groupe '{group_data['name']}' créé pour l'organisation '{organization.name}'")
+
+def seed_default_policies_and_rules(db: Session, organization: Organization):
+    """Crée les policies par défaut avec leurs règles pour chaque groupe"""
+
+    # Récupérer les groupes
+    admin_group = db.query(Group).filter(
+        Group.name == "Administrators",
+        Group.organization_id == organization.id
+    ).first()
+
+    users_group = db.query(Group).filter(
+        Group.name == "Users",
+        Group.organization_id == organization.id
+    ).first()
+
+    viewers_group = db.query(Group).filter(
+        Group.name == "Viewers",
+        Group.organization_id == organization.id
+    ).first()
+
+    if not admin_group or not users_group or not viewers_group:
+        print("⚠️ Groupes par défaut non trouvés, impossible de créer les policies")
+        return
+
+    # Récupérer les fonctions
+    admin_function = db.query(Function).filter(Function.name == "admin").first()
+
+    # Fonctions pour les utilisateurs standard
+    user_functions = db.query(Function).filter(Function.name.in_([
+        "env:read", "element:read", "user:read_groups", "user:read_policies",
+        "user:read_organizations", "user:read_tags"
+    ])).all()
+
+    # Fonctions pour les viewers (lecture seule)
+    viewer_functions = db.query(Function).filter(Function.name.in_([
+        "env:read", "element:read", "user:read", "group:read", "policy:read",
+        "tag:read", "organization:read"
+    ])).all()
+
+    # Créer la policy pour les Administrators
+    admin_policy_name = f"Admin Policy - {organization.name}"
+    existing_admin_policy = db.query(Policy).filter(
+        Policy.name == admin_policy_name,
+        Policy.organization_id == organization.id
+    ).first()
+
+    if not existing_admin_policy and admin_function:
+        admin_policy = policy_repo.create_policy(db, PolicyCreate(
+            name=admin_policy_name,
+            description="Policy complète pour les administrateurs",
+            organization_id=organization.id
+        ))
+
+        # Ajouter la règle admin (accès complet)
+        rule_repo.create_rule(db, admin_policy.id, admin_function.id)
+
+        # Associer la policy au groupe Administrators
+        policy_repo.add_group(db, admin_policy, admin_group)
+        print(f"✅ Policy '{admin_policy_name}' créée avec règle admin")
+
+    # Créer la policy pour les Users
+    users_policy_name = f"Users Policy - {organization.name}"
+    existing_users_policy = db.query(Policy).filter(
+        Policy.name == users_policy_name,
+        Policy.organization_id == organization.id
+    ).first()
+
+    if not existing_users_policy and user_functions:
+        users_policy = policy_repo.create_policy(db, PolicyCreate(
+            name=users_policy_name,
+            description="Policy standard pour les utilisateurs",
+            organization_id=organization.id
+        ))
+
+        # Ajouter les règles pour les utilisateurs
+        for func in user_functions:
+            rule_repo.create_rule(db, users_policy.id, func.id)
+
+        # Associer la policy au groupe Users
+        policy_repo.add_group(db, users_policy, users_group)
+        print(f"✅ Policy '{users_policy_name}' créée avec {len(user_functions)} règles")
+
+    # Créer la policy pour les Viewers
+    viewers_policy_name = f"Viewers Policy - {organization.name}"
+    existing_viewers_policy = db.query(Policy).filter(
+        Policy.name == viewers_policy_name,
+        Policy.organization_id == organization.id
+    ).first()
+
+    if not existing_viewers_policy and viewer_functions:
+        viewers_policy = policy_repo.create_policy(db, PolicyCreate(
+            name=viewers_policy_name,
+            description="Policy en lecture seule pour les viewers",
+            organization_id=organization.id
+        ))
+
+        # Ajouter les règles pour les viewers
+        for func in viewer_functions:
+            rule_repo.create_rule(db, viewers_policy.id, func.id)
+
+        # Associer la policy au groupe Viewers
+        policy_repo.add_group(db, viewers_policy, viewers_group)
+        print(f"✅ Policy '{viewers_policy_name}' créée avec {len(viewer_functions)} règles")
+
+def seed_superadmin(db: Session, organization: Organization):
     email = get_env_var("SUPERADMIN_EMAIL")
     password = get_env_var("SUPERADMIN_PASSWORD")
     if not email or not password:
@@ -118,9 +247,38 @@ def seed_superadmin(db: Session):
         )
         db.add(new_admin)
         db.commit()
-        print("✅ Superadmin seedé")
+        db.refresh(new_admin)
+
+        # Attacher le superadmin à l'organisation par défaut
+        user_repo.add_user_to_organization(db, new_admin, organization)
+        print(f"✅ Superadmin seedé et attaché à l'organisation '{organization.name}'")
+
+        # Ajouter le superadmin au groupe Administrators
+        admin_group = db.query(Group).filter(
+            Group.name == "Administrators",
+            Group.organization_id == organization.id
+        ).first()
+        if admin_group:
+            group_repo.add_user_to_group(db, admin_group, new_admin)
+            print(f"✅ Superadmin ajouté au groupe 'Administrators'")
+    else:
+        # Si le superadmin existe déjà, vérifier qu'il est bien attaché à l'organisation
+        if organization not in existing.organizations:
+            user_repo.add_user_to_organization(db, existing, organization)
+            print(f"✅ Superadmin existant attaché à l'organisation '{organization.name}'")
+
+        # Vérifier qu'il est dans le groupe Administrators
+        admin_group = db.query(Group).filter(
+            Group.name == "Administrators",
+            Group.organization_id == organization.id
+        ).first()
+        if admin_group and existing not in admin_group.users:
+            group_repo.add_user_to_group(db, admin_group, existing)
+            print(f"✅ Superadmin existant ajouté au groupe 'Administrators'")
 
 def seed(db: Session):
     seed_functions(db)
-    seed_organization(db)
-    seed_superadmin(db)
+    organization = seed_organization(db)
+    seed_default_groups(db, organization)
+    seed_default_policies_and_rules(db, organization)
+    seed_superadmin(db, organization)

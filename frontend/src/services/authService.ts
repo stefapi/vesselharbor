@@ -1,7 +1,7 @@
 // src/services/authService.ts
 import type { AxiosError } from 'axios'
-import { apiPost, apiGet } from './api'
-import { authenticateauser } from '@/api/root'
+
+import { authenticateauser, logout as apiLogout, renewtoken } from '@/api/root'
 
 export interface LoginCredentials {
   username: string
@@ -23,23 +23,11 @@ export interface UserProfileData {
 
 /**
  * Authentifie un utilisateur avec son email et mot de passe
- * Note: authenticateauser de api/root.ts ne peut pas être utilisé directement car:
- * - Il ne prend pas de paramètres pour les credentials
- * - Il manque l'import de l'objet 'api'
- * Utilise donc l'implémentation directe avec apiPost
  */
 export async function login(credentials: LoginCredentials) {
-  // TODO: Utiliser authenticateauser de api/root.ts quand il sera corrigé
-  // pour accepter les credentials et avoir les imports nécessaires
-
-  const formData = new FormData()
-  formData.append('username', credentials.username)
-  formData.append('password', credentials.password)
-
-  return apiPost('/login', formData, {
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
+  return authenticateauser({
+    username: credentials.username,
+    password: credentials.password,
   })
 }
 
@@ -47,7 +35,7 @@ export async function login(credentials: LoginCredentials) {
  * Déconnecte l'utilisateur
  */
 export async function logout() {
-  return apiPost('/logout')
+  return apiLogout()
 }
 
 /**
@@ -55,7 +43,7 @@ export async function logout() {
  */
 export async function refresh() {
   try {
-    return await apiPost('/refresh-token')
+    return await renewtoken()
   } catch (error: unknown) {
     const axiosError = error as AxiosError
     // Si l'erreur est 400, on l'ignore silencieusement
@@ -65,11 +53,4 @@ export async function refresh() {
     // Sinon, on relance l'erreur
     throw error
   }
-}
-
-/**
- * Récupère le profil de l'utilisateur connecté
- */
-export async function getCurrentUser() {
-  return apiGet('/me')
 }

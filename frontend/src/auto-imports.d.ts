@@ -64,6 +64,7 @@ declare global {
   const getCachedResponse: typeof import('./services/useOfflineCache')['getCachedResponse']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
+  const getCurrentUser: typeof import('./services/authService')['getCurrentUser']
   const getElement: typeof import('./services/elementService')['getElement']
   const getEnvironment: typeof import('./services/environmentService')['getEnvironment']
   const getGroup: typeof import('./services/groupService')['getGroup']
@@ -383,6 +384,9 @@ declare global {
   export type { ApiError } from './services/api'
   import('./services/api')
   // @ts-ignore
+  export type { LoginCredentials, LoginResponseData, UserProfileData } from './services/authService'
+  import('./services/authService')
+  // @ts-ignore
   export type { Group, GroupCreate, GroupUpdate, User, Policy, Tag } from './services/groupService'
   import('./services/groupService')
   // @ts-ignore
@@ -449,6 +453,7 @@ declare module 'vue' {
     readonly getCachedResponse: UnwrapRef<typeof import('./services/useOfflineCache')['getCachedResponse']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
+    readonly getCurrentUser: UnwrapRef<typeof import('./services/authService')['getCurrentUser']>
     readonly getGroup: UnwrapRef<typeof import('./services/groupService')['getGroup']>
     readonly getGroupFunctions: UnwrapRef<typeof import('./services/groupService')['getGroupFunctions']>
     readonly getGroupPolicies: UnwrapRef<typeof import('./services/groupService')['getGroupPolicies']>
@@ -468,6 +473,7 @@ declare module 'vue' {
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly listAllGroups: UnwrapRef<typeof import('./services/groupService')['listAllGroups']>
     readonly login: UnwrapRef<typeof import('./services/authService')['login']>
+    readonly logout: UnwrapRef<typeof import('./services/authService')['logout']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
     readonly mapActions: UnwrapRef<typeof import('pinia')['mapActions']>
     readonly mapGetters: UnwrapRef<typeof import('pinia')['mapGetters']>
@@ -550,7 +556,6 @@ declare module 'vue' {
     readonly unrefElement: UnwrapRef<typeof import('@vueuse/core')['unrefElement']>
     readonly until: UnwrapRef<typeof import('@vueuse/core')['until']>
     readonly updateGroup: UnwrapRef<typeof import('./services/groupService')['updateGroup']>
-    readonly updateSuperadmin: UnwrapRef<typeof import('./services/userService')['updateSuperadmin']>
     readonly useActiveElement: UnwrapRef<typeof import('@vueuse/core')['useActiveElement']>
     readonly useAnimate: UnwrapRef<typeof import('@vueuse/core')['useAnimate']>
     readonly useArrayDifference: UnwrapRef<typeof import('@vueuse/core')['useArrayDifference']>

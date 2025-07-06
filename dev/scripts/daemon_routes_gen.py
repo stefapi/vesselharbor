@@ -179,8 +179,13 @@ class HTTPRequest(BaseModel):
     @property
     def content(self)-> str:
         if 'content' in self.requestBody:
+            # Check for JSON content type
             if 'application/json' in self.requestBody['content']:
                 a= self.requestBody['content']['application/json']['schema']['$ref'].split("/")[-1]
+                return a
+            # Check for form data content type
+            elif 'application/x-www-form-urlencoded' in self.requestBody['content']:
+                a= self.requestBody['content']['application/x-www-form-urlencoded']['schema']['$ref'].split("/")[-1]
                 return a
         return ""
 
@@ -214,6 +219,25 @@ class HTTPRequest(BaseModel):
     @property
     def js_docs(self):
         return self.description.replace("\n", "  \n  * ")
+
+    @computed_field
+    @property
+    def is_form_data_endpoint(self) -> bool:
+        """
+        Detect if this endpoint requires form data (like login endpoints).
+        Returns True for endpoints that use OAuth2PasswordRequestForm or similar form-based authentication.
+        """
+        # Check if this is a login endpoint
+        if self.path == "/login" and self.request_type == RequestType.post:
+            return True
+
+        # Check if the requestBody indicates form data
+        if 'content' in self.requestBody:
+            content_types = self.requestBody['content'].keys()
+            if 'application/x-www-form-urlencoded' in content_types:
+                return True
+
+        return False
 
 
 class PathObject(BaseModel):

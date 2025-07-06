@@ -57,10 +57,21 @@ def create_user(organization_id: int, user_in: UserCreate, current_user: User = 
         raise HTTPException(status_code=403, detail="Insufficient permission")
     if user_repo.get_user_by_email(db, user_in.email):
         raise HTTPException(status_code=400, detail="Email already registered")
-    is_superadmin =  False
+
+    # Check if organization exists
+    from ..repositories import organization_repo
+    organization = organization_repo.get_organization(db, organization_id)
+    if not organization:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    is_superadmin = False
     user = user_repo.create_user(db, email=user_in.email, username=user_in.username, first_name=user_in.first_name,
                                  last_name=user_in.last_name, password=user_in.password, is_superadmin=is_superadmin)
-    audit.log_action(db, user.id, "User creation", f"Creation of user {user.email}")
+
+    # Associate user with organization
+    user_repo.add_user_to_organization(db, user, organization)
+
+    audit.log_action(db, user.id, "User creation", f"Creation of user {user.email} in organization {organization.name}")
     return response.success_response(UserOut.model_validate(user), "User created successfully")
 
 @router.get("", response_model=BaseResponse[List[UserOut]],

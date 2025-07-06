@@ -768,6 +768,17 @@ VITE_API_BASE_URL=http://localhost:8010/api/v1
 VITE_APP_TITLE=VesselHarbor
 ```
 
+## frontend api
+
+the frontend api is located in frontend/src/api
+this directory is generated and must be never modified but used as is.
+if you change  something in the backend related to the endpoints , you have to regenerate the frontend/src/api directory by typing:
+
+```
+make generate-api
+```
+
+
 ## Troubleshooting Common Issues
 
 ### Database Connection Issues
@@ -792,3 +803,4 @@ When making significant changes, update the relevant documentation in the `.juni
 - Architecture (`.junie/architecture.md`)
 - Authentication (`.junie/authentication.md`)
 - Changelog (`.junie/changelog.md`)
+
