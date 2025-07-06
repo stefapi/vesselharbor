@@ -6,7 +6,9 @@
 // biome-ignore lint: disable
 export {}
 declare global {
+  const ACTIONS: typeof import('@/composables/business')['ACTIONS']
   const EffectScope: typeof import('vue')['EffectScope']
+  const RESOURCES: typeof import('@/composables/business')['RESOURCES']
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
   const addFunctionToGroup: typeof import('./services/groupService')['addFunctionToGroup']
   const addPolicyToGroup: typeof import('./services/groupService')['addPolicyToGroup']
@@ -20,6 +22,7 @@ declare global {
   const assignUserToGroup: typeof import('./services/groupService')['assignUserToGroup']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
+  const businessValidationRules: typeof import('@/composables/business')['businessValidationRules']
   const changePassword: typeof import('./services/userService')['changePassword']
   const clearAllOfflineData: typeof import('./services/clearOfflineData')['clearAllOfflineData']
   const clearQueuedAction: typeof import('./services/offlineQueue')['clearQueuedAction']
@@ -75,6 +78,7 @@ declare global {
   const getQueuedActions: typeof import('./services/offlineQueue')['getQueuedActions']
   const getUser: typeof import('./services/authService')['getUser']
   const getUserGroups: typeof import('./services/userService')['getUserGroups']
+  const globalModal: typeof import('@/composables/ui')['globalModal']
   const h: typeof import('vue')['h']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
   const incrementRetryCount: typeof import('./services/offlineQueue')['incrementRetryCount']
@@ -199,6 +203,7 @@ declare global {
   const useAsyncQueue: typeof import('@vueuse/core')['useAsyncQueue']
   const useAsyncState: typeof import('@vueuse/core')['useAsyncState']
   const useAttrs: typeof import('vue')['useAttrs']
+  const useAuth: typeof import('@/composables/api')['useAuth']
   const useAuthStore: typeof import('./store/auth')['useAuthStore']
   const useBase64: typeof import('@vueuse/core')['useBase64']
   const useBattery: typeof import('@vueuse/core')['useBattery']
@@ -237,6 +242,7 @@ declare global {
   const useElementHover: typeof import('@vueuse/core')['useElementHover']
   const useElementSize: typeof import('@vueuse/core')['useElementSize']
   const useElementVisibility: typeof import('@vueuse/core')['useElementVisibility']
+  const useEnvironments: typeof import('@/composables/api')['useEnvironments']
   const useEnvironmentsStore: typeof import('./store/entities')['useEnvironmentsStore']
   const useEventBus: typeof import('@vueuse/core')['useEventBus']
   const useEventListener: typeof import('@vueuse/core')['useEventListener']
@@ -248,10 +254,12 @@ declare global {
   const useFileSystemAccess: typeof import('@vueuse/core')['useFileSystemAccess']
   const useFocus: typeof import('@vueuse/core')['useFocus']
   const useFocusWithin: typeof import('@vueuse/core')['useFocusWithin']
+  const useForm: typeof import('@/composables/ui')['useForm']
   const useFps: typeof import('@vueuse/core')['useFps']
   const useFullscreen: typeof import('@vueuse/core')['useFullscreen']
   const useGamepad: typeof import('@vueuse/core')['useGamepad']
   const useGeolocation: typeof import('@vueuse/core')['useGeolocation']
+  const useGroups: typeof import('@/composables/api')['useGroups']
   const useGroupsStore: typeof import('./store/group')['useGroupsStore']
   const useHead: (typeof import('@vueuse/head'))['useHead']
   const useId: typeof import('vue')['useId']
@@ -271,6 +279,7 @@ declare global {
   const useMediaQuery: typeof import('@vueuse/core')['useMediaQuery']
   const useMemoize: typeof import('@vueuse/core')['useMemoize']
   const useMemory: typeof import('@vueuse/core')['useMemory']
+  const useModal: typeof import('@/composables/ui')['useModal']
   const useModel: typeof import('vue')['useModel']
   const useMounted: typeof import('@vueuse/core')['useMounted']
   const useMouse: typeof import('@vueuse/core')['useMouse']
@@ -285,12 +294,14 @@ declare global {
   const useOfflineSyncStore: typeof import('./store/offlineSync')['useOfflineSyncStore']
   const useOffsetPagination: typeof import('@vueuse/core')['useOffsetPagination']
   const useOnline: typeof import('@vueuse/core')['useOnline']
+  const useOrganizations: typeof import('@/composables/api')['useOrganizations']
   const useOrganizationsStore: typeof import('./store/organization')['useOrganizationsStore']
   const usePageLeave: typeof import('@vueuse/core')['usePageLeave']
   const useParallax: typeof import('@vueuse/core')['useParallax']
   const useParentElement: typeof import('@vueuse/core')['useParentElement']
   const usePerformanceObserver: typeof import('@vueuse/core')['usePerformanceObserver']
   const usePermission: typeof import('@vueuse/core')['usePermission']
+  const usePermissions: typeof import('@/composables/business')['usePermissions']
   const usePointer: typeof import('@vueuse/core')['usePointer']
   const usePointerLock: typeof import('@vueuse/core')['usePointerLock']
   const usePointerSwipe: typeof import('@vueuse/core')['usePointerSwipe']
@@ -325,6 +336,7 @@ declare global {
   const useStyleTag: typeof import('@vueuse/core')['useStyleTag']
   const useSupported: typeof import('@vueuse/core')['useSupported']
   const useSwipe: typeof import('@vueuse/core')['useSwipe']
+  const useTable: typeof import('@/composables/ui')['useTable']
   const useTemplateRef: typeof import('vue')['useTemplateRef']
   const useTemplateRefsList: typeof import('@vueuse/core')['useTemplateRefsList']
   const useTextDirection: typeof import('@vueuse/core')['useTextDirection']
@@ -345,9 +357,11 @@ declare global {
   const useTransition: typeof import('@vueuse/core')['useTransition']
   const useUrlSearchParams: typeof import('@vueuse/core')['useUrlSearchParams']
   const useUserMedia: typeof import('@vueuse/core')['useUserMedia']
+  const useUsers: typeof import('@/composables/api')['useUsers']
   const useUsersStore: typeof import('./store/users')['useUsersStore']
   const useVModel: typeof import('@vueuse/core')['useVModel']
   const useVModels: typeof import('@vueuse/core')['useVModels']
+  const useValidation: typeof import('@/composables/business')['useValidation']
   const useVibrate: typeof import('@vueuse/core')['useVibrate']
   const useVirtualList: typeof import('@vueuse/core')['useVirtualList']
   const useWakeLock: typeof import('@vueuse/core')['useWakeLock']
@@ -358,6 +372,7 @@ declare global {
   const useWindowFocus: typeof import('@vueuse/core')['useWindowFocus']
   const useWindowScroll: typeof import('@vueuse/core')['useWindowScroll']
   const useWindowSize: typeof import('@vueuse/core')['useWindowSize']
+  const validationRules: typeof import('@/composables/ui')['validationRules']
   const watch: typeof import('vue')['watch']
   const watchArray: typeof import('@vueuse/core')['watchArray']
   const watchAtMost: typeof import('@vueuse/core')['watchAtMost']
@@ -402,7 +417,9 @@ import { UnwrapRef } from 'vue'
 declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
+    readonly ACTIONS: UnwrapRef<typeof import('@/composables/business')['ACTIONS']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
+    readonly RESOURCES: UnwrapRef<typeof import('@/composables/business')['RESOURCES']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly addFunctionToGroup: UnwrapRef<typeof import('./services/groupService')['addFunctionToGroup']>
     readonly addPolicyToGroup: UnwrapRef<typeof import('./services/groupService')['addPolicyToGroup']>
@@ -416,6 +433,7 @@ declare module 'vue' {
     readonly assignUserToGroup: UnwrapRef<typeof import('./services/groupService')['assignUserToGroup']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
+    readonly businessValidationRules: UnwrapRef<typeof import('@/composables/business')['businessValidationRules']>
     readonly clearAllOfflineData: UnwrapRef<typeof import('./services/clearOfflineData')['clearAllOfflineData']>
     readonly clearQueuedAction: UnwrapRef<typeof import('./services/offlineQueue')['clearQueuedAction']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
@@ -453,13 +471,13 @@ declare module 'vue' {
     readonly getCachedResponse: UnwrapRef<typeof import('./services/useOfflineCache')['getCachedResponse']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
-    readonly getCurrentUser: UnwrapRef<typeof import('./services/authService')['getCurrentUser']>
     readonly getGroup: UnwrapRef<typeof import('./services/groupService')['getGroup']>
     readonly getGroupFunctions: UnwrapRef<typeof import('./services/groupService')['getGroupFunctions']>
     readonly getGroupPolicies: UnwrapRef<typeof import('./services/groupService')['getGroupPolicies']>
     readonly getGroupTags: UnwrapRef<typeof import('./services/groupService')['getGroupTags']>
     readonly getGroupUsers: UnwrapRef<typeof import('./services/groupService')['getGroupUsers']>
     readonly getQueuedActions: UnwrapRef<typeof import('./services/offlineQueue')['getQueuedActions']>
+    readonly globalModal: UnwrapRef<typeof import('@/composables/ui')['globalModal']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly incrementRetryCount: UnwrapRef<typeof import('./services/offlineQueue')['incrementRetryCount']>
@@ -573,6 +591,7 @@ declare module 'vue' {
     readonly useAsyncQueue: UnwrapRef<typeof import('@vueuse/core')['useAsyncQueue']>
     readonly useAsyncState: UnwrapRef<typeof import('@vueuse/core')['useAsyncState']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
+    readonly useAuth: UnwrapRef<typeof import('@/composables/api')['useAuth']>
     readonly useAuthStore: UnwrapRef<typeof import('./store/auth')['useAuthStore']>
     readonly useBase64: UnwrapRef<typeof import('@vueuse/core')['useBase64']>
     readonly useBattery: UnwrapRef<typeof import('@vueuse/core')['useBattery']>
@@ -611,6 +630,7 @@ declare module 'vue' {
     readonly useElementHover: UnwrapRef<typeof import('@vueuse/core')['useElementHover']>
     readonly useElementSize: UnwrapRef<typeof import('@vueuse/core')['useElementSize']>
     readonly useElementVisibility: UnwrapRef<typeof import('@vueuse/core')['useElementVisibility']>
+    readonly useEnvironments: UnwrapRef<typeof import('@/composables/api')['useEnvironments']>
     readonly useEnvironmentsStore: UnwrapRef<typeof import('./store/entities')['useEnvironmentsStore']>
     readonly useEventBus: UnwrapRef<typeof import('@vueuse/core')['useEventBus']>
     readonly useEventListener: UnwrapRef<typeof import('@vueuse/core')['useEventListener']>
@@ -622,10 +642,12 @@ declare module 'vue' {
     readonly useFileSystemAccess: UnwrapRef<typeof import('@vueuse/core')['useFileSystemAccess']>
     readonly useFocus: UnwrapRef<typeof import('@vueuse/core')['useFocus']>
     readonly useFocusWithin: UnwrapRef<typeof import('@vueuse/core')['useFocusWithin']>
+    readonly useForm: UnwrapRef<typeof import('@/composables/ui')['useForm']>
     readonly useFps: UnwrapRef<typeof import('@vueuse/core')['useFps']>
     readonly useFullscreen: UnwrapRef<typeof import('@vueuse/core')['useFullscreen']>
     readonly useGamepad: UnwrapRef<typeof import('@vueuse/core')['useGamepad']>
     readonly useGeolocation: UnwrapRef<typeof import('@vueuse/core')['useGeolocation']>
+    readonly useGroups: UnwrapRef<typeof import('@/composables/api')['useGroups']>
     readonly useGroupsStore: UnwrapRef<typeof import('./store/group')['useGroupsStore']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
     readonly useIdle: UnwrapRef<typeof import('@vueuse/core')['useIdle']>
@@ -644,6 +666,7 @@ declare module 'vue' {
     readonly useMediaQuery: UnwrapRef<typeof import('@vueuse/core')['useMediaQuery']>
     readonly useMemoize: UnwrapRef<typeof import('@vueuse/core')['useMemoize']>
     readonly useMemory: UnwrapRef<typeof import('@vueuse/core')['useMemory']>
+    readonly useModal: UnwrapRef<typeof import('@/composables/ui')['useModal']>
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
     readonly useMounted: UnwrapRef<typeof import('@vueuse/core')['useMounted']>
     readonly useMouse: UnwrapRef<typeof import('@vueuse/core')['useMouse']>
@@ -658,12 +681,14 @@ declare module 'vue' {
     readonly useOfflineSyncStore: UnwrapRef<typeof import('./store/offlineSync')['useOfflineSyncStore']>
     readonly useOffsetPagination: UnwrapRef<typeof import('@vueuse/core')['useOffsetPagination']>
     readonly useOnline: UnwrapRef<typeof import('@vueuse/core')['useOnline']>
+    readonly useOrganizations: UnwrapRef<typeof import('@/composables/api')['useOrganizations']>
     readonly useOrganizationsStore: UnwrapRef<typeof import('./store/organization')['useOrganizationsStore']>
     readonly usePageLeave: UnwrapRef<typeof import('@vueuse/core')['usePageLeave']>
     readonly useParallax: UnwrapRef<typeof import('@vueuse/core')['useParallax']>
     readonly useParentElement: UnwrapRef<typeof import('@vueuse/core')['useParentElement']>
     readonly usePerformanceObserver: UnwrapRef<typeof import('@vueuse/core')['usePerformanceObserver']>
     readonly usePermission: UnwrapRef<typeof import('@vueuse/core')['usePermission']>
+    readonly usePermissions: UnwrapRef<typeof import('@/composables/business')['usePermissions']>
     readonly usePointer: UnwrapRef<typeof import('@vueuse/core')['usePointer']>
     readonly usePointerLock: UnwrapRef<typeof import('@vueuse/core')['usePointerLock']>
     readonly usePointerSwipe: UnwrapRef<typeof import('@vueuse/core')['usePointerSwipe']>
@@ -697,6 +722,7 @@ declare module 'vue' {
     readonly useStyleTag: UnwrapRef<typeof import('@vueuse/core')['useStyleTag']>
     readonly useSupported: UnwrapRef<typeof import('@vueuse/core')['useSupported']>
     readonly useSwipe: UnwrapRef<typeof import('@vueuse/core')['useSwipe']>
+    readonly useTable: UnwrapRef<typeof import('@/composables/ui')['useTable']>
     readonly useTemplateRef: UnwrapRef<typeof import('vue')['useTemplateRef']>
     readonly useTemplateRefsList: UnwrapRef<typeof import('@vueuse/core')['useTemplateRefsList']>
     readonly useTextDirection: UnwrapRef<typeof import('@vueuse/core')['useTextDirection']>
@@ -717,9 +743,11 @@ declare module 'vue' {
     readonly useTransition: UnwrapRef<typeof import('@vueuse/core')['useTransition']>
     readonly useUrlSearchParams: UnwrapRef<typeof import('@vueuse/core')['useUrlSearchParams']>
     readonly useUserMedia: UnwrapRef<typeof import('@vueuse/core')['useUserMedia']>
+    readonly useUsers: UnwrapRef<typeof import('@/composables/api')['useUsers']>
     readonly useUsersStore: UnwrapRef<typeof import('./store/users')['useUsersStore']>
     readonly useVModel: UnwrapRef<typeof import('@vueuse/core')['useVModel']>
     readonly useVModels: UnwrapRef<typeof import('@vueuse/core')['useVModels']>
+    readonly useValidation: UnwrapRef<typeof import('@/composables/business')['useValidation']>
     readonly useVibrate: UnwrapRef<typeof import('@vueuse/core')['useVibrate']>
     readonly useVirtualList: UnwrapRef<typeof import('@vueuse/core')['useVirtualList']>
     readonly useWakeLock: UnwrapRef<typeof import('@vueuse/core')['useWakeLock']>
@@ -730,6 +758,7 @@ declare module 'vue' {
     readonly useWindowFocus: UnwrapRef<typeof import('@vueuse/core')['useWindowFocus']>
     readonly useWindowScroll: UnwrapRef<typeof import('@vueuse/core')['useWindowScroll']>
     readonly useWindowSize: UnwrapRef<typeof import('@vueuse/core')['useWindowSize']>
+    readonly validationRules: UnwrapRef<typeof import('@/composables/ui')['validationRules']>
     readonly watch: UnwrapRef<typeof import('vue')['watch']>
     readonly watchArray: UnwrapRef<typeof import('@vueuse/core')['watchArray']>
     readonly watchAtMost: UnwrapRef<typeof import('@vueuse/core')['watchAtMost']>

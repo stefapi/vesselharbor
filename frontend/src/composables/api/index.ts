@@ -32,8 +32,8 @@
  */
 
 // API composables will be exported here
+export { useAuth } from './useAuth'
+export { useEnvironments } from './useEnvironments'
+export { useGroups } from './useGroups'
+export { useOrganizations } from './useOrganizations'
 export { useUsers } from './useUsers'
-// Future exports:
-// export { useAuth } from './useAuth'
-// export { useGroups } from './useGroups'
-// export { useEnvironments } from './useEnvironments'

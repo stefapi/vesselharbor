@@ -33,8 +33,8 @@
 
 import { ref, computed, readonly } from 'vue'
 import { useAsyncState } from '@vueuse/core'
-import { getUsersService, createUserService, updateUserService, deleteUserService } from '@/services'
-import type { User, CreateUserInput, UpdateUserInput } from '@/types'
+import { listusers, createauser, createauserinfreemode, updateuserinformation, deleteauser } from '@/api'
+import type { User, UserCreate, UserUpdate } from '@/api/types'
 
 export function useUsers() {
   const users = ref<User[]>([])
@@ -43,19 +43,23 @@ export function useUsers() {
 
   const { execute: fetchUsers, isLoading: isFetching } = useAsyncState(
     async () => {
-      const response = await getUsersService()
-      users.value = response.data
-      return response.data
+      const response = await listusers()
+      users.value = Array.isArray(response.data) ? response.data : []
+      return users.value
     },
     [],
     { immediate: false }
   )
 
-  const createUser = async (userData: CreateUserInput) => {
+  const createUser = async (userData: UserCreate, organizationId?: number) => {
     loading.value = true
     try {
-      const response = await createUserService(userData)
-      users.value.push(response.data)
+      const response = organizationId
+        ? await createauser(organizationId, userData)
+        : await createauserinfreemode(userData)
+      const usersList = Array.isArray(users.value) ? users.value : []
+      usersList.push(response.data)
+      users.value = usersList
       return response.data
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Erreur lors de la création'
@@ -65,13 +69,15 @@ export function useUsers() {
     }
   }
 
-  const updateUser = async (id: number, userData: UpdateUserInput) => {
+  const updateUser = async (id: number, userData: UserUpdate) => {
     loading.value = true
     try {
-      const response = await updateUserService(id, userData)
-      const index = users.value.findIndex(u => u.id === id)
+      const response = await updateuserinformation(id, userData)
+      const usersList = Array.isArray(users.value) ? users.value : []
+      const index = usersList.findIndex(u => u.id === id)
       if (index !== -1) {
-        users.value[index] = response.data
+        usersList[index] = response.data
+        users.value = usersList
       }
       return response.data
     } catch (err) {
@@ -85,8 +91,9 @@ export function useUsers() {
   const deleteUser = async (id: number) => {
     loading.value = true
     try {
-      await deleteUserService(id)
-      users.value = users.value.filter(u => u.id !== id)
+      await deleteauser(id)
+      const usersList = Array.isArray(users.value) ? users.value : []
+      users.value = usersList.filter(u => u.id !== id)
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Erreur lors de la suppression'
       throw err
@@ -95,8 +102,14 @@ export function useUsers() {
     }
   }
 
-  const activeUsers = computed(() => users.value.filter(u => u.isActive))
-  const userCount = computed(() => users.value.length)
+  const activeUsers = computed(() => {
+    const usersList = Array.isArray(users.value) ? users.value : []
+    return usersList.filter(u => u.isActive)
+  })
+  const userCount = computed(() => {
+    const usersList = Array.isArray(users.value) ? users.value : []
+    return usersList.length
+  })
 
   return {
     // State

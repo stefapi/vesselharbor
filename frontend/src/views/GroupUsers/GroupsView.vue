@@ -4,7 +4,7 @@
     <h1 class="u-text-3xl u-font-bold u-mb-6">Gestion des Groupes</h1>
 
     <!-- Loading indicator -->
-    <div v-if="groupsStore.loading" class="u-mb-4">
+    <div v-if="loading" class="u-mb-4">
       <p class="u-text-gray-600">Chargement des groupes...</p>
     </div>
 
@@ -30,7 +30,7 @@
     </div>
 
     <!-- Tableau listant les groupes -->
-    <div v-if="!groupsStore.loading">
+    <div v-if="!loading">
       <table class="u-w-full u-border-collapse u-mt-4">
         <thead>
           <tr class="u-bg-gray-100">
@@ -42,7 +42,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="group in groupsStore.paginatedGroups" :key="group.id" class="u-hover:bg-gray-50">
+          <tr v-for="group in paginatedGroups" :key="group.id" class="u-hover:bg-gray-50">
             <td class="u-border u-border-gray-300 u-px-4 u-py-2">{{ group.id }}</td>
             <td class="u-border u-border-gray-300 u-px-4 u-py-2">{{ group.name }}</td>
             <td class="u-border u-border-gray-300 u-px-4 u-py-2">{{ group.description }}</td>
@@ -62,13 +62,13 @@
 
       <!-- Pagination -->
       <div class="u-mt-4 u-flex u-items-center u-gap-4">
-        <p>Total : {{ groupsStore.filteredGroups.length }} groupes</p>
-        <button :disabled="groupsStore.currentPage === 1" @click="prevPage" class="u-px-3 u-py-1 u-bg-gray-500 u-text-white u-rounded u-disabled:opacity-50 u-disabled:cursor-not-allowed u-hover:bg-gray-600">
+        <p>Total : {{ filteredGroups.length }} groupes</p>
+        <button :disabled="currentPage === 1" @click="prevPage" class="u-px-3 u-py-1 u-bg-gray-500 u-text-white u-rounded u-disabled:opacity-50 u-disabled:cursor-not-allowed u-hover:bg-gray-600">
           Précédent
         </button>
-        <span class="u-font-medium">Page {{ groupsStore.currentPage }} / {{ groupsStore.totalPages }}</span>
+        <span class="u-font-medium">Page {{ currentPage }} / {{ totalPages }}</span>
         <button
-          :disabled="groupsStore.currentPage >= groupsStore.totalPages"
+          :disabled="currentPage >= totalPages"
           @click="nextPage"
           class="u-px-3 u-py-1 u-bg-gray-500 u-text-white u-rounded u-disabled:opacity-50 u-disabled:cursor-not-allowed u-hover:bg-gray-600"
         >
@@ -85,6 +85,8 @@
     </div>
 
     <!-- Modal pour la gestion des utilisateurs du groupe -->
+    <!-- TODO: Create GroupUsersManager component -->
+    <!--
     <div v-if="showUserManager" class="u-fixed u-top-0 u-left-0 u-right-0 u-bottom-0 u-bg-black u-bg-opacity-50 u-flex u-justify-center u-items-center">
       <div class="u-bg-white u-p-6 u-rounded-lg u-w-4/5 u-max-w-4xl">
         <h2 class="u-text-xl u-font-bold u-mb-4">Gérer les utilisateurs du groupe "{{ managingGroup?.name }}"</h2>
@@ -92,8 +94,11 @@
         <button @click="closeUserManager" class="u-px-4 u-py-2 u-bg-gray-500 u-text-white u-rounded u-mt-4 u-hover:bg-gray-600">Fermer</button>
       </div>
     </div>
+    -->
 
     <!-- Modal pour la gestion des politiques du groupe -->
+    <!-- TODO: Create GroupPoliciesManager component -->
+    <!--
     <div v-if="showPolicyManager" class="u-fixed u-top-0 u-left-0 u-right-0 u-bottom-0 u-bg-black u-bg-opacity-50 u-flex u-justify-center u-items-center">
       <div class="u-bg-white u-p-6 u-rounded-lg u-w-4/5 u-max-w-4xl">
         <h2 class="u-text-xl u-font-bold u-mb-4">Gérer les politiques du groupe "{{ managingGroup?.name }}"</h2>
@@ -101,8 +106,11 @@
         <button @click="closePolicyManager" class="u-px-4 u-py-2 u-bg-gray-500 u-text-white u-rounded u-mt-4 u-hover:bg-gray-600">Fermer</button>
       </div>
     </div>
+    -->
 
     <!-- Modal pour la gestion des tags du groupe -->
+    <!-- TODO: Create GroupTagsManager component -->
+    <!--
     <div v-if="showTagManager" class="u-fixed u-top-0 u-left-0 u-right-0 u-bottom-0 u-bg-black u-bg-opacity-50 u-flex u-justify-center u-items-center">
       <div class="u-bg-white u-p-6 u-rounded-lg u-w-4/5 u-max-w-4xl">
         <h2 class="u-text-xl u-font-bold u-mb-4">Gérer les tags du groupe "{{ managingGroup?.name }}"</h2>
@@ -110,22 +118,35 @@
         <button @click="closeTagManager" class="u-px-4 u-py-2 u-bg-gray-500 u-text-white u-rounded u-mt-4 u-hover:bg-gray-600">Fermer</button>
       </div>
     </div>
+    -->
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import GroupForm from '@/components/business/Groups/GroupForm.vue'
-import { useGroupsStore } from '@/store/group'
-import { deleteGroup as deleteGroupService, type Group } from '@/services/groupService'
 import { useNotificationStore } from '@/store/notifications'
+import type { Group } from '@/services/groupService'
 
 // Import placeholder components (these would need to be created)
 // import GroupUsersManager from '@/components/business/Groups/GroupUsersManager.vue'
 // import GroupPoliciesManager from '@/components/business/Groups/GroupPoliciesManager.vue'
 // import GroupTagsManager from '@/components/business/Groups/GroupTagsManager.vue'
 
-const groupsStore = useGroupsStore()
+// Use new composables instead of direct store access
+const {
+  groups,
+  loading,
+  error,
+  fetchGroups,
+  deleteGroup,
+  filteredGroups,
+  paginatedGroups,
+  currentPage,
+  totalPages
+} = useGroups()
+
+const { showConfirm, showSuccess, showError } = useModal()
 const notificationStore = useNotificationStore()
 
 const filterName = ref('')
@@ -136,50 +157,41 @@ const showUserManager = ref(false)
 const showPolicyManager = ref(false)
 const showTagManager = ref(false)
 
-const fetchGroups = async () => {
-  try {
-    await groupsStore.fetchGroups()
-  } catch (error) {
-    notificationStore.addNotification({
-      type: 'error',
-      message: 'Erreur lors du chargement des groupes',
-    })
-  }
-}
+// Fetch groups on component mount
+fetchGroups()
 
 const applyFilter = () => {
-  groupsStore.setFilter(filterName.value)
+  // Use composable's built-in filtering if available, otherwise fetch with filter
+  fetchGroups({ name: filterName.value })
 }
 
 const prevPage = () => {
-  if (groupsStore.currentPage > 1) {
-    groupsStore.setPage(groupsStore.currentPage - 1)
+  if (currentPage.value > 1) {
+    fetchGroups({ page: currentPage.value - 1 })
   }
 }
 
 const nextPage = () => {
-  if (groupsStore.currentPage < groupsStore.totalPages) {
-    groupsStore.setPage(groupsStore.currentPage + 1)
+  if (currentPage.value < totalPages.value) {
+    fetchGroups({ page: currentPage.value + 1 })
   }
 }
 
 const deleteGroupAction = async (groupId: number) => {
-  if (!confirm('Êtes-vous sûr de vouloir supprimer ce groupe ?')) {
+  const confirmed = await showConfirm(
+    'Confirmer la suppression',
+    'Êtes-vous sûr de vouloir supprimer ce groupe ?'
+  )
+
+  if (!confirmed) {
     return
   }
 
   try {
-    await deleteGroupService(groupId)
-    notificationStore.addNotification({
-      type: 'success',
-      message: 'Groupe supprimé avec succès',
-    })
-    fetchGroups()
+    await deleteGroup(groupId)
+    showSuccess('Groupe supprimé', 'Le groupe a été supprimé avec succès')
   } catch (error) {
-    notificationStore.addNotification({
-      type: 'error',
-      message: 'Erreur lors de la suppression du groupe',
-    })
+    showError('Erreur', 'Erreur lors de la suppression du groupe')
   }
 }
 

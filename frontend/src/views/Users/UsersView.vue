@@ -11,10 +11,10 @@
       <user-filters :filter-email="filterEmail" :is-form-open="showForm || !!editingUser" @filter="onFilterChange" @toggle-form="toggleForm" />
 
       <!-- Tableau -->
-      <users-table :users="usersStore.users" @edit="editUser" @delete="confirmDelete" @manage-groups="manageGroups" @toggle-superadmin="handleToggleSuperadmin" />
+      <users-table :users="users" @edit="editUser" @delete="confirmDelete" @manage-groups="manageGroups" @toggle-superadmin="handleToggleSuperadmin" />
 
       <!-- Pagination custom -->
-      <users-pagination :total="usersStore.total" :per-page="usersStore.perPage" :current-page="usersStore.currentPage" @page-change="handlePageChange" />
+      <users-pagination :total="total" :per-page="perPage" :current-page="currentPage" @page-change="handlePageChange" />
 
       <!-- Drawer création / édition -->
       <user-form-drawer :visible="showForm || !!editingUser" :editing-user="editingUser" @close="closeDrawer" @success="onFormSuccess" />
@@ -37,14 +37,21 @@ import UserGroupsDialog from '@/components/business/Users/UserGroupsDialog.vue'
 import UsersPagination from '@/components/business/Users/UsersPagination.vue'
 import UsersTable from '@/components/business/Users/UsersTable.vue'
 
-// Services & stores
-import { deleteauser, modifysuperadminstatus } from '@/api'
-import { useNotificationStore } from '@/store/notifications'
-import { useUsersStore } from '@/store/users'
-import { useAuthStore } from '@/store/auth'
+// Use new composables instead of direct store access
+const {
+  users,
+  loading,
+  error,
+  fetchUsers,
+  deleteUser,
+  updateUser,
+  total,
+  currentPage,
+  perPage
+} = useUsers()
 
-// Stores et router
-const usersStore = useUsersStore()
+const { user: currentUser, isAuthenticated } = useAuth()
+const { canDelete, canUpdate } = usePermissions()
 const notificationStore = useNotificationStore()
 const router = useRouter()
 
@@ -55,24 +62,19 @@ const editingUser = ref<any>(null)
 const managingUser = ref<any>(null)
 const showGroupManager = ref(false)
 
-// Fetch initial
-const fetchUsers = async () => {
-  await usersStore.fetchUsers()
-}
+// Fetch initial data
 fetchUsers()
 
 // Gestion des filtres
 const onFilterChange = (email: string) => {
   filterEmail.value = email
-  usersStore.filters.email = email
-  usersStore.currentPage = 1
-  fetchUsers()
+  // Use composable's built-in filtering if available, otherwise fetch with filter
+  fetchUsers({ email })
 }
 
 // Pagination
 const handlePageChange = (page: number) => {
-  usersStore.currentPage = page
-  fetchUsers()
+  fetchUsers({ page })
 }
 
 // Formulaire
@@ -96,11 +98,8 @@ const onFormSuccess = () => {
 
 // Suppression avec boîte de confirmation
 const confirmDelete = async (userId: number) => {
-  // Importer le store d'authentification pour vérifier l'utilisateur courant
-  const authStore = useAuthStore()
-
   // Empêcher la suppression de soi-même
-  if (authStore.user && authStore.user.id === userId) {
+  if (currentUser.value && currentUser.value.id === userId) {
     notificationStore.addNotification({
       type: 'warning',
       message: 'Vous ne pouvez pas supprimer votre propre compte',
@@ -108,8 +107,17 @@ const confirmDelete = async (userId: number) => {
     return
   }
 
+  // Vérifier les permissions
+  if (!canDelete('USER')) {
+    notificationStore.addNotification({
+      type: 'error',
+      message: 'Vous n\'avez pas les permissions pour supprimer des utilisateurs',
+    })
+    return
+  }
+
   // Trouver l'utilisateur à supprimer
-  const userToDelete = usersStore.users.find((u) => u.id === userId)
+  const userToDelete = users.value.find((u) => u.id === userId)
 
   if (!userToDelete) {
     notificationStore.addNotification({
@@ -143,13 +151,12 @@ const confirmDelete = async (userId: number) => {
       })
     }
 
-    // Procéder à la suppression
-    await deleteauser(userId)
+    // Procéder à la suppression avec le composable
+    await deleteUser(userId)
     notificationStore.addNotification({
       type: 'success',
       message: 'Utilisateur supprimé avec succès',
     })
-    fetchUsers()
   } catch (error) {
     // Ne pas afficher d'erreur si l'utilisateur a simplement annulé l'opération
     if (error !== 'cancel' && error !== 'close') {
@@ -173,6 +180,15 @@ const closeGroupManager = () => {
 
 // Gestion du statut superadmin
 const handleToggleSuperadmin = async (user: any, isSuperadmin: boolean) => {
+  // Vérifier les permissions
+  if (!canUpdate('USER')) {
+    notificationStore.addNotification({
+      type: 'error',
+      message: 'Vous n\'avez pas les permissions pour modifier le statut des utilisateurs',
+    })
+    return
+  }
+
   try {
     const action = isSuperadmin ? 'promouvoir' : 'rétrograder'
     const status = isSuperadmin ? 'superadmin' : 'utilisateur normal'
@@ -188,17 +204,14 @@ const handleToggleSuperadmin = async (user: any, isSuperadmin: boolean) => {
       }
     )
 
-    // Appel API
-    await modifysuperadminstatus(user.id, { is_superadmin: isSuperadmin })
+    // Utiliser le composable pour la mise à jour
+    await updateUser(user.id, { is_superadmin: isSuperadmin })
 
     // Notification de succès
     notificationStore.addNotification({
       type: 'success',
       message: `Statut superadmin mis à jour pour ${user.email}`,
     })
-
-    // Rafraîchir la liste
-    fetchUsers()
   } catch (error) {
     // Ne pas afficher d'erreur si l'utilisateur a simplement annulé l'opération
     if (error !== 'cancel' && error !== 'close') {

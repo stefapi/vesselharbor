@@ -37,7 +37,7 @@
     <h1 class="u-text-3xl u-font-bold u-mb-6">Gestion des Organisations</h1>
 
     <!-- Loading indicator -->
-    <div v-if="organizationsStore.loading" class="u-mb-4">
+    <div v-if="loading" class="u-mb-4">
       <p class="u-text-gray-600">Chargement des organisations...</p>
     </div>
 
@@ -63,7 +63,7 @@
     </div>
 
     <!-- Tableau listant les organisations -->
-    <div v-if="!organizationsStore.loading">
+    <div v-if="!loading">
       <table class="u-w-full u-border-collapse u-mt-4">
         <thead>
           <tr class="u-bg-gray-100">
@@ -76,7 +76,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="organization in organizationsStore.paginatedOrganizations" :key="organization.id" class="u-hover:bg-gray-50">
+          <tr v-for="organization in paginatedOrganizations" :key="organization.id" class="u-hover:bg-gray-50">
             <td class="u-border u-border-gray-300 u-px-4 u-py-2">{{ organization.id }}</td>
             <td class="u-border u-border-gray-300 u-px-4 u-py-2">{{ organization.name }}</td>
             <td class="u-border u-border-gray-300 u-px-4 u-py-2">{{ organization.description || '-' }}</td>
@@ -114,13 +114,13 @@
 
       <!-- Pagination -->
       <div class="u-mt-4 u-flex u-items-center u-gap-4">
-        <p>Total : {{ organizationsStore.filteredOrganizations.length }} organisations</p>
-        <button :disabled="organizationsStore.currentPage === 1" @click="prevPage" class="u-px-3 u-py-1 u-bg-gray-500 u-text-white u-rounded u-disabled:opacity-50 u-disabled:cursor-not-allowed u-hover:bg-gray-600">
+        <p>Total : {{ filteredOrganizations.length }} organisations</p>
+        <button :disabled="currentPage === 1" @click="prevPage" class="u-px-3 u-py-1 u-bg-gray-500 u-text-white u-rounded u-disabled:opacity-50 u-disabled:cursor-not-allowed u-hover:bg-gray-600">
           Précédent
         </button>
-        <span class="u-font-medium">Page {{ organizationsStore.currentPage }} / {{ organizationsStore.totalPages }}</span>
+        <span class="u-font-medium">Page {{ currentPage }} / {{ totalPages }}</span>
         <button
-          :disabled="organizationsStore.currentPage >= organizationsStore.totalPages"
+          :disabled="currentPage >= totalPages"
           @click="nextPage"
           class="u-px-3 u-py-1 u-bg-gray-500 u-text-white u-rounded u-disabled:opacity-50 u-disabled:cursor-not-allowed u-hover:bg-gray-600"
         >
@@ -183,9 +183,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useOrganizationsStore } from '@/store/organization'
-import { deleteorganization } from '@/api/organizations'
+import { ref, computed, onMounted } from 'vue'
+import { useOrganizations } from '@/composables/api/useOrganizations'
 import type { OrganizationOut } from '@/api/types'
 import { useNotificationStore } from '@/store/notifications'
 import OrganizationForm from '@/components/business/Organizations/OrganizationForm.vue'
@@ -193,7 +192,15 @@ import OrganizationUsersManager from '@/components/business/Organizations/Organi
 import OrganizationGroupsManager from '@/components/business/Organizations/OrganizationGroupsManager.vue'
 import OrganizationEnvironmentsManager from '@/components/business/Organizations/OrganizationEnvironmentsManager.vue'
 
-const organizationsStore = useOrganizationsStore()
+const {
+  organizations,
+  loading,
+  error,
+  fetchOrganizations,
+  createNewOrganization,
+  updateExistingOrganization,
+  deleteExistingOrganization
+} = useOrganizations()
 const notificationStore = useNotificationStore()
 
 // State
@@ -206,9 +213,31 @@ const showGroupManager = ref(false)
 const showEnvironmentManager = ref(false)
 const managingOrganization = ref<OrganizationOut | null>(null)
 
+// Local pagination and filtering (TODO: Move to composable)
+const currentPage = ref(1)
+const perPage = ref(10)
+
+// Computed properties for filtering and pagination
+const filteredOrganizations = computed(() => {
+  if (!filterName.value) return organizations.value
+  return organizations.value.filter(org =>
+    org.name.toLowerCase().includes(filterName.value.toLowerCase())
+  )
+})
+
+const totalPages = computed(() => Math.ceil(filteredOrganizations.value.length / perPage.value))
+
+const paginatedOrganizations = computed(() => {
+  const start = (currentPage.value - 1) * perPage.value
+  const end = start + perPage.value
+  return filteredOrganizations.value.slice(start, end)
+})
+
 // Methods
 const applyFilter = () => {
-  organizationsStore.setFilter(filterName.value)
+  // Reset to first page when filtering
+  currentPage.value = 1
+  // The filtering is handled by the computed property filteredOrganizations
 }
 
 const toggleForm = () => {
@@ -221,7 +250,7 @@ const toggleForm = () => {
 const onFormSuccess = () => {
   showForm.value = false
   editingOrganization.value = null
-  organizationsStore.fetchOrganizations()
+  fetchOrganizations()
 }
 
 const editOrganization = (organization: OrganizationOut) => {
@@ -243,9 +272,12 @@ const confirmDelete = async () => {
   if (!deletingOrganization.value) return
 
   try {
-    await deleteorganization(deletingOrganization.value.id)
-    organizationsStore.fetchOrganizations()
+    await deleteExistingOrganization(deletingOrganization.value.id)
     deletingOrganization.value = null
+    notificationStore.addNotification({
+      type: 'success',
+      message: 'Organisation supprimée avec succès',
+    })
   } catch (error) {
     console.error('Erreur lors de la suppression de l\'organisation:', error)
     notificationStore.addNotification({
@@ -310,19 +342,19 @@ const handleCommand = (command: string, organization: OrganizationOut) => {
 }
 
 const prevPage = () => {
-  if (organizationsStore.currentPage > 1) {
-    organizationsStore.setPage(organizationsStore.currentPage - 1)
+  if (currentPage.value > 1) {
+    currentPage.value--
   }
 }
 
 const nextPage = () => {
-  if (organizationsStore.currentPage < organizationsStore.totalPages) {
-    organizationsStore.setPage(organizationsStore.currentPage + 1)
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++
   }
 }
 
 // Lifecycle
 onMounted(() => {
-  organizationsStore.fetchOrganizations()
+  fetchOrganizations()
 })
 </script>

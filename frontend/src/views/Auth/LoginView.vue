@@ -10,6 +10,8 @@
 </template>
 
 <script setup lang="ts">
+import LoginForm from '@/components/business/Auth/LoginForm.vue'
+
 interface LoginSubmitEvent {
   isValid: boolean
   credentials: {
@@ -18,6 +20,8 @@ interface LoginSubmitEvent {
   }
 }
 
+// Use the authStore for consistent authentication state
+const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
 const router = useRouter()
 
@@ -31,12 +35,10 @@ const handleFormSubmit = async (event: LoginSubmitEvent) => {
   }
 
   try {
-    const authStore = useAuthStore()
-
-    // Utiliser l'action login du store au lieu du service direct
+    // Use the authStore's login method for consistent authentication state
     await authStore.login({
       username: event.credentials.email,
-      password: event.credentials.password,
+      password: event.credentials.password
     })
 
     notificationStore.addNotification({
@@ -48,17 +50,17 @@ const handleFormSubmit = async (event: LoginSubmitEvent) => {
     setTimeout(() => {
       router.push({ name: 'Dashboard' })
     }, 150)
-  } catch (error: unknown) {
-    handleLoginError(error)
+  } catch (loginError: unknown) {
+    handleLoginError(loginError)
   }
 }
 
-const handleLoginError = (error: unknown) => {
+const handleLoginError = (loginError: unknown) => {
   let errorMessage = 'Une erreur est survenue lors de la connexion'
 
-  if (isAxiosError(error)) {
-    errorMessage = (error.response?.data as any)?.message || errorMessage
-    if (error.response?.status === 401) {
+  if (isAxiosError(loginError)) {
+    errorMessage = (loginError.response?.data as any)?.message || errorMessage
+    if (loginError.response?.status === 401) {
       errorMessage = 'Identifiants incorrects'
     }
   }

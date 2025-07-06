@@ -31,9 +31,7 @@
  *
  */
 
-// UI composables will be exported here
-// Example:
-// export { useModal } from './useModal'
-// export { useTable } from './useTable'
-// export { useForm } from './useForm'
-// export { usePagination } from './usePagination'
+// UI composables exports
+export { useForm, validationRules } from './useForm'
+export { useModal, globalModal } from './useModal'
+export { useTable } from './useTable'

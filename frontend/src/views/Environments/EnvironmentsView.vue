@@ -1,7 +1,7 @@
 <!-- src/views/Environments/EnvironmentsView.vue -->
 <template>
   <div class="u-p-6">
-    <h1 class="u-text-3xl u-font-bold u-mb-6">Environnement : {{ environment.name }}</h1>
+    <h1 class="u-text-3xl u-font-bold u-mb-6">Environnement : {{ currentEnvironment?.name || 'Chargement...' }}</h1>
 
     <!-- Section de gestion de l'environnement accessible uniquement si l'utilisateur peut gérer -->
     <div v-if="canManage" class="u-space-y-8">
@@ -41,11 +41,11 @@
     <!-- Section de consultation (accessible à tous) -->
     <section class="u-mt-8">
       <h2 class="u-text-2xl u-font-semibold u-mb-4">Liste des éléments</h2>
-      <div v-if="elements.length === 0" class="u-text-center u-py-8">
+      <div v-if="environmentElements.length === 0" class="u-text-center u-py-8">
         <p class="u-text-gray-500 u-text-lg">Aucun élément disponible dans cet environnement.</p>
       </div>
       <ul v-else class="u-space-y-3">
-        <li v-for="element in elements" :key="element.id" class="u-flex u-justify-between u-items-center u-p-4 u-bg-white u-border u-border-gray-200 u-rounded-lg u-shadow-sm">
+        <li v-for="element in environmentElements" :key="element.id" class="u-flex u-justify-between u-items-center u-p-4 u-bg-white u-border u-border-gray-200 u-rounded-lg u-shadow-sm">
           <div>
             <h3 class="u-font-semibold u-text-lg u-text-gray-900">
               {{ element.name }}
@@ -65,9 +65,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getEnvironment, updateEnvironment, deleteEnvironment } from '@/services/environmentService'
 import { listElements, createElement as createElementService, deleteElement as deleteElementService } from '@/services/elementService'
-import { useAuthStore } from '@/store/auth'
+import { useAuth } from '@/composables/api/useAuth'
+import { useEnvironments } from '@/composables/api/useEnvironments'
 import { useNotificationStore } from '@/store/notifications'
 
 interface Environment {
@@ -83,30 +83,38 @@ interface Element {
 
 const route = useRoute()
 const router = useRouter()
-const authStore = useAuthStore()
+const { user, isSuperAdmin } = useAuth()
+const {
+  currentEnvironment,
+  environmentElements,
+  loading,
+  fetchEnvironment,
+  updateExistingEnvironment,
+  deleteExistingEnvironment,
+  fetchEnvironmentElements
+} = useEnvironments()
 const notificationStore = useNotificationStore()
 const envId = Number(route.params.envId)
 
-// Données de l'environnement
-const environment = ref<Environment>({ id: 0, name: '' })
+// Données de l'environnement (utilise currentEnvironment du composable)
 const envName = ref('')
 
-// Liste des éléments de l'environnement
-const elements = ref<Element[]>([])
+// Liste des éléments de l'environnement (utilise environmentElements du composable)
 const showElementForm = ref(false)
 const newElement = ref({ name: '', description: '' })
 
 // Détermine si l'utilisateur a le droit de gérer l'environnement
 const canManage = computed(() => {
-  return authStore.user?.is_superadmin || authStore.isEnvironmentAdmin(envId)
+  // TODO: Implémenter la logique de permissions spécifique aux environnements
+  // Pour l'instant, seuls les super admins peuvent gérer
+  return isSuperAdmin.value
 })
 
 // Récupère les informations de l'environnement
-const fetchEnvironment = async () => {
+const fetchEnvironmentData = async () => {
   try {
-    const response = await getEnvironment(envId)
-    environment.value = response.data.data
-    envName.value = environment.value.name
+    await fetchEnvironment(envId)
+    envName.value = currentEnvironment.value?.name || ''
   } catch (error) {
     notificationStore.addNotification({
       type: 'error',
@@ -118,8 +126,7 @@ const fetchEnvironment = async () => {
 // Récupère la liste des éléments
 const fetchElements = async () => {
   try {
-    const response = await listElements(envId, {})
-    elements.value = response.data.data
+    await fetchEnvironmentElements(envId)
   } catch (error) {
     notificationStore.addNotification({
       type: 'error',
@@ -131,8 +138,7 @@ const fetchElements = async () => {
 // Met à jour le nom de l'environnement
 const updateEnv = async () => {
   try {
-    await updateEnvironment(envId, { name: envName.value })
-    await fetchEnvironment()
+    await updateExistingEnvironment(envId, { name: envName.value })
     notificationStore.addNotification({
       type: 'success',
       message: 'Environnement mis à jour avec succès',
@@ -148,7 +154,7 @@ const updateEnv = async () => {
 // Supprime l'environnement et redirige vers le dashboard
 const deleteEnv = async () => {
   try {
-    await deleteEnvironment(envId)
+    await deleteExistingEnvironment(envId)
     notificationStore.addNotification({
       type: 'success',
       message: 'Environnement supprimé avec succès',
@@ -202,7 +208,7 @@ const deleteElement = async (elementId: number) => {
 }
 
 onMounted(() => {
-  fetchEnvironment()
+  fetchEnvironmentData()
   fetchElements()
 })
 </script>

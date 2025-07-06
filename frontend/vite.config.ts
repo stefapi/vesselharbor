@@ -102,9 +102,20 @@ export default defineConfig({
       },
     }),
     UnoCSS(), // ✅ Uses configuration from uno.config.ts
-    // ⚡ Auto-import Vue API + VueUse + Pinia + Router
+    // ⚡ Auto-import Vue API + VueUse + Pinia + Router + Composables
     AutoImport({
-      imports: ['vue', 'vue-router', 'pinia', '@vueuse/core', VueRouterAutoImports],
+      imports: [
+        'vue',
+        'vue-router',
+        'pinia',
+        '@vueuse/core',
+        VueRouterAutoImports,
+        {
+          '@/composables/api': ['useAuth', 'useUsers', 'useGroups', 'useOrganizations', 'useEnvironments'],
+          '@/composables/ui': ['useModal', 'useTable', 'useForm', 'globalModal', 'validationRules'],
+          '@/composables/business': ['usePermissions', 'useValidation', 'businessValidationRules', 'ACTIONS', 'RESOURCES'],
+        },
+      ],
       dts: 'src/auto-imports.d.ts',
       dirs: ['src/services', 'src/store'],
       vueTemplate: true,
@@ -178,6 +189,7 @@ export default defineConfig({
     },
   },
   server: {
+    // @ts-expect-error - Plugin callable issue
     https: false,
     port: 3001, // Changed to 3001 to match e2e test scripts
     watch: {

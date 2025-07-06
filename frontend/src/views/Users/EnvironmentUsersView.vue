@@ -25,7 +25,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="user in usersStore.users" :key="user.id" class="u-hover:bg-gray-50">
+        <tr v-for="user in users" :key="user.id" class="u-hover:bg-gray-50">
           <td class="u-border u-border-gray-300 u-px-2 u-py-2">{{ user.id }}</td>
           <td class="u-border u-border-gray-300 u-px-2 u-py-2">{{ user.email }}</td>
           <td class="u-border u-border-gray-300 u-px-2 u-py-2">
@@ -41,12 +41,12 @@
     </table>
 
     <div class="u-mt-4 u-flex u-items-center u-gap-4">
-      <p>Total : {{ usersStore.total }}</p>
-      <button :disabled="usersStore.currentPage === 1" class="u-px-3 u-py-1 u-bg-gray-500 u-text-white u-rounded u-disabled:opacity-50 u-disabled:cursor-not-allowed u-hover:bg-gray-600" @click="prevPage">
+      <p>Total : {{ total }}</p>
+      <button :disabled="currentPage === 1" class="u-px-3 u-py-1 u-bg-gray-500 u-text-white u-rounded u-disabled:opacity-50 u-disabled:cursor-not-allowed u-hover:bg-gray-600" @click="prevPage">
         Précédent
       </button>
-      <span class="u-font-medium">Page {{ usersStore.currentPage }}</span>
-      <button :disabled="usersStore.users.length < usersStore.perPage" class="u-px-3 u-py-1 u-bg-gray-500 u-text-white u-rounded u-disabled:opacity-50 u-disabled:cursor-not-allowed u-hover:bg-gray-600" @click="nextPage">
+      <span class="u-font-medium">Page {{ currentPage }}</span>
+      <button :disabled="users.length < perPage" class="u-px-3 u-py-1 u-bg-gray-500 u-text-white u-rounded u-disabled:opacity-50 u-disabled:cursor-not-allowed u-hover:bg-gray-600" @click="nextPage">
         Suivant
       </button>
     </div>
@@ -72,15 +72,14 @@
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import UserForm from '@/components/business/Users/UserForm.vue'
-import { useUsersStore } from '@/store/users'
-import { deleteauser } from '@/api'
+import { useUsers } from '@/composables/api/useUsers'
 import { useNotificationStore } from '@/store/notifications'
 import UserGroupsManager from '@/components/business/Users/UserGroupsManager.vue'
 import type { User } from '@/types/user'
 
 const route = useRoute()
 const environmentId = Number(route.params.envId)
-const usersStore = useUsersStore()
+const { users, loading, fetchUsers, deleteUser: deleteUserComposable } = useUsers()
 const notificationStore = useNotificationStore()
 const filterEmail = ref('')
 const showForm = ref(false)
@@ -88,39 +87,53 @@ const editingUser = ref<User | null>(null)
 const managingUser = ref<User | null>(null)
 const showGroupManager = ref(false)
 
-const fetchUsers = async () => {
-  await usersStore.fetchUsers()
-  // Ici, vous pouvez filtrer par environnement si l'API le supporte
+// TODO: Implement pagination and filtering in useUsers composable
+// For now, we'll use basic functionality without pagination
+const currentPage = ref(1)
+const perPage = ref(10)
+const total = ref(0)
+
+const loadUsers = async () => {
+  try {
+    await fetchUsers()
+    total.value = users.value.length // TODO: Get actual total from API
+    // TODO: Implement environment-specific filtering when API supports it
+  } catch (error) {
+    notificationStore.addNotification({
+      type: 'error',
+      message: 'Erreur lors du chargement des utilisateurs',
+    })
+  }
 }
 
-fetchUsers()
+loadUsers()
 
 const applyFilter = () => {
-  usersStore.filters.email = filterEmail.value
-  usersStore.currentPage = 1
-  fetchUsers()
+  // TODO: Implement filtering in useUsers composable
+  currentPage.value = 1
+  loadUsers()
 }
 
 const prevPage = () => {
-  if (usersStore.currentPage > 1) {
-    usersStore.currentPage--
-    fetchUsers()
+  if (currentPage.value > 1) {
+    currentPage.value--
+    loadUsers()
   }
 }
 
 const nextPage = () => {
-  usersStore.currentPage++
-  fetchUsers()
+  currentPage.value++
+  loadUsers()
 }
 
 const deleteUser = async (userId: number) => {
   try {
-    await deleteauser(userId)
+    await deleteUserComposable(userId)
     notificationStore.addNotification({
       type: 'success',
       message: 'Utilisateur supprimé avec succès',
     })
-    fetchUsers()
+    loadUsers()
   } catch (error) {
     notificationStore.addNotification({
       type: 'error',
@@ -140,7 +153,7 @@ const cancelEdit = () => {
 const onFormSuccess = () => {
   editingUser.value = null
   showForm.value = false
-  fetchUsers()
+  loadUsers()
 }
 
 const toggleForm = () => {

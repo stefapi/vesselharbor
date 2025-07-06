@@ -26,8 +26,12 @@ export interface UserProfileData {
  */
 export async function login(credentials: LoginCredentials) {
   return authenticateauser({
+    grant_type: 'password',
     username: credentials.username,
     password: credentials.password,
+    scope: '',
+    client_id: null,
+    client_secret: null
   })
 }
 

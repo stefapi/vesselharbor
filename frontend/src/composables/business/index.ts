@@ -31,8 +31,8 @@
  *
  */
 
-// Business logic composables will be exported here
-// Example:
-// export { useUserManagement } from './useUserManagement'
-// export { useGroupManagement } from './useGroupManagement'
-// export { usePermissions } from './usePermissions'
+// Business logic composables exports
+export { usePermissions, ACTIONS, RESOURCES } from './usePermissions'
+export { useValidation, businessValidationRules } from './useValidation'
+export type { Permission, Role, PermissionContext } from './usePermissions'
+export type { ValidationResult, BusinessValidationRule, ValidationContext, NamingConstraints } from './useValidation'
