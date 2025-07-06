@@ -14,9 +14,9 @@
 <script setup lang="ts">
 import { useNotificationStore } from '@/store/notifications'
 import { useRouter } from 'vue-router'
-import ForgotPasswordForm from '@/components/Auth/ForgotPasswordForm.vue'
+import ForgotPasswordForm from '@/components/business/Auth/ForgotPasswordForm.vue'
 import { isAxiosError } from '@/services/api'
-import { reset_password_request } from '@/services/authService.js'
+import { requestpasswordreset } from '@/api'
 
 interface ForgotPasswordSubmitEvent {
   isValid: boolean
@@ -36,7 +36,7 @@ const handleFormSubmit = async (event: ForgotPasswordSubmitEvent) => {
   }
 
   try {
-    await reset_password_request(event.email)
+    await requestpasswordreset({ email: event.email })
 
     notificationStore.addNotification({
       type: 'success',

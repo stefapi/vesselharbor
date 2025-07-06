@@ -62,14 +62,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getEnvironment, updateEnvironment, deleteEnvironment } from '@/services/environmentService'
-import { listElements, createElement as createElementService, deleteElement as deleteElementService } from '@/services/elementService'
-import { listEnvironmentUsers } from '@/services/environmentUserService'
+import { environmentdetails, updateanenvironment, deleteanenvironment, listelementsofanenvironmentenvironments, userslinkedtoanenvironment } from '@/api'
+import { createanelement, deleteanelement } from '@/api'
 import { useNotificationStore } from '@/store/notifications'
 
 interface Environment {
   id: number
   name: string
+  organization_id: number
 }
 
 interface Element {
@@ -88,7 +88,7 @@ const route = useRoute()
 const router = useRouter()
 const notificationStore = useNotificationStore()
 const envId = Number(route.params.envId)
-const environment = ref<Environment>({ id: 0, name: '' })
+const environment = ref<Environment>({ id: 0, name: '', organization_id: 0 })
 const envName = ref('')
 
 // Gestion des éléments
@@ -101,7 +101,7 @@ const users = ref<User[]>([])
 
 const fetchEnvironment = async () => {
   try {
-    const response = await getEnvironment(envId)
+    const response = await environmentdetails(envId)
     environment.value = response.data.data
     envName.value = environment.value.name
   } catch (error) {
@@ -114,7 +114,10 @@ const fetchEnvironment = async () => {
 
 const updateEnv = async () => {
   try {
-    await updateEnvironment(envId, { name: envName.value })
+    await updateanenvironment(envId, {
+      name: envName.value,
+      organization_id: environment.value.organization_id
+    })
     await fetchEnvironment()
     notificationStore.addNotification({
       type: 'success',
@@ -130,7 +133,7 @@ const updateEnv = async () => {
 
 const deleteEnv = async () => {
   try {
-    await deleteEnvironment(envId)
+    await deleteanenvironment(envId)
     notificationStore.addNotification({
       type: 'success',
       message: 'Environnement supprimé avec succès',
@@ -146,7 +149,7 @@ const deleteEnv = async () => {
 
 const fetchElements = async () => {
   try {
-    const response = await listElements(envId, {})
+    const response = await listelementsofanenvironmentenvironments(envId)
     elements.value = response.data.data
   } catch (error) {
     notificationStore.addNotification({
@@ -162,7 +165,13 @@ const toggleElementForm = () => {
 
 const createElement = async () => {
   try {
-    await createElementService(envId, newElement.value)
+    await createanelement(envId, {
+      name: newElement.value.name,
+      description: newElement.value.description,
+      environment_id: envId,
+      subcomponent_type: 'generic',
+      subcomponent_data: {}
+    })
     newElement.value = { name: '', description: '' }
     showElementForm.value = false
     fetchElements()
@@ -180,7 +189,7 @@ const createElement = async () => {
 
 const deleteElement = async (elementId: number) => {
   try {
-    await deleteElementService(elementId)
+    await deleteanelement(elementId)
     fetchElements()
     notificationStore.addNotification({
       type: 'success',
@@ -196,7 +205,7 @@ const deleteElement = async (elementId: number) => {
 
 const fetchUsers = async () => {
   try {
-    const response = await listEnvironmentUsers(envId, {})
+    const response = await userslinkedtoanenvironment(envId)
     users.value = response.data.data
   } catch (error) {
     notificationStore.addNotification({

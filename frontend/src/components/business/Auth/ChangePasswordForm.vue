@@ -22,7 +22,7 @@
 import { reactive, computed, unref } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { required, minLength, helpers } from '@vuelidate/validators'
-import { changePassword } from '@/services/userService'
+import { changepassword } from '@/api'
 import { useAuthStore } from '@/store/auth'
 import { useNotificationStore } from '@/store/notifications'
 
@@ -58,9 +58,10 @@ const handleSubmit = async () => {
   if (!isValid) return
 
   try {
-    await changePassword(authStore.user!.id, {
+    await changepassword(authStore.user!.id, {
       old_password: state.oldPassword,
       new_password: state.newPassword,
+      send_email: false,
     })
 
     notificationStore.addNotification({

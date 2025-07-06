@@ -18,17 +18,15 @@ export default defineConfig({
     presetWind(), // style tailwind-like
     presetIcons(),
             presetTypography(),
-        presetWebFonts({
-            fonts: {
-                sans: "Roboto",
-                serif: "DM Serif Display",
-                mono: "DM Mono",
-            },
-        }),
   ],
   safelist: ['u-bg-code-bg u-prose u-m-auto u-text-left".split(" ")'],
   transformers: [transformerDirectives(), transformerVariantGroup()],
   theme: {
+    fontFamily: {
+      sans: ['Roboto', 'sans-serif'],
+      serif: ['DM Serif Display', 'serif'],
+      mono: ['DM Mono', 'monospace'],
+    },
     colors: {
       primary: '#646cff',
       success: '#4CAF50', // Vert Vuestic

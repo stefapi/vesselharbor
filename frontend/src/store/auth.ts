@@ -1,8 +1,7 @@
 // src/store/auth.ts
 import { defineStore } from 'pinia'
-import { logout as logoutService, login as loginService, refresh } from '@/services/authService.ts'
-import { getUser } from '@/services/authService.ts'
-import type { User } from '@/types/user.ts' // Importation du type partagé
+import { login, logout, refresh, getCurrentUser } from '@/services/authService'
+import type { User } from '@/types' // Importation du type partagé
 import { useRouter } from 'vue-router'
 import { clearAllOfflineData } from '@/services/clearOfflineData.ts'
 
@@ -61,7 +60,7 @@ export const useAuthStore = defineStore('auth', {
 
     async login(credentials: Credentials) {
       try {
-        const response = await loginService(credentials)
+        const response = await login(credentials)
         await this.renewSession()
       } catch (error) {
         this.logout()
@@ -73,8 +72,8 @@ export const useAuthStore = defineStore('auth', {
       try {
         // On tente d'abord de rafraîchir le token avant de récupérer l'utilisateur
         await this.refreshTokenAction()
-        const response = await getUser()
-        this.user = response.data
+        const response = await getCurrentUser()
+        this.user = response.data.data
         this.isAuthenticated = true
       } catch (error) {
         this.logout()
@@ -96,7 +95,7 @@ export const useAuthStore = defineStore('auth', {
       this.isAuthenticated = false
 
       clearAllOfflineData()
-      logoutService()
+      logout()
     },
   },
 })

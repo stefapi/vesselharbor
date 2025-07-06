@@ -36,11 +36,11 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
-import { getUserGroups, getUser, addUserToGroup, removeUserFromGroup, listGroups } from '@/services/userService'
+import { usergroups, getauserusers, assignuser, removeuser, listallgroups } from '@/api'
 import { useNotificationStore } from '@/store/notifications'
-import UserInfoCard from '@/components/Users/UserInfoCard.vue'
-import UserGroupsCard from '@/components/Users/UserGroupsCard.vue'
-import AddGroupDialog from '@/components/Users/AddGroupDialog.vue'
+import UserInfoCard from '@/components/business/Users/UserInfoCard.vue'
+import UserGroupsCard from '@/components/business/Users/UserGroupsCard.vue'
+import AddGroupDialog from '@/components/business/Users/AddGroupDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -60,11 +60,11 @@ const userId = Number(route.params.id)
 const fetchUserData = async () => {
   try {
     // Récupérer les détails de l'utilisateur
-    const userResponse = await getUser(userId)
+    const userResponse = await getauserusers(userId)
     user.value = userResponse.data
 
     // Récupérer les groupes de l'utilisateur
-    const userGroupsResponse = await getUserGroups(userId)
+    const userGroupsResponse = await usergroups(userId)
     userGroups.value = userGroupsResponse.data.map((group: any) => ({
       id: group.id,
       name: group.name,
@@ -72,7 +72,7 @@ const fetchUserData = async () => {
     }))
 
     // Récupérer tous les groupes disponibles
-    const groupsResponse = await listGroups()
+    const groupsResponse = await listallgroups()
     const allGroups = groupsResponse.data.map((group: any) => ({
       id: group.id,
       name: group.name,
@@ -96,7 +96,7 @@ const addGroupToUser = async () => {
 
   try {
     // Appel API pour ajouter l'utilisateur au groupe
-    await addUserToGroup(userId, selectedGroup.value)
+    await assignuser(selectedGroup.value, userId)
 
     // Mettre à jour l'interface utilisateur
     const groupToAdd = availableGroups.value.find((g) => g.id === selectedGroup.value)
@@ -129,7 +129,7 @@ const removeGroupFromUser = async (groupId: number) => {
     })
 
     // Appel API pour retirer l'utilisateur du groupe
-    await removeUserFromGroup(userId, groupId)
+    await removeuser(groupId, userId)
 
     // Mettre à jour l'interface utilisateur
     const removedGroup = userGroups.value.find((g) => g.id === groupId)

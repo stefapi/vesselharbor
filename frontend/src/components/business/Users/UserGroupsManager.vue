@@ -30,8 +30,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getUserGroups } from '@/services/userService'
-import { listGroups, listAllGroups, assignUserToGroup, removeUserFromGroup } from '@/services/groupService'
+import { usergroups } from '@/api'
+import { listorganizationgroups, listallgroups, assignuser, removeuser } from '@/api'
 import { useNotificationStore } from '@/store/notifications'
 
 interface Group {
@@ -61,8 +61,8 @@ const notificationStore = useNotificationStore()
 // Charge les groupes assignés à l'utilisateur
 const fetchAssignedGroups = async () => {
   try {
-    const response = await getUserGroups(props.userId)
-    assignedGroups.value = response.data.data
+    const response = await usergroups(props.userId)
+    assignedGroups.value = response.data
   } catch (error) {
     notificationStore.addNotification({
       type: 'error',
@@ -75,11 +75,11 @@ const fetchAssignedGroups = async () => {
 const fetchAvailableGroups = async () => {
   try {
     if (props.environmentId !== null) {
-      const response = await listGroups(props.environmentId!, {})
-      availableGroups.value = response.data.data
+      const response = await listorganizationgroups(props.environmentId!)
+      availableGroups.value = response.data
     } else {
-      const response = await listAllGroups({})
-      availableGroups.value = response.data.data
+      const response = await listallgroups()
+      availableGroups.value = response.data
     }
   } catch (error) {
     notificationStore.addNotification({
@@ -93,7 +93,7 @@ const fetchAvailableGroups = async () => {
 const assignGroup = async () => {
   if (!selectedGroupId.value) return
   try {
-    await assignUserToGroup(selectedGroupId.value as number, props.userId)
+    await assignuser(selectedGroupId.value as number, props.userId)
     notificationStore.addNotification({
       type: 'success',
       message: 'Groupe assigné avec succès',
@@ -111,7 +111,7 @@ const assignGroup = async () => {
 // Retire un groupe de l'utilisateur
 const removeGroup = async (groupId: number) => {
   try {
-    await removeUserFromGroup(groupId, props.userId)
+    await removeuser(groupId, props.userId)
     notificationStore.addNotification({
       type: 'success',
       message: 'Groupe retiré avec succès',

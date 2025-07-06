@@ -1,7 +1,7 @@
 // src/store/users.ts
 import { defineStore } from 'pinia'
-import { listUsers } from '@/services/userService.ts'
-import type { User } from '@/types/user.ts' // Importation du type partagé
+import type { User } from '@/types' // Importation du type partagé
+import { listusers } from '@/api'
 
 export const useUsersStore = defineStore('users', {
   state: () => ({
@@ -16,15 +16,10 @@ export const useUsersStore = defineStore('users', {
   actions: {
     async fetchUsers() {
       try {
-        const params = {
-          skip: (this.currentPage - 1) * this.perPage,
-          limit: this.perPage,
-          email: this.filters.email,
-        }
-        const response = await listUsers(params)
+        const response = await listusers()
         // Adaptation selon la structure du retour de l'API
-        this.users = response.data.data
-        this.total = response.data.total
+        this.users = response.data.data || response.data
+        this.total = response.data.total || response.data.length
       } catch (error) {
         throw error
       }

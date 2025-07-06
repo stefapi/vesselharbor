@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import UserForm from '@/components/UserForm.vue'
+import UserForm from '@/components/business/Users/UserForm.vue'
 defineProps<{ visible: boolean; editingUser: any | null }>()
 const emit = defineEmits(['close', 'success'])
 </script>

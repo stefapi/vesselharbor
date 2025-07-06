@@ -1,7 +1,7 @@
 from typing import Optional, List
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from ..api.users import get_current_user
 from ..database.session import SessionLocal
@@ -36,7 +36,12 @@ def get_db():
     401: {"description": "Unauthenticated"}
 })
 def list_organizations(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    orgs = db.query(Organization).all()
+    orgs = db.query(Organization).options(
+        selectinload(Organization.users),
+        selectinload(Organization.environments),
+        selectinload(Organization.groups),
+        selectinload(Organization.policies)
+    ).all()
     # Convert Organization objects to OrganizationOut objects for proper serialization
     serializable_orgs = [
         OrganizationOut.model_validate(org) for org in orgs if permissions.has_permission(db, current_user, org.id, "organization:read")
@@ -50,7 +55,12 @@ def list_organizations(current_user: User = Depends(get_current_user), db: Sessi
     404: {"description": "Organization not found"}
 })
 def get_organization(org_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    org = db.query(Organization).get(org_id)
+    org = db.query(Organization).options(
+        selectinload(Organization.users),
+        selectinload(Organization.environments),
+        selectinload(Organization.groups),
+        selectinload(Organization.policies)
+    ).get(org_id)
     if not org:
         raise HTTPException(status_code=404, detail="Organization not found")
     if not permissions.has_permission(db, current_user, org.id, "organization:read"):

@@ -102,7 +102,7 @@ def delete_group(group_id: int, current_user: User = Depends(get_current_user), 
 
     group_repo.delete_group(db, group)
     audit.log_action(db, current_user.id, "Group deletion", f"Group '{group.name}' deleted")
-    return response.success_response(None, "Group deleted")
+    return response.success_response(EmptyData(), "Group deleted")
 
 
 @router.get("/organization/{org_id}", response_model=BaseResponse[List[GroupOut]], summary="List organization groups", description="Retrieves all groups belonging to a specific organization", responses={
@@ -148,7 +148,7 @@ def assign_user(group_id: int, user_id: int, current_user: User = Depends(get_cu
         raise HTTPException(status_code=403, detail="Insufficient permissions")
     # Check if user is already in the group
     if user in group.users:
-        return response.success_response(None, "User already in this group")
+        return response.success_response(GroupOut.model_validate(group), "User already in this group")
 
     group.users.append(user)
     db.commit()
@@ -171,7 +171,7 @@ def remove_user(group_id: int, user_id: int, current_user: User = Depends(get_cu
         raise HTTPException(status_code=403, detail="Insufficient permissions")
     # Check if user is in the group
     if user not in group.users:
-        return response.success_response(None, "User not in this group")
+        return response.success_response(GroupOut.model_validate(group), "User not in this group")
 
     group.users.remove(user)
     db.commit()

@@ -30,8 +30,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getEnvironment } from '@/services/environmentService'
-import { listElements } from '@/services/elementService'
+import { environmentdetails, listelementsofanenvironmentenvironments } from '@/api'
 import { useRoute } from 'vue-router'
 import { useNotificationStore } from '@/store/notifications'
 
@@ -54,7 +53,7 @@ const elements = ref<Element[]>([])
 
 const fetchEnvironment = async () => {
   try {
-    const response = await getEnvironment(envId)
+    const response = await environmentdetails(envId)
     environment.value = response.data.data
   } catch (error) {
     notificationStore.addNotification({
@@ -66,7 +65,7 @@ const fetchEnvironment = async () => {
 
 const fetchElements = async () => {
   try {
-    const response = await listElements(envId, {})
+    const response = await listelementsofanenvironmentenvironments(envId)
     elements.value = response.data.data
   } catch (error) {
     notificationStore.addNotification({

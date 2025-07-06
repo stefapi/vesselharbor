@@ -71,11 +71,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
-import UserForm from '@/components/UserForm.vue'
+import UserForm from '@/components/business/Users/UserForm.vue'
 import { useUsersStore } from '@/store/users'
-import { deleteUser as deleteUserService } from '@/services/userService'
+import { deleteauser } from '@/api'
 import { useNotificationStore } from '@/store/notifications'
-import UserGroupsManager from '@/components/UserGroupsManager.vue'
+import UserGroupsManager from '@/components/business/Users/UserGroupsManager.vue'
 import type { User } from '@/types/user'
 
 const route = useRoute()
@@ -115,7 +115,7 @@ const nextPage = () => {
 
 const deleteUser = async (userId: number) => {
   try {
-    await deleteUserService(userId)
+    await deleteauser(userId)
     notificationStore.addNotification({
       type: 'success',
       message: 'Utilisateur supprimé avec succès',

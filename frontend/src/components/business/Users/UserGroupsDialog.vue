@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import UserGroupsManager from '@/components/UserGroupsManager.vue'
+import UserGroupsManager from '@/components/business/Users/UserGroupsManager.vue'
 
 const props = defineProps<{
   visible: boolean // ← reste en lecture seule

@@ -9,7 +9,9 @@ declare global {
   const EffectScope: typeof import('vue')['EffectScope']
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
   const addFunctionToGroup: typeof import('./services/groupService')['addFunctionToGroup']
-  const addUserToGroup: typeof import('./services/userService')['addUserToGroup']
+  const addPolicyToGroup: typeof import('./services/groupService')['addPolicyToGroup']
+  const addTagToGroup: typeof import('./services/groupService')['addTagToGroup']
+  const addUserToGroup: typeof import('./services/groupService')['addUserToGroup']
   const api: typeof import('./services/api')['default']
   const apiDelete: typeof import('./services/api')['apiDelete']
   const apiGet: typeof import('./services/api')['apiGet']
@@ -64,9 +66,13 @@ declare global {
   const getCurrentScope: typeof import('vue')['getCurrentScope']
   const getElement: typeof import('./services/elementService')['getElement']
   const getEnvironment: typeof import('./services/environmentService')['getEnvironment']
+  const getGroup: typeof import('./services/groupService')['getGroup']
   const getGroupFunctions: typeof import('./services/groupService')['getGroupFunctions']
+  const getGroupPolicies: typeof import('./services/groupService')['getGroupPolicies']
+  const getGroupTags: typeof import('./services/groupService')['getGroupTags']
+  const getGroupUsers: typeof import('./services/groupService')['getGroupUsers']
   const getQueuedActions: typeof import('./services/offlineQueue')['getQueuedActions']
-  const getUser: typeof import('./services/userService')['getUser']
+  const getUser: typeof import('./services/authService')['getUser']
   const getUserGroups: typeof import('./services/userService')['getUserGroups']
   const h: typeof import('vue')['h']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
@@ -135,7 +141,9 @@ declare global {
   const refWithControl: typeof import('@vueuse/core')['refWithControl']
   const refresh: typeof import('./services/authService')['refresh']
   const removeFunctionFromGroup: typeof import('./services/groupService')['removeFunctionFromGroup']
-  const removeUserFromGroup: typeof import('./services/userService')['removeUserFromGroup']
+  const removePolicyFromGroup: typeof import('./services/groupService')['removePolicyFromGroup']
+  const removeTagFromGroup: typeof import('./services/groupService')['removeTagFromGroup']
+  const removeUserFromGroup: typeof import('./services/groupService')['removeUserFromGroup']
   const replayOfflineActions: typeof import('./services/replayOfflineActions')['replayOfflineActions']
   const reset_password: typeof import('./services/authService')['reset_password']
   const reset_password_request: typeof import('./services/authService')['reset_password_request']
@@ -276,6 +284,7 @@ declare global {
   const useOfflineSyncStore: typeof import('./store/offlineSync')['useOfflineSyncStore']
   const useOffsetPagination: typeof import('@vueuse/core')['useOffsetPagination']
   const useOnline: typeof import('@vueuse/core')['useOnline']
+  const useOrganizationsStore: typeof import('./store/organization')['useOrganizationsStore']
   const usePageLeave: typeof import('@vueuse/core')['usePageLeave']
   const useParallax: typeof import('@vueuse/core')['useParallax']
   const useParentElement: typeof import('@vueuse/core')['useParentElement']
@@ -374,11 +383,11 @@ declare global {
   export type { ApiError } from './services/api'
   import('./services/api')
   // @ts-ignore
+  export type { Group, GroupCreate, GroupUpdate, User, Policy, Tag } from './services/groupService'
+  import('./services/groupService')
+  // @ts-ignore
   export type { OfflineAction } from './services/offlineQueue'
   import('./services/offlineQueue')
-  // @ts-ignore
-  export type { Group } from './store/group'
-  import('./store/group')
   // @ts-ignore
   export type { Notification } from './store/notifications'
   import('./store/notifications')
@@ -392,7 +401,9 @@ declare module 'vue' {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly addFunctionToGroup: UnwrapRef<typeof import('./services/groupService')['addFunctionToGroup']>
-    readonly addUserToGroup: UnwrapRef<typeof import('./services/userService')['addUserToGroup']>
+    readonly addPolicyToGroup: UnwrapRef<typeof import('./services/groupService')['addPolicyToGroup']>
+    readonly addTagToGroup: UnwrapRef<typeof import('./services/groupService')['addTagToGroup']>
+    readonly addUserToGroup: UnwrapRef<typeof import('./services/groupService')['addUserToGroup']>
     readonly api: UnwrapRef<typeof import('./services/api')['default']>
     readonly apiDelete: UnwrapRef<typeof import('./services/api')['apiDelete']>
     readonly apiGet: UnwrapRef<typeof import('./services/api')['apiGet']>
@@ -401,7 +412,6 @@ declare module 'vue' {
     readonly assignUserToGroup: UnwrapRef<typeof import('./services/groupService')['assignUserToGroup']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
-    readonly changePassword: UnwrapRef<typeof import('./services/userService')['changePassword']>
     readonly clearAllOfflineData: UnwrapRef<typeof import('./services/clearOfflineData')['clearAllOfflineData']>
     readonly clearQueuedAction: UnwrapRef<typeof import('./services/offlineQueue')['clearQueuedAction']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
@@ -412,8 +422,6 @@ declare module 'vue' {
     readonly controlledComputed: UnwrapRef<typeof import('@vueuse/core')['controlledComputed']>
     readonly controlledRef: UnwrapRef<typeof import('@vueuse/core')['controlledRef']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
-    readonly createElement: UnwrapRef<typeof import('./services/elementService')['createElement']>
-    readonly createEnvironment: UnwrapRef<typeof import('./services/environmentService')['createEnvironment']>
     readonly createEventHook: UnwrapRef<typeof import('@vueuse/core')['createEventHook']>
     readonly createGlobalState: UnwrapRef<typeof import('@vueuse/core')['createGlobalState']>
     readonly createGroup: UnwrapRef<typeof import('./services/groupService')['createGroup']>
@@ -425,7 +433,6 @@ declare module 'vue' {
     readonly createSharedComposable: UnwrapRef<typeof import('@vueuse/core')['createSharedComposable']>
     readonly createTemplatePromise: UnwrapRef<typeof import('@vueuse/core')['createTemplatePromise']>
     readonly createUnrefFn: UnwrapRef<typeof import('@vueuse/core')['createUnrefFn']>
-    readonly createUser: UnwrapRef<typeof import('./services/userService')['createUser']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly dbPromise: UnwrapRef<typeof import('./services/db')['dbPromise']>
     readonly debouncedRef: UnwrapRef<typeof import('@vueuse/core')['debouncedRef']>
@@ -433,10 +440,7 @@ declare module 'vue' {
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly defineStore: UnwrapRef<typeof import('pinia')['defineStore']>
-    readonly deleteElement: UnwrapRef<typeof import('./services/elementService')['deleteElement']>
-    readonly deleteEnvironment: UnwrapRef<typeof import('./services/environmentService')['deleteEnvironment']>
     readonly deleteGroup: UnwrapRef<typeof import('./services/groupService')['deleteGroup']>
-    readonly deleteUser: UnwrapRef<typeof import('./services/userService')['deleteUser']>
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
@@ -445,12 +449,12 @@ declare module 'vue' {
     readonly getCachedResponse: UnwrapRef<typeof import('./services/useOfflineCache')['getCachedResponse']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
-    readonly getElement: UnwrapRef<typeof import('./services/elementService')['getElement']>
-    readonly getEnvironment: UnwrapRef<typeof import('./services/environmentService')['getEnvironment']>
+    readonly getGroup: UnwrapRef<typeof import('./services/groupService')['getGroup']>
     readonly getGroupFunctions: UnwrapRef<typeof import('./services/groupService')['getGroupFunctions']>
+    readonly getGroupPolicies: UnwrapRef<typeof import('./services/groupService')['getGroupPolicies']>
+    readonly getGroupTags: UnwrapRef<typeof import('./services/groupService')['getGroupTags']>
+    readonly getGroupUsers: UnwrapRef<typeof import('./services/groupService')['getGroupUsers']>
     readonly getQueuedActions: UnwrapRef<typeof import('./services/offlineQueue')['getQueuedActions']>
-    readonly getUser: UnwrapRef<typeof import('./services/userService')['getUser']>
-    readonly getUserGroups: UnwrapRef<typeof import('./services/userService')['getUserGroups']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly incrementRetryCount: UnwrapRef<typeof import('./services/offlineQueue')['incrementRetryCount']>
@@ -463,13 +467,7 @@ declare module 'vue' {
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly listAllGroups: UnwrapRef<typeof import('./services/groupService')['listAllGroups']>
-    readonly listElements: UnwrapRef<typeof import('./services/elementService')['listElements']>
-    readonly listEnvironmentUsers: UnwrapRef<typeof import('./services/environmentUserService')['listEnvironmentUsers']>
-    readonly listEnvironments: UnwrapRef<typeof import('./services/environmentService')['listEnvironments']>
-    readonly listGroups: UnwrapRef<typeof import('./services/userService')['listGroups']>
-    readonly listUsers: UnwrapRef<typeof import('./services/userService')['listUsers']>
     readonly login: UnwrapRef<typeof import('./services/authService')['login']>
-    readonly logout: UnwrapRef<typeof import('./services/authService')['logout']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
     readonly mapActions: UnwrapRef<typeof import('pinia')['mapActions']>
     readonly mapGetters: UnwrapRef<typeof import('pinia')['mapGetters']>
@@ -518,10 +516,10 @@ declare module 'vue' {
     readonly refWithControl: UnwrapRef<typeof import('@vueuse/core')['refWithControl']>
     readonly refresh: UnwrapRef<typeof import('./services/authService')['refresh']>
     readonly removeFunctionFromGroup: UnwrapRef<typeof import('./services/groupService')['removeFunctionFromGroup']>
-    readonly removeUserFromGroup: UnwrapRef<typeof import('./services/userService')['removeUserFromGroup']>
+    readonly removePolicyFromGroup: UnwrapRef<typeof import('./services/groupService')['removePolicyFromGroup']>
+    readonly removeTagFromGroup: UnwrapRef<typeof import('./services/groupService')['removeTagFromGroup']>
+    readonly removeUserFromGroup: UnwrapRef<typeof import('./services/groupService')['removeUserFromGroup']>
     readonly replayOfflineActions: UnwrapRef<typeof import('./services/replayOfflineActions')['replayOfflineActions']>
-    readonly reset_password: UnwrapRef<typeof import('./services/authService')['reset_password']>
-    readonly reset_password_request: UnwrapRef<typeof import('./services/authService')['reset_password_request']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
     readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
@@ -551,11 +549,8 @@ declare module 'vue' {
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
     readonly unrefElement: UnwrapRef<typeof import('@vueuse/core')['unrefElement']>
     readonly until: UnwrapRef<typeof import('@vueuse/core')['until']>
-    readonly updateElement: UnwrapRef<typeof import('./services/elementService')['updateElement']>
-    readonly updateEnvironment: UnwrapRef<typeof import('./services/environmentService')['updateEnvironment']>
     readonly updateGroup: UnwrapRef<typeof import('./services/groupService')['updateGroup']>
     readonly updateSuperadmin: UnwrapRef<typeof import('./services/userService')['updateSuperadmin']>
-    readonly updateUserEnvironmentRights: UnwrapRef<typeof import('./services/environmentUserService')['updateUserEnvironmentRights']>
     readonly useActiveElement: UnwrapRef<typeof import('@vueuse/core')['useActiveElement']>
     readonly useAnimate: UnwrapRef<typeof import('@vueuse/core')['useAnimate']>
     readonly useArrayDifference: UnwrapRef<typeof import('@vueuse/core')['useArrayDifference']>
@@ -658,6 +653,7 @@ declare module 'vue' {
     readonly useOfflineSyncStore: UnwrapRef<typeof import('./store/offlineSync')['useOfflineSyncStore']>
     readonly useOffsetPagination: UnwrapRef<typeof import('@vueuse/core')['useOffsetPagination']>
     readonly useOnline: UnwrapRef<typeof import('@vueuse/core')['useOnline']>
+    readonly useOrganizationsStore: UnwrapRef<typeof import('./store/organization')['useOrganizationsStore']>
     readonly usePageLeave: UnwrapRef<typeof import('@vueuse/core')['usePageLeave']>
     readonly useParallax: UnwrapRef<typeof import('@vueuse/core')['useParallax']>
     readonly useParentElement: UnwrapRef<typeof import('@vueuse/core')['useParentElement']>

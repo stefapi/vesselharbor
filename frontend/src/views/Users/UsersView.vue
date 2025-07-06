@@ -8,10 +8,10 @@
     <!-- Contenu principal -->
     <el-main class="u-p-4 u-bg-gray-50 dark:u-bg-gray-900">
       <!-- Barre de recherche + bouton de création -->
-      <user-filters :filter-email="filterEmail" :is-form-open="showForm || editingUser" @filter="onFilterChange" @toggle-form="toggleForm" />
+      <user-filters :filter-email="filterEmail" :is-form-open="showForm || !!editingUser" @filter="onFilterChange" @toggle-form="toggleForm" />
 
       <!-- Tableau -->
-      <users-table :users="usersStore.users" @edit="editUser" @delete="confirmDelete" @manage-groups="manageGroups" />
+      <users-table :users="usersStore.users" @edit="editUser" @delete="confirmDelete" @manage-groups="manageGroups" @toggle-superadmin="handleToggleSuperadmin" />
 
       <!-- Pagination custom -->
       <users-pagination :total="usersStore.total" :per-page="usersStore.perPage" :current-page="usersStore.currentPage" @page-change="handlePageChange" />
@@ -31,14 +31,14 @@ import { useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 
 // Composants
-import UserFilters from '@/components/Users/UserFilters.vue'
-import UserFormDrawer from '@/components/Users/UserFormDrawer.vue'
-import UserGroupsDialog from '@/components/Users/UserGroupsDialog.vue'
-import UsersPagination from '@/components/Users/UsersPagination.vue'
-import UsersTable from '@/components/Users/UsersTable.vue'
+import UserFilters from '@/components/business/Users/UserFilters.vue'
+import UserFormDrawer from '@/components/business/Users/UserFormDrawer.vue'
+import UserGroupsDialog from '@/components/business/Users/UserGroupsDialog.vue'
+import UsersPagination from '@/components/business/Users/UsersPagination.vue'
+import UsersTable from '@/components/business/Users/UsersTable.vue'
 
 // Services & stores
-import { deleteUser as deleteUserService } from '@/services/userService'
+import { deleteauser, modifysuperadminstatus } from '@/api'
 import { useNotificationStore } from '@/store/notifications'
 import { useUsersStore } from '@/store/users'
 import { useAuthStore } from '@/store/auth'
@@ -144,7 +144,7 @@ const confirmDelete = async (userId: number) => {
     }
 
     // Procéder à la suppression
-    await deleteUserService(userId)
+    await deleteauser(userId)
     notificationStore.addNotification({
       type: 'success',
       message: 'Utilisateur supprimé avec succès',
@@ -169,5 +169,44 @@ const manageGroups = (user: any) => {
 const closeGroupManager = () => {
   showGroupManager.value = false
   managingUser.value = null
+}
+
+// Gestion du statut superadmin
+const handleToggleSuperadmin = async (user: any, isSuperadmin: boolean) => {
+  try {
+    const action = isSuperadmin ? 'promouvoir' : 'rétrograder'
+    const status = isSuperadmin ? 'superadmin' : 'utilisateur normal'
+
+    // Confirmation avant modification
+    await ElMessageBox.confirm(
+      `Êtes-vous sûr de vouloir ${action} "${user.email}" en tant que ${status} ?`,
+      'Confirmation de modification',
+      {
+        confirmButtonText: 'Confirmer',
+        cancelButtonText: 'Annuler',
+        type: 'warning',
+      }
+    )
+
+    // Appel API
+    await modifysuperadminstatus(user.id, { is_superadmin: isSuperadmin })
+
+    // Notification de succès
+    notificationStore.addNotification({
+      type: 'success',
+      message: `Statut superadmin mis à jour pour ${user.email}`,
+    })
+
+    // Rafraîchir la liste
+    fetchUsers()
+  } catch (error) {
+    // Ne pas afficher d'erreur si l'utilisateur a simplement annulé l'opération
+    if (error !== 'cancel' && error !== 'close') {
+      notificationStore.addNotification({
+        type: 'error',
+        message: 'Erreur lors de la modification du statut superadmin',
+      })
+    }
+  }
 }
 </script>

@@ -152,7 +152,7 @@ def delete_user(user_id: int, current_user: User = Depends(get_current_user), db
             raise HTTPException(status_code=400, detail="Cannot delete the last superadmin")
     user_repo.delete_user(db, user)
     audit.log_action(db, current_user.id, "User deletion", f"Deletion of user {user.email}")
-    return response.success_response(None, "User deleted")
+    return response.success_response(EmptyData(), "User deleted")
 
 @router.put("/{user_id}/password", response_model=BaseResponse[EmptyData],
     summary="Change password",
@@ -172,11 +172,11 @@ def change_password(user_id: int, cp: ChangePassword, current_user: User = Depen
         if cp.new_password and user.is_superadmin:
             user.hashed_password = security.get_password_hash(cp.new_password)
             db.commit()
-            return response.success_response(None, "Password reset by admin")
+            return response.success_response(EmptyData(), "Password reset by admin")
         elif cp.send_email:
             token = security.create_password_reset_token(user.id)
             email.send_reset_email(user.email, token)
-            return response.success_response(None, "Reset email sent")
+            return response.success_response(EmptyData(), "Reset email sent")
         elif user.is_superadmin:
             new_pass = secrets.token_urlsafe(20)
             user.hashed_password = security.get_password_hash(new_pass)
@@ -193,7 +193,7 @@ def change_password(user_id: int, cp: ChangePassword, current_user: User = Depen
             raise HTTPException(status_code=400, detail="Current password incorrect")
         user.hashed_password = security.get_password_hash(cp.new_password)
         db.commit()
-        return response.success_response(None, "Password updated")
+        return response.success_response(EmptyData(), "Password updated")
 
 @router.put("/{user_id}/superadmin", response_model=BaseResponse[EmptyData],
     summary="Modify superadmin status",
@@ -223,7 +223,7 @@ def change_superadmin(user_id: int, change: ChangeSuperadmin, current_user: User
     user.is_superadmin = change.is_superadmin
     db.commit()
     audit.log_action(db, current_user.id, "Superadmin modification", f"Status changed for {user.email}")
-    return response.success_response(None, "Superadmin status updated")
+    return response.success_response(EmptyData(), "Superadmin status updated")
 
 @router.get("/{user_id}/groups", response_model=BaseResponse[List[GroupOut]],
     summary="User groups",

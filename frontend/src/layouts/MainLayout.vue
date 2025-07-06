@@ -88,6 +88,12 @@ const routes = [
   { path: '/databases', name: 'Bases de données', icon: 'i-mdi:database' },
   { path: '/virtual-machines', name: 'Machines virtuelles', icon: 'i-carbon:virtual-machine' },
   {
+    path: '/organizations',
+    name: 'Organisations',
+    icon: 'i-mdi:office-building',
+    requiresSuperadmin: true,
+  },
+  {
     path: '/audit-logs',
     name: 'Audit Logs',
     icon: 'i-mdi:file-document-outline',
@@ -96,7 +102,8 @@ const routes = [
 ]
 
 const menuItems = ref([
-  { name: 'Utilisateurs', icon: 'i-mdi:account', path: '/users' },
+  { name: 'Mon compte', icon: 'i-mdi:account', path: '/account' },
+  { name: 'Utilisateurs', icon: 'i-mdi:account-multiple', path: '/users' },
   { name: 'Groupes', icon: 'i-mdi:account-group-outline', path: '/groups' },
   { name: 'Policy', icon: 'i-mdi:shield-lock-outline', path: '/policy' },
   { name: 'Clés API', icon: 'i-mdi:key-outline', path: '/api-keys' },

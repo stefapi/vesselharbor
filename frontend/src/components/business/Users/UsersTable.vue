@@ -48,6 +48,21 @@
               <!-- Supprimer : visible uniquement pour superadmin -->
               <el-dropdown-item v-if="isSuperadmin" command="delete"> <i-mdi-delete class="u-mr-1" /> Supprimer </el-dropdown-item>
 
+              <!-- Superadmin toggle : visible uniquement pour superadmin et pas pour soi-même -->
+              <el-dropdown-item
+                v-if="isSuperadmin && authStore.user?.id !== row.id && !row.is_superadmin"
+                command="promote-superadmin"
+              >
+                <i-mdi-shield-crown class="u-mr-1" /> Promouvoir Superadmin
+              </el-dropdown-item>
+
+              <el-dropdown-item
+                v-if="isSuperadmin && authStore.user?.id !== row.id && row.is_superadmin"
+                command="demote-superadmin"
+              >
+                <i-mdi-shield-off class="u-mr-1" /> Retirer Superadmin
+              </el-dropdown-item>
+
               <el-dropdown-item command="groups"> <i-mdi-account-group class="u-mr-1" /> Groupes </el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -80,11 +95,14 @@ const emit = defineEmits<{
   (e: 'edit', user: (typeof props.users)[number]): void
   (e: 'delete', id: number): void
   (e: 'manage-groups', user: (typeof props.users)[number]): void
+  (e: 'toggle-superadmin', user: (typeof props.users)[number], isSuperadmin: boolean): void
 }>()
 
 function handleCommand(command: string, row: (typeof props.users)[number]) {
   if (command === 'edit') emit('edit', row)
   if (command === 'delete') emit('delete', row.id)
   if (command === 'groups') emit('manage-groups', row)
+  if (command === 'promote-superadmin') emit('toggle-superadmin', row, true)
+  if (command === 'demote-superadmin') emit('toggle-superadmin', row, false)
 }
 </script>

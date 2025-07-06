@@ -20,8 +20,8 @@
 import { useNotificationStore } from '@/store/notifications'
 import { useRouter, useRoute } from 'vue-router'
 import { isAxiosError } from '@/services/api'
-import PasswordResetForm from '@/components/Auth/PasswordResetForm.vue'
-import { reset_password } from '@/services/authService.js'
+import PasswordResetForm from '@/components/business/Auth/PasswordResetForm.vue'
+import { resetpassword } from '@/api'
 
 interface ResetPasswordSubmitEvent {
   isValid: boolean
@@ -60,7 +60,7 @@ const handlePasswordReset = async (event: ResetPasswordSubmitEvent) => {
   }
 
   try {
-    await reset_password(token, event.credentials.newPassword)
+    await resetpassword({ token, new_password: event.credentials.newPassword })
 
     notificationStore.addNotification({
       type: 'success',

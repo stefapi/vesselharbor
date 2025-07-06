@@ -14,8 +14,8 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '@/store/auth'
-import UserForm from '@/components/UserForm.vue'
-import ChangePasswordForm from '@/components/Auth/ChangePasswordForm.vue'
+import UserForm from '@/components/business/Users/UserForm.vue'
+import ChangePasswordForm from '@/components/business/Auth/ChangePasswordForm.vue'
 
 const authStore = useAuthStore()
 

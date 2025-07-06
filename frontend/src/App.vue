@@ -14,8 +14,8 @@ import { useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 
-import NotificationsList from '@/components/Common/NotificationsList.vue'
-import SyncStatusIndicator from '@/components/Common/SyncStatusIndicator.vue'
+import NotificationsList from '@/components/common/NotificationsList.vue'
+import SyncStatusIndicator from '@/components/common/SyncStatusIndicator.vue'
 import { isOfflineSyncEnabled } from '@/utils/env'
 
 const route = useRoute()

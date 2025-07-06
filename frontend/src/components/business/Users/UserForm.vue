@@ -4,6 +4,18 @@
     <form @submit.prevent="handleSubmit" class="u-space-y-4">
       <!-- Mode création -->
       <template v-if="mode === 'create'">
+        <el-form-item label="Nom d'utilisateur" :error="UsernameError">
+          <el-input v-model="state.username" placeholder="Entrez le nom d'utilisateur" @blur="v$.username?.$touch()" />
+        </el-form-item>
+
+        <el-form-item label="Prénom" :error="FirstNameError">
+          <el-input v-model="state.first_name" placeholder="Entrez le prénom" @blur="v$.first_name?.$touch()" />
+        </el-form-item>
+
+        <el-form-item label="Nom" :error="LastNameError">
+          <el-input v-model="state.last_name" placeholder="Entrez le nom" @blur="v$.last_name?.$touch()" />
+        </el-form-item>
+
         <el-form-item label="Email" :error="EmailError">
           <el-input v-model="state.email" type="email" placeholder="Entrez l'email" @blur="v$.email?.$touch()" />
         </el-form-item>
@@ -37,7 +49,7 @@ import { reactive, watch, computed, unref, type PropType } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { required, email, minLength, helpers } from '@vuelidate/validators'
 import { useNotificationStore } from '@/store/notifications'
-import { createUser, updateSuperadmin } from '@/services/userService'
+import { createauserinfreemode, modifysuperadminstatus } from '@/api'
 
 const props = defineProps({
   mode: {
@@ -54,6 +66,9 @@ const emit = defineEmits(['success'])
 const notificationStore = useNotificationStore()
 
 const state = reactive({
+  username: '',
+  first_name: '',
+  last_name: '',
   email: '',
   password: '',
   is_superadmin: props.mode === 'edit' ? props.initialData?.is_superadmin || false : false,
@@ -63,6 +78,15 @@ const state = reactive({
 const validationRules = computed(() => {
   if (props.mode === 'create') {
     return {
+      username: {
+        required: helpers.withMessage("Le nom d'utilisateur est requis", required),
+      },
+      first_name: {
+        required: helpers.withMessage('Le prénom est requis', required),
+      },
+      last_name: {
+        required: helpers.withMessage('Le nom est requis', required),
+      },
       email: {
         required: helpers.withMessage("L'email est requis", required),
         email: helpers.withMessage('Email invalide', email),
@@ -83,6 +107,9 @@ const validationRules = computed(() => {
 const v$ = useVuelidate(validationRules, state)
 
 // Computed properties for error handling
+const UsernameError = computed(() => unref((v$.value.username?.$error && v$.value.username?.$errors[0]?.$message) || ''))
+const FirstNameError = computed(() => unref((v$.value.first_name?.$error && v$.value.first_name?.$errors[0]?.$message) || ''))
+const LastNameError = computed(() => unref((v$.value.last_name?.$error && v$.value.last_name?.$errors[0]?.$message) || ''))
 const EmailError = computed(() => unref((v$.value.email?.$error && v$.value.email?.$errors[0]?.$message) || ''))
 const PasswordError = computed(() => unref((v$.value.password?.$error && v$.value.password?.$errors[0]?.$message) || ''))
 
@@ -103,15 +130,18 @@ const handleSubmit = async () => {
 
   try {
     if (props.mode === 'create') {
-      await createUser(state)
+      await createauserinfreemode(state)
       notificationStore.addNotification({
         type: 'success',
         message: 'Utilisateur créé avec succès',
       })
+      state.username = ''
+      state.first_name = ''
+      state.last_name = ''
       state.email = ''
       state.password = ''
     } else if (props.mode === 'edit' && props.initialData) {
-      await updateSuperadmin(props.initialData.id, state.is_superadmin)
+      await modifysuperadminstatus(props.initialData.id, { is_superadmin: state.is_superadmin })
       notificationStore.addNotification({
         type: 'success',
         message: 'Statut superadmin mis à jour',
